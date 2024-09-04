@@ -1,51 +1,47 @@
-#include "globals.hpp"
-#include "networking.hpp"
+#include <globals.hpp>
+#include <networking.hpp>
+#include <player.hpp>
 #include <iostream>
 #include <string>
 
 int main() {
-    Connection conn = {0};  // Create a Connection object, not a pointer
-    OpenWebSocket(&conn, "ws://localhost:9000/ws");
+    Player player;
+    player.GetConnection();
+    player._position = {400, 225};
+    Connection* conn = player.GetConnection();   // Create a Connection object, not a pointer
+    OpenWebSocket(conn, "ws://192.168.1.42:9000/ws");
 
-    if (conn.ws <= 0) {
+    if (conn->ws <= 0) {
         std::cout << "Failed to create websocket" << std::endl;
         return 1;
     }
 
     // Wait for the connection to be established
-    while (!conn.connected) {
+    while (!conn->connected) {
         emscripten_sleep(10); // Small delay to avoid busy waiting
     }
 
     uint8_t buf = 1;
 
-    ClientSendBytes(conn.ws, (void*)&buf, 1);
+    ClientSendBytes(conn->ws, (void*)&buf, 1);
 
     InitWindow(800, 450, "client");
     SetTargetFPS(60);
 
     while (!WindowShouldClose()) {
-        if (IsKeyPressed(KEY_ONE)){
-            ClientSendBytes(conn.ws, (void*)&buf, 1);
-        }
-        if (conn.last_received->numBytes > 0) {
-            std::cout << "Received message of size: " << conn.last_received->numBytes << std::endl;
-            for (int i = 0; i < conn.last_received->numBytes; i++) {
-                printf("0x%x\n", conn.last_received->data[i]);
-            }
-            conn.last_received->numBytes = 0;
-        }
-        
+        player.Update();
         BeginDrawing();
-        ClearBackground(DARKGRAY);
-        DrawText("Client", 30, 30, 20, RAYWHITE);
+            ClearBackground(DARKGRAY);
+            player.Draw();
+            DrawText("Client", 30, 30, 20, RAYWHITE);
         EndDrawing();
+
     }
 
     std::cout << "Closing application" << std::endl;
 
     CloseWindow();
-    CloseWebSocket(conn.ws);
+    CloseWebSocket(conn->ws);
 
     return 0;
 }

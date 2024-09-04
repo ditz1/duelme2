@@ -12,3 +12,11 @@ typedef struct Connection {
     EmscriptenWebSocketMessageEvent* last_received;
     bool connected;
 } Connection;
+
+typedef enum PlayerState {
+    IDLE,
+    MOVE_RIGHT,
+    MOVE_LEFT,
+    MOVE_UP,
+    MOVE_DOWN,    
+} PlayerState;
