@@ -6,7 +6,7 @@ void OpenWebSocket(Connection* conn, const char* url) {
         std::cout << "WebSockets are not supported" << std::endl;
         return;
     }
-
+    
     EmscriptenWebSocketCreateAttributes ws_attrs = {
         url, nullptr, EM_TRUE
     };

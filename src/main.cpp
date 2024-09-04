@@ -5,9 +5,11 @@
 #include <string>
 
 int main() {
+
+    GameState game_state;
+    
     Player player;
     player.GetConnection();
-    player._position = {400, 225};
     Connection* conn = player.GetConnection();   // Create a Connection object, not a pointer
     OpenWebSocket(conn, "ws://192.168.1.42:9000/ws");
 
@@ -28,12 +30,17 @@ int main() {
     InitWindow(800, 450, "client");
     SetTargetFPS(60);
 
+    std::cout << player.State() << std::endl;
+
     while (!WindowShouldClose()) {
         player.Update();
         BeginDrawing();
             ClearBackground(DARKGRAY);
             player.Draw();
             DrawText("Client", 30, 30, 20, RAYWHITE);
+            DrawText("- Player -", 30, 60, 20, RAYWHITE);
+            DrawText(TextFormat("State: %s", (PlayerStateToString.at(player.State())).c_str()), 30, 90, 20, RAYWHITE);
+            DrawText(TextFormat("Requested: %s", (PlayerStateToString.at(player.RequestedState())).c_str()), 30, 120, 20, RAYWHITE);
         EndDrawing();
 
     }

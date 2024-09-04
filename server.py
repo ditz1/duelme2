@@ -1,8 +1,14 @@
 import asyncio
 import websockets
 
+global num_connections
+
 async def handle_connection(websocket, path):
     try:
+        print("New connection")
+        num_connections += 1
+        #send connected id back to player
+        await websocket.send(f"connected: {num_connections}")
         async for message in websocket:
             print(f"Received message: {message}")
             await websocket.send(message)  # Echoes the received message
