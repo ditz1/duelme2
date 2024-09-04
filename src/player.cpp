@@ -44,11 +44,11 @@ PlayerState Player::RequestedState() {
 
 void Player::PollConnection() {
     if (_conn.last_received->numBytes > 0) {
-        //std::cout << "Received message of size: " << _conn.last_received->numBytes << std::endl;
+        std::cout << "Received message of size: " << (int)_conn.last_received->numBytes << std::endl;
         for (int i = 0; i < _conn.last_received->numBytes; i++) {
-            printf("0x%x\n", _conn.last_received->data[i]);
+            printf("0x%x | ", _conn.last_received->data[i]);
         }
-        _conn.last_received->numBytes = 0;
+        printf("\n");
     }
 }
 
@@ -62,8 +62,12 @@ int Player::Id() {
 
 void Player::ParseReceivedData() {
     int state = _conn.last_received->data[0];
+    if (_conn.last_received->numBytes > 1) {
+        std::cout << "Received more than one byte" << std::endl;
+        return;
+    }
     if (state != _state){
-        std::cout << "PlayerState changed from " << PlayerStateToString.at((PlayerState)_state) << " to " << PlayerStateToString.at((PlayerState)state) << std::endl;
+        //std::cout << "PlayerState changed from " << PlayerStateToString.at((PlayerState)_state) << " to " << PlayerStateToString.at((PlayerState)state) << std::endl;
     }
     switch (state) {
         case 0:
@@ -81,17 +85,24 @@ void Player::ParseReceivedData() {
         case 4:
             _state = MOVE_DOWN;
             break;
+        default:
+            _state = IDLE;
+            //std::cout << "Invalid PlayerState received" << std::endl;
+            break;
     }
 }
 
 void Player::Update() {
+    PollConnection();
+
+    ParseReceivedData();
+
     PollInput();
     if (_state != _requested_state) {
         ClientSendBytes(_conn.ws, (void*)&_requested_state, 1);
     }
     //ClientSendBytes(_conn.ws, (void*)&_requested_state, 1);
-    PollConnection();
-    ParseReceivedData();
+
     switch (_state) {
         case IDLE:
             break;
@@ -108,4 +119,6 @@ void Player::Update() {
             _position.y -= 1;
             break;
     }
+    _conn.last_received->numBytes = 0;
+
 }

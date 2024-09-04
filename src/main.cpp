@@ -12,6 +12,7 @@ int main() {
     player.GetConnection();
     Connection* conn = player.GetConnection();   // Create a Connection object, not a pointer
     OpenWebSocket(conn, "ws://192.168.1.42:9000/ws");
+    int current_player_id = -1;
 
     if (conn->ws <= 0) {
         std::cout << "Failed to create websocket" << std::endl;
@@ -29,8 +30,12 @@ int main() {
 
     InitWindow(800, 450, "client");
     SetTargetFPS(60);
-
-    std::cout << player.State() << std::endl;
+    
+    // register player
+    for (int i = 0; i < conn->last_received->numBytes; i++) {
+        printf("0x%x | ", conn->last_received->data[i]);
+    }
+    printf("\n");
 
     while (!WindowShouldClose()) {
         player.Update();
