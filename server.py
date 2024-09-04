@@ -13,7 +13,7 @@ async def handle_connection(websocket, path):
         print(f"Connection closed: {e}")
 
 async def main():
-    server = await websockets.serve(handle_connection, "localhost", 9000)
+    server = await websockets.serve(handle_connection, "192.168.1.42", 9000)
     print("Server started...")
     await server.wait_closed()
 
