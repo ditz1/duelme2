@@ -10,6 +10,7 @@ AUTH_GAMESTATE = b'\xA3'
 REQ_GAMESTATE = b'\xA4'
 
 async def handle_connection(websocket, path):
+    global num_connections
     try:
         print(f"New connection from {websocket.remote_address}")
         connected_clients.add(websocket)
@@ -46,6 +47,7 @@ async def main():
     server = await websockets.serve(handle_connection, "192.168.1.42", 9000)
     print("Server started...")
     await server.wait_closed()
+    
 
 if __name__ == "__main__":
     asyncio.run(main())
