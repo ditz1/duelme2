@@ -1,3 +1,5 @@
+#pragma once
+
 #include <globals.hpp>
 #include <networking.hpp>
 
@@ -8,18 +10,15 @@ public:
     PlayerState State();
     PlayerState RequestedState();
     void PollInput();
-    void Update();
-    Connection* GetConnection();
+    void Update(GameState& game);
     void Draw();
     int Id();
+    void inline SetId(int id) { _id = id; }
     Vector2 Position();
 private:
-    void PollConnection();
-    void ParseReceivedData();
     int _id;
     Vector2 _position;
     PlayerState _state;
     int8_t _requested_state;
-    Connection _conn;
     Color color;
 };

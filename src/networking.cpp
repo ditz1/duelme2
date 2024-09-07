@@ -21,13 +21,13 @@ void OpenWebSocket(Connection* conn, const char* url) {
     }
 }
 
-void CloseWebSocket(EMSCRIPTEN_WEBSOCKET_T ws) {
-    emscripten_websocket_close(ws, 1000, "Closed");
-    emscripten_websocket_delete(ws);
+void CloseWebSocket(Connection* conn) {
+    emscripten_websocket_close(conn->ws, 1000, "Closed");
+    emscripten_websocket_delete(conn->ws);
 }
 
-void ClientSendBytes(EMSCRIPTEN_WEBSOCKET_T ws, void* data, uint32_t length) {
-    EM_BOOL error = emscripten_websocket_send_binary(ws, data, length);
+void ClientSendBytes(Connection* conn, void* data, uint32_t length) {
+    EM_BOOL error = emscripten_websocket_send_binary(conn->ws, data, length);
     if (error) {
         std::cout << "Failed to send binary data" << std::endl;
     }

@@ -1,54 +1,58 @@
 #include <globals.hpp>
 #include <networking.hpp>
 #include <player.hpp>
-#include <iostream>
-#include <string>
+#include <game_manager.hpp>
+#include <helpers.hpp>
 
 int main() {
 
     GameState game_state;
+    InitGameState(&game_state);
     
-    Player player;
-    player.GetConnection();
-    Connection* conn = player.GetConnection();   // Create a Connection object, not a pointer
-    OpenWebSocket(conn, "ws://192.168.1.42:9000/ws");
+    Player client_player;
+    Connection conn;
+    OpenWebSocket(&conn, "ws://192.168.1.42:9000/ws");
+    client_player.SetId(0);
 
-    if (conn->ws <= 0) {
+    if (conn.ws <= 0) {
         std::cout << "Failed to create websocket" << std::endl;
         return 1;
     }
 
-    // Wait for the connection to be established
-    while (!conn->connected) {
-        emscripten_sleep(10); // Small delay to avoid busy waiting
+    while (!conn.connected) {
+        emscripten_sleep(10); 
     }
+
+    std::cout << std::to_string(game_state.player_positions[0].x) << std::endl;
 
     uint8_t buf = 1;
 
-    ClientSendBytes(conn->ws, (void*)&buf, 1);
+    ClientSendBytes(&conn, (void*)&buf, 1);
 
     InitWindow(800, 450, "client");
     SetTargetFPS(60);
 
-    std::cout << player.State() << std::endl;
-
     while (!WindowShouldClose()) {
-        player.Update();
+        ParseGameState(&game_state, &conn, &client_player);
+
+        if (IsKeyPressed(KEY_L)){            
+            LogGameState(game_state);
+        }
+
+        client_player.PollInput();
         BeginDrawing();
             ClearBackground(DARKGRAY);
-            player.Draw();
-            DrawText("Client", 30, 30, 20, RAYWHITE);
-            DrawText("- Player -", 30, 60, 20, RAYWHITE);
-            DrawText(TextFormat("State: %s", (PlayerStateToString.at(player.State())).c_str()), 30, 90, 20, RAYWHITE);
-            DrawText(TextFormat("Requested: %s", (PlayerStateToString.at(player.RequestedState())).c_str()), 30, 120, 20, RAYWHITE);
+            client_player.Draw();
+            DrawDebugInfo(game_state);
+            
         EndDrawing();
 
     }
 
     std::cout << "Closing application" << std::endl;
 
+    CloseWebSocket(&conn);
     CloseWindow();
-    CloseWebSocket(conn->ws);
 
     return 0;
 }
