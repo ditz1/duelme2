@@ -4,6 +4,7 @@
 #include <game_manager.hpp>
 #include <helpers.hpp>
 
+
 int main() {
 
     GameState game_state;
@@ -14,6 +15,7 @@ int main() {
     OpenWebSocket(&conn, "ws://192.168.1.42:9000/ws");
     client_player.SetId(0);
 
+    
     if (conn.ws <= 0) {
         std::cout << "Failed to create websocket" << std::endl;
         return 1;
@@ -25,7 +27,9 @@ int main() {
 
     std::cout << std::to_string(game_state.player_positions[0].x) << std::endl;
 
-    uint8_t buf = 1;
+    conn.last_received->numBytes = 0;
+
+    uint8_t buf = xCONNECT;
 
     ClientSendBytes(&conn, (void*)&buf, 1);
 

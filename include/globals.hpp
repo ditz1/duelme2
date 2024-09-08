@@ -9,6 +9,8 @@
 #include <map>
 #include <protocol.hpp>
 
+extern int this_client_id;
+
 typedef struct Connection {
     int id;
     EMSCRIPTEN_WEBSOCKET_T ws;

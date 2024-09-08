@@ -1,5 +1,7 @@
 #include <globals.hpp>
 
+int this_client_id;
+
 std::string PlayerStateToString(PlayerState state) {
     int state_int = static_cast<int>(state);
     if (state_int > 0 && state_int < ALL_PLAYER_STATES) {

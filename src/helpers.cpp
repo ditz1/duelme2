@@ -6,7 +6,7 @@ void DrawDebugInfo(GameState game) {
             int x_start = 30;
             int y_start = 30;
             DrawText("Client", x_start, y_start, font_size, RAYWHITE);
-            DrawText("- Player 1-", x_start, y_start + y_spacing, font_size, RAYWHITE);
+            DrawText("- Player 1 -", x_start, y_start + y_spacing, font_size, RAYWHITE);
             DrawText(TextFormat("State: %s", PlayerStateToString(PlayerState(game.player_states[0])).c_str()), x_start, y_start + y_spacing * 2, font_size, RAYWHITE);
 }
 
