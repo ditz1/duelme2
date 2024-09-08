@@ -13,7 +13,7 @@ include_directories(include ${Boost_INCLUDE_DIRS})
 
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.c" "src/*.cc")
 
-file(GLOB_RECURSE HEADERS "include/*.h" "include/*.hpp" "include/*.hh")
+file(GLOB_RECURSE HEADERS "inc/*.h" "inc/*.hpp" "inc/*.hh")
 
 add_executable(program ${SOURCES} ${HEADERS})
 

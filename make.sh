@@ -4,3 +4,4 @@ make
 sudo cp index.* /var/www/html
 cd ../server/build
 make
+./program

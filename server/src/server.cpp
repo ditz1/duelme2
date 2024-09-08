@@ -1,14 +1,16 @@
-#include <boost/asio.hpp>
-#include <boost/beast.hpp>
+#include <boost/beast/core.hpp>
+#include <boost/beast/websocket.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include "../inc/s_protocol.hpp"
+#include "../inc/server_logic.hpp"
+#include "../inc/game_state.hpp"
 #include <iostream>
-#include <vector>
 #include <mutex>
+#include <vector>
+#include <thread>
 
-namespace asio = boost::asio;
-namespace beast = boost::beast;
-namespace websocket = beast::websocket;
-using tcp = asio::ip::tcp;
+namespace websocket = boost::beast::websocket;
+using tcp = boost::asio::ip::tcp;
 
 std::vector<std::shared_ptr<websocket::stream<tcp::socket>>> clients;
 std::mutex clients_mutex;
@@ -16,18 +18,10 @@ std::mutex clients_mutex;
 void LogMessageReceived(const std::vector<uint8_t>& message) {    
     if (!message.empty()) {
         switch(message[0]) {
-            case xCONNECT: 
-                std::cout << "CONNECT" << std::endl; 
-                break;
-            case xDISCONNECT: 
-                std::cout << "DISCONNECT" << std::endl; 
-                break;
-            case xUPDATE: 
-                std::cout << "UPDATE" << std::endl; 
-                break;
-            default: 
-                std::cout << "UNKNOWN" << std::endl;
-                break;
+            case xCONNECT: std::cout << "CONNECT" << std::endl; break;
+            case xDISCONNECT: std::cout << "DISCONNECT" << std::endl; break;
+            case xUPDATE: std::cout << "UPDATE" << std::endl; break;
+            default: std::cout << "UNKNOWN" << std::endl; break;
         }
     }
 
@@ -38,32 +32,43 @@ void LogMessageReceived(const std::vector<uint8_t>& message) {
     std::cout << std::endl;
 }
 
-
 void SendToClient(size_t client_index, const std::vector<uint8_t>& message) {
     std::lock_guard<std::mutex> lock(clients_mutex);
     std::cout << message.size() << " bytes to send: " << std::endl;
     if (client_index < clients.size()) {
         try {
-            clients[client_index]->write(asio::buffer(message));
+            clients[client_index]->write(boost::asio::buffer(message));
         } catch (const std::exception& e) {
             std::cerr << "Error sending message to client " << client_index << ": " << e.what() << std::endl;
         }
-        
     } else {
         std::cerr << "Invalid client index: " << client_index << std::endl;
     }
 }
 
 void SendBackPlayerId(size_t client_index) {
-    std::vector<uint8_t> msg;
-    msg.push_back(xASSIGN_ID);
-    msg.push_back(client_index);
-    msg.push_back(xEND_MSG);
+    std::vector<uint8_t> msg = {xASSIGN_ID, static_cast<uint8_t>(client_index), xEND_MSG};
     SendToClient(client_index, msg);
 }
 
+void BroadcastMessage(const std::vector<uint8_t>& message) {
+    for (int i = 0; i < int(clients.size()); i++) {
+        SendToClient(i, message);
+        std::cout << "broadcasting " << message.size() << " bytes" << std::endl;
+    }
+}
+
+void UpdateGameState(const std::vector<uint8_t>& message) {
+    std::vector<uint8_t> msg;
+    msg.push_back(xUPDATE);
+    for (int i = 1; i < 17; i++) {
+        msg.push_back(message[i]);
+    }
+    msg.push_back(xEND_MSG);
+    BroadcastMessage(msg);
+}
+
 void ParseMessageReceived(const std::vector<uint8_t>& message) {
-    std::cout << "size: " << message.size() << std::endl;
     if (!message.empty()) {
         switch(message[0]) {
             case xCONNECT:
@@ -71,10 +76,10 @@ void ParseMessageReceived(const std::vector<uint8_t>& message) {
                 SendBackPlayerId(clients.size() - 1);
                 break;
             case xDISCONNECT:
-                LogMessageReceived(message);
                 break;
             case xUPDATE:
                 LogMessageReceived(message);
+                UpdateGameState(message);
                 break;
             default:
                 std::cout << "Unknown message" << std::endl;
@@ -83,37 +88,23 @@ void ParseMessageReceived(const std::vector<uint8_t>& message) {
     }
 }
 
-void BroadcastMessage(const std::vector<uint8_t>& message) {
-    std::lock_guard<std::mutex> lock(clients_mutex);
-    for (auto& client : clients) {
-        try {
-            client->write(asio::buffer(message));
-        } catch (const std::exception& e) {
-            std::cerr << "Error broadcasting message: " << e.what() << std::endl;
-        }
-    }
-}
 
 
 void HandleWebSocketMessage(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
     try {
         ws->accept();
+        std::vector<uint8_t> buffer(32); // Adjust size as needed
         for(;;) {
-            beast::flat_buffer buffer;
-            ws->read(buffer);
-            
-            std::vector<uint8_t> message;
-            message.reserve(buffer.size());
-
-            auto data = buffer.data();
-            const uint8_t* begin = static_cast<const uint8_t*>(data.data());
-            const uint8_t* end = begin + data.size();
-            message.insert(message.end(), begin, end);
-            
+            size_t bytes_read = ws->read_some(boost::asio::buffer(buffer));
+            if (bytes_read > 0) {
+                std::cout << "Received " << bytes_read << " bytes" << std::endl;
+            }
+            std::vector<uint8_t> message(buffer.begin(), buffer.begin() + bytes_read);
             ParseMessageReceived(message);
+            buffer.clear();
         }
     }
-    catch(beast::system_error const& se) {
+    catch(boost::beast::system_error const& se) {
         if(se.code() != websocket::error::closed)
             std::cerr << "Error: " << se.code().message() << std::endl;
     }
@@ -127,8 +118,8 @@ void HandleWebSocketMessage(std::shared_ptr<websocket::stream<tcp::socket>> ws) 
 
 int main() {
     try {
-        asio::io_context ioc;
-        tcp::acceptor acceptor(ioc, {asio::ip::make_address("192.168.1.42"), 9000});
+        boost::asio::io_context ioc;
+        tcp::acceptor acceptor(ioc, {boost::asio::ip::make_address("192.168.1.42"), 9000});
 
         std::cout << "Server listening on port 9000" << std::endl;
 

@@ -1,33 +1,21 @@
 #include <helpers.hpp>
+#include <player.hpp>
 
-void DrawDebugInfo(GameState game) {
+void DrawDebugInfo(GameState game, Player& client_player) {
             int font_size = 20;
             int y_spacing = 30;
             int x_start = 30;
             int y_start = 30;
             DrawText("Client", x_start, y_start, font_size, RAYWHITE);
-            DrawText("- Player 1 -", x_start, y_start + y_spacing, font_size, RAYWHITE);
-            DrawText(TextFormat("State: %s", PlayerStateToString(PlayerState(game.player_states[0])).c_str()), x_start, y_start + y_spacing * 2, font_size, RAYWHITE);
+            DrawText(TextFormat("- Player %d -", this_client_id), x_start, y_start + y_spacing, font_size, RAYWHITE);
+            DrawText(TextFormat("State: %s", PlayerStateToString(client_player.RequestedState()).c_str()), x_start, y_start + y_spacing * 2, font_size, RAYWHITE);
+            DrawText(TextFormat("Position: %d, %d", client_player.Position().x, client_player.Position().y), x_start, y_start + y_spacing * 3, font_size, RAYWHITE);
 }
 
 void LogGameState(GameState game) {
-    std::cout << "Player 1" << std::endl;
-    std::cout << "state: " << PlayerStateToString(PlayerState(game.player_states[0])) << std::endl;
-    std::cout << "pos: " << game.player_positions[0].x << "," << game.player_positions[0].y << std::endl;
-
-    std::cout << "Player 2 state: " << std::endl; 
-    std::cout << "state: " << PlayerStateToString(PlayerState(game.player_states[1])) << std::endl;
-    std::cout << "pos: " << game.player_positions[1].x << "," << game.player_positions[1].y << std::endl;
-
-    std::cout << "Player 3 state: " << std::endl;
-    std::cout << "state: " << PlayerStateToString(PlayerState(game.player_states[2])) << std::endl;
-    std::cout << "pos: " << game.player_positions[2].x << "," << game.player_positions[2].y << std::endl;
-
-    std::cout << "Player 4 state: " << std::endl;
-    std::cout << "state: " << PlayerStateToString(PlayerState(game.player_states[3])) << std::endl;
-    std::cout << "pos: " << game.player_positions[3].x << "," << game.player_positions[3].y << std::endl;
-    
+    printf("Game State: %d\n", int(sizeof(game.ToBytes())));
+    for (int i = 0; i < sizeof(game.ToBytes()); i++) {
+        printf(" %x |", (game.ToBytes())[i]);
+    }
     printf("\n");
-    printf("%x\n", game.ToBytes().c_str());
-
 }

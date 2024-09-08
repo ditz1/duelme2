@@ -12,13 +12,13 @@ public:
     void PollInput();
     void Update(GameState& game);
     void Draw();
-    int Id();
-    void inline SetId(int id) { _id = id; }
-    Vector2 Position();
+    uint8_t Id();
+    void inline SetId(int id) { _id = uint8_t(id); }
+    Vector2int Position();
 private:
-    int _id;
-    Vector2 _position;
+    uint8_t _id;
+    Vector2int _position;
     PlayerState _state;
-    int8_t _requested_state;
+    uint8_t _requested_state;
     Color color;
 };

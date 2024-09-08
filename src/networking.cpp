@@ -27,6 +27,13 @@ void CloseWebSocket(Connection* conn) {
 }
 
 void ClientSendBytes(Connection* conn, void* data, uint32_t length) {
+    if (data != nullptr) {
+        std::cout << "Sending data" << std::endl;
+        for (int i = 0; i < length; i++) {
+            printf("%x | ", ((uint8_t*)data)[i]);
+        }
+        printf("data\n");
+    }
     EM_BOOL error = emscripten_websocket_send_binary(conn->ws, data, length);
     if (error) {
         std::cout << "Failed to send binary data" << std::endl;

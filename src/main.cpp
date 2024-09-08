@@ -9,6 +9,7 @@ int main() {
 
     GameState game_state;
     InitGameState(&game_state);
+
     
     Player client_player;
     Connection conn;
@@ -24,10 +25,7 @@ int main() {
     while (!conn.connected) {
         emscripten_sleep(10); 
     }
-
-    std::cout << std::to_string(game_state.player_positions[0].x) << std::endl;
-
-    conn.last_received->numBytes = 0;
+    
 
     uint8_t buf = xCONNECT;
 
@@ -37,17 +35,19 @@ int main() {
     SetTargetFPS(60);
 
     while (!WindowShouldClose()) {
+
         ParseGameState(&game_state, &conn, &client_player);
 
         if (IsKeyPressed(KEY_L)){            
             LogGameState(game_state);
         }
-
         client_player.PollInput();
+        RequestStateUpdate(&game_state, &conn, &client_player);
+        
         BeginDrawing();
             ClearBackground(DARKGRAY);
             client_player.Draw();
-            DrawDebugInfo(game_state);
+            DrawDebugInfo(game_state, client_player);
             
         EndDrawing();
 
