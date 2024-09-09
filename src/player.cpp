@@ -18,28 +18,24 @@ void Player::PollInput() {
     int reset_state_flag = 0;
     if (IsKeyDown(KEY_D)){
         _requested_state = uint8_t(MOVE_RIGHT);
-        _position.x += 1;
     } else {
         reset_state_flag++;
     }   
 
     if (IsKeyDown(KEY_A)){
         _requested_state = uint8_t(MOVE_LEFT);
-        _position.x -= 1;
     } else {
         reset_state_flag++;
     }
 
     if (IsKeyDown(KEY_W)){
         _requested_state = uint8_t(MOVE_UP);
-        _position.y -= 1;
     } else {
         reset_state_flag++;
     }
 
     if (IsKeyDown(KEY_S)){
         _requested_state = uint8_t(MOVE_DOWN);
-        _position.y += 1;
     } else {
         reset_state_flag++;
     }

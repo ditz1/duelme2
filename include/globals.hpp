@@ -61,9 +61,9 @@ typedef struct GameState {
         std::array<uint8_t, 16> bytes;
         for (int i = 0; i < bytes.size(); i+=4){
             bytes[i] = player_ids[i];
-            bytes[i+1] = player_positions[i].x;
-            bytes[i+2] = player_positions[i].y;
-            bytes[i+3] = player_states[i];
+            bytes[i+1] = player_states[i];
+            bytes[i+2] = player_positions[i].x;
+            bytes[i+3] = player_positions[i].y;
         }
         return bytes;
     }

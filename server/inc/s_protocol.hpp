@@ -7,6 +7,7 @@
 #define xUPDATE 0x3a
 #define xASSIGN_ID 0x4a
 #define xEND_MSG 0x5a
+#define xPING 0x6a
 
 typedef struct Vector2int {
     uint16_t x;

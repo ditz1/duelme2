@@ -27,13 +27,6 @@ void CloseWebSocket(Connection* conn) {
 }
 
 void ClientSendBytes(Connection* conn, void* data, uint32_t length) {
-    if (data != nullptr) {
-        std::cout << "Sending data" << std::endl;
-        for (int i = 0; i < length; i++) {
-            printf("%x | ", ((uint8_t*)data)[i]);
-        }
-        printf("data\n");
-    }
     EM_BOOL error = emscripten_websocket_send_binary(conn->ws, data, length);
     if (error) {
         std::cout << "Failed to send binary data" << std::endl;
@@ -42,6 +35,14 @@ void ClientSendBytes(Connection* conn, void* data, uint32_t length) {
 
 EM_BOOL OnMessage(int eventType, const EmscriptenWebSocketMessageEvent *websocketEvent, void *userData) {
     Connection* conn = (Connection*)userData;
+    if (websocketEvent->isText) {
+        std::string textData(reinterpret_cast<char*>(websocketEvent->data), websocketEvent->numBytes);
+        std::cout << "Received text message: " << textData << std::endl;
+    } else {
+        const uint8_t* binaryData = websocketEvent->data;
+        size_t dataLength = websocketEvent->numBytes;        
+        std::cout << "Received binary message of " << dataLength << " bytes" << std::endl;
+    }
     conn->last_received = (EmscriptenWebSocketMessageEvent*)websocketEvent;
     return EM_TRUE;
 }

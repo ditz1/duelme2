@@ -37,6 +37,7 @@ void SendToClient(size_t client_index, const std::vector<uint8_t>& message) {
     std::cout << message.size() << " bytes to send: " << std::endl;
     if (client_index < clients.size()) {
         try {
+            clients[client_index]->binary(true);
             clients[client_index]->write(boost::asio::buffer(message));
         } catch (const std::exception& e) {
             std::cerr << "Error sending message to client " << client_index << ": " << e.what() << std::endl;
@@ -81,6 +82,9 @@ void ParseMessageReceived(const std::vector<uint8_t>& message) {
                 LogMessageReceived(message);
                 UpdateGameState(message);
                 break;
+            case xPING:
+                std::cout << "PING" << std::endl;
+                break;
             default:
                 std::cout << "Unknown message" << std::endl;
                 break;
@@ -93,15 +97,18 @@ void ParseMessageReceived(const std::vector<uint8_t>& message) {
 void HandleWebSocketMessage(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
     try {
         ws->accept();
+        ws->binary(true);
         std::vector<uint8_t> buffer(32); // Adjust size as needed
         for(;;) {
             size_t bytes_read = ws->read_some(boost::asio::buffer(buffer));
             if (bytes_read > 0) {
                 std::cout << "Received " << bytes_read << " bytes" << std::endl;
             }
-            std::vector<uint8_t> message(buffer.begin(), buffer.begin() + bytes_read);
+            std::vector<uint8_t> message;
+            for (size_t i = 0; i < bytes_read; i++) {
+                message.push_back(buffer[i]);
+            }
             ParseMessageReceived(message);
-            buffer.clear();
         }
     }
     catch(boost::beast::system_error const& se) {
@@ -113,13 +120,13 @@ void HandleWebSocketMessage(std::shared_ptr<websocket::stream<tcp::socket>> ws) 
     }
 
     std::lock_guard<std::mutex> lock(clients_mutex);
-    clients.erase(std::remove(clients.begin(), clients.end(), ws), clients.end());
+    std::remove(clients.begin(), clients.end(), ws), clients.end();
 }
 
 int main() {
     try {
         boost::asio::io_context ioc;
-        tcp::acceptor acceptor(ioc, {boost::asio::ip::make_address("192.168.1.42"), 9000});
+        boost::asio::ip::tcp::acceptor acceptor(ioc, {boost::asio::ip::make_address("192.168.1.42"), 9000});
 
         std::cout << "Server listening on port 9000" << std::endl;
 

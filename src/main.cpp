@@ -6,11 +6,14 @@
 
 
 int main() {
+    
+
+    InitWindow(800, 450, "client");
+    SetTargetFPS(60);
 
     GameState game_state;
     InitGameState(&game_state);
 
-    
     Player client_player;
     Connection conn;
     OpenWebSocket(&conn, "ws://192.168.1.42:9000/ws");
@@ -25,21 +28,25 @@ int main() {
     while (!conn.connected) {
         emscripten_sleep(10); 
     }
-    
 
     uint8_t buf = xCONNECT;
 
     ClientSendBytes(&conn, (void*)&buf, 1);
 
-    InitWindow(800, 450, "client");
-    SetTargetFPS(60);
+
+    uint8_t msg[3] = {xPING, 0x00, xEND_MSG};
+    ClientSendBytes(&conn, (void*)msg, 3);
 
     while (!WindowShouldClose()) {
 
-        ParseGameState(&game_state, &conn, &client_player);
+        //ParseGameState(&game_state, &conn, &client_player);
 
         if (IsKeyPressed(KEY_L)){            
             LogGameState(game_state);
+        }
+        if (IsKeyPressed(KEY_P)){
+            std::cout << "ping" << std::endl;
+            ClientSendBytes(&conn, (void*)msg, 3);
         }
         client_player.PollInput();
         RequestStateUpdate(&game_state, &conn, &client_player);
