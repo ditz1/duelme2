@@ -42,6 +42,9 @@ EM_BOOL OnMessage(int eventType, const EmscriptenWebSocketMessageEvent *websocke
         const uint8_t* binaryData = websocketEvent->data;
         size_t dataLength = websocketEvent->numBytes;        
         std::cout << "Received binary message of " << dataLength << " bytes" << std::endl;
+        for (size_t i = 0; i < dataLength; i++) {
+            printf("%x ", binaryData[i]);
+        }
     }
     conn->last_received = (EmscriptenWebSocketMessageEvent*)websocketEvent;
     return EM_TRUE;

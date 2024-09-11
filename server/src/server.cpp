@@ -18,9 +18,9 @@ std::mutex clients_mutex;
 void LogMessageReceived(const std::vector<uint8_t>& message) {    
     if (!message.empty()) {
         switch(message[0]) {
-            case xCONNECT: std::cout << "CONNECT" << std::endl; break;
-            case xDISCONNECT: std::cout << "DISCONNECT" << std::endl; break;
-            case xUPDATE: std::cout << "UPDATE" << std::endl; break;
+            case msg_connect: std::cout << "CONNECT" << std::endl; break;
+            case msg_disconnect: std::cout << "DISCONNECT" << std::endl; break;
+            case msg_update: std::cout << "UPDATE" << std::endl; break;
             default: std::cout << "UNKNOWN" << std::endl; break;
         }
     }
@@ -41,6 +41,7 @@ void SendToClient(size_t client_index, const std::vector<uint8_t>& message) {
             clients[client_index]->write(boost::asio::buffer(message));
         } catch (const std::exception& e) {
             std::cerr << "Error sending message to client " << client_index << ": " << e.what() << std::endl;
+            clients.erase(clients.begin() + client_index);
         }
     } else {
         std::cerr << "Invalid client index: " << client_index << std::endl;
@@ -48,7 +49,10 @@ void SendToClient(size_t client_index, const std::vector<uint8_t>& message) {
 }
 
 void SendBackPlayerId(size_t client_index) {
-    std::vector<uint8_t> msg = {xASSIGN_ID, static_cast<uint8_t>(client_index), xEND_MSG};
+    std::vector<uint8_t> msg = {msg_assign_id, static_cast<uint8_t>(client_index), msg_end};
+    for (uint8_t x : msg){
+        printf("%x | ", x);
+    }
     SendToClient(client_index, msg);
 }
 
@@ -61,29 +65,30 @@ void BroadcastMessage(const std::vector<uint8_t>& message) {
 
 void UpdateGameState(const std::vector<uint8_t>& message) {
     std::vector<uint8_t> msg;
-    msg.push_back(xUPDATE);
-    for (int i = 1; i < 17; i++) {
+    msg.push_back(msg_update);
+    for (int i = 1; i < int(message.size() - 1); i++) {
         msg.push_back(message[i]);
     }
-    msg.push_back(xEND_MSG);
+    msg.push_back(msg_end);
     BroadcastMessage(msg);
 }
 
 void ParseMessageReceived(const std::vector<uint8_t>& message) {
     if (!message.empty()) {
         switch(message[0]) {
-            case xCONNECT:
+            case msg_connect:
                 LogMessageReceived(message);
                 SendBackPlayerId(clients.size() - 1);
                 break;
-            case xDISCONNECT:
+            case msg_disconnect:
                 break;
-            case xUPDATE:
+            case msg_update:
                 LogMessageReceived(message);
                 UpdateGameState(message);
                 break;
-            case xPING:
+            case msg_ping:
                 std::cout << "PING" << std::endl;
+                SendBackPlayerId(clients.size() - 1);
                 break;
             default:
                 std::cout << "Unknown message" << std::endl;
@@ -91,7 +96,6 @@ void ParseMessageReceived(const std::vector<uint8_t>& message) {
         }
     }
 }
-
 
 
 void HandleWebSocketMessage(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
@@ -110,6 +114,7 @@ void HandleWebSocketMessage(std::shared_ptr<websocket::stream<tcp::socket>> ws) 
             }
             ParseMessageReceived(message);
         }
+        buffer.clear();
     }
     catch(boost::beast::system_error const& se) {
         if(se.code() != websocket::error::closed)

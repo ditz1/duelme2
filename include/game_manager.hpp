@@ -6,5 +6,5 @@
 
 void InitGameState(GameState* game);
 void ParseGameState(GameState* game, Connection* conn, Player* player);
-void SendGameState(GameState* game, Connection* conn);
+void SendGameStateRequest(GameState* game, Connection* conn);
 void RequestStateUpdate(GameState* game, Connection* conn, Player* player);

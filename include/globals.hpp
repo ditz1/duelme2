@@ -57,16 +57,38 @@ typedef struct GameState {
             uint8_t b0;
         } b;
     } u16tou8s;
-    std::array<uint8_t, 16> ToBytes(){
-        std::array<uint8_t, 16> bytes;
-        for (int i = 0; i < bytes.size(); i+=4){
+    std::array<uint8_t, 24> ToBytes(){
+        std::array<uint8_t, 24> bytes;
+        for (int i = 0; i < bytes.size(); i+=6){
             bytes[i] = player_ids[i];
             bytes[i+1] = player_states[i];
-            bytes[i+2] = player_positions[i].x;
-            bytes[i+3] = player_positions[i].y;
+            u16tou8s x;
+            x.u = player_positions[i].x;
+            bytes[i+2] = x.b.b1;
+            bytes[i+3] = x.b.b0;
+            u16tou8s y;
+            y.u = player_positions[i].y;
+            bytes[i+4] = y.b.b1;
+            bytes[i+5] = y.b.b0;
+
         }
         return bytes;
     }
+    void FromBytes(std::array<uint8_t, 26> bytes){
+        for (int i = 1; i < bytes.size(); i+=6){
+            this->player_ids[i] = bytes[i];
+            this->player_states[i] = bytes[i+1];
+            u16tou8s x;
+            x.b.b1 = bytes[i+2];
+            x.b.b0 = bytes[i+3];
+            this->player_positions[i].x = x.u;
+            u16tou8s y;
+            y.b.b1 = bytes[i+4];
+            y.b.b0 = bytes[i+5];
+            this->player_positions[i].y = y.u;
+        }
+    }
+
 } GameState;
 
 std::string PlayerStateToString(PlayerState state); 

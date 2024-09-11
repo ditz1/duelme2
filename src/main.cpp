@@ -29,28 +29,26 @@ int main() {
         emscripten_sleep(10); 
     }
 
-    uint8_t buf = xCONNECT;
+    uint8_t buf = msg_connect;
 
     ClientSendBytes(&conn, (void*)&buf, 1);
 
 
-    uint8_t msg[3] = {xPING, 0x00, xEND_MSG};
-    ClientSendBytes(&conn, (void*)msg, 3);
+    uint8_t msg[3] = {msg_ping, 0x00, msg_end};
 
     while (!WindowShouldClose()) {
+        ParseGameState(&game_state, &conn, &client_player);
 
-        //ParseGameState(&game_state, &conn, &client_player);
 
         if (IsKeyPressed(KEY_L)){            
-            LogGameState(game_state);
+            LogGameState(game_state, &conn);
         }
         if (IsKeyPressed(KEY_P)){
             std::cout << "ping" << std::endl;
             ClientSendBytes(&conn, (void*)msg, 3);
         }
         client_player.PollInput();
-        RequestStateUpdate(&game_state, &conn, &client_player);
-        
+        RequestStateUpdate(&game_state, &conn, &client_player);        
         BeginDrawing();
             ClearBackground(DARKGRAY);
             client_player.Draw();
