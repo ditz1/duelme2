@@ -13,14 +13,10 @@ void DrawDebugInfo(GameState game, Player& client_player) {
 }
 
 void LogGameState(GameState game, Connection* conn) {
-    std::cout << "recieved from server" <<  std::endl;
     printf("Game State: %d\n", int(sizeof(game.ToBytes())));
+    std::array<uint8_t, 24> bytes = game.ToBytes();
     for (int i = 0; i < sizeof(game.ToBytes()); i++) {
-        printf(" %x |", (game.ToBytes())[i]);
-    }
-    printf("\n");
-    for (int i = 0; i < conn->last_received->numBytes; i++) {
-        printf("%x | ", conn->last_received->data[i]);
+        printf(" %x |", bytes[i]);
     }
     printf("\n");
 }

@@ -36,14 +36,24 @@ void ClientSendBytes(Connection* conn, void* data, uint32_t length) {
 EM_BOOL OnMessage(int eventType, const EmscriptenWebSocketMessageEvent *websocketEvent, void *userData) {
     Connection* conn = (Connection*)userData;
     if (websocketEvent->isText) {
-        std::string textData(reinterpret_cast<char*>(websocketEvent->data), websocketEvent->numBytes);
-        std::cout << "Received text message: " << textData << std::endl;
+        std::cout << "ERROR: server sent data as text instead of binary" << std::endl;
     } else {
         const uint8_t* binaryData = websocketEvent->data;
         size_t dataLength = websocketEvent->numBytes;        
         std::cout << "Received binary message of " << dataLength << " bytes" << std::endl;
-        for (size_t i = 0; i < dataLength; i++) {
-            printf("%x ", binaryData[i]);
+        data_from_server.clear();
+        switch(binaryData[0]){
+            case msg_connect:
+            case msg_disconnect:
+            case msg_assign_id:
+            case msg_update:
+                for (int i = 0; i < dataLength; i++) {
+                    data_from_server.push_back(binaryData[i]);
+                }
+                break;
+            default:
+                std::cout << "Recieved Malformed Data" << std::endl;
+                break;
         }
     }
     conn->last_received = (EmscriptenWebSocketMessageEvent*)websocketEvent;

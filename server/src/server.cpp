@@ -1,19 +1,33 @@
-#include <boost/beast/core.hpp>
-#include <boost/beast/websocket.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include "../inc/s_protocol.hpp"
-#include "../inc/server_logic.hpp"
-#include "../inc/game_state.hpp"
+#include <cstdlib>
+#include <functional>
 #include <iostream>
-#include <mutex>
-#include <vector>
+#include <string>
 #include <thread>
+#include <vector>
+#include "../inc/s_protocol.hpp"
 
-namespace websocket = boost::beast::websocket;
-using tcp = boost::asio::ip::tcp;
+namespace beast = boost::beast;         // from <boost/beast.hpp>
+namespace http = beast::http;           // from <boost/beast/http.hpp>
+namespace websocket = beast::websocket; // from <boost/beast/websocket.hpp>
+namespace net = boost::asio;            // from <boost/asio.hpp>
+using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
 std::vector<std::shared_ptr<websocket::stream<tcp::socket>>> clients;
-std::mutex clients_mutex;
+std::mutex clients_mutex; // Mutex to protect the clients vector
+
+void InitGameState(GameState* game){
+    std::cout << "init game" << std::endl;
+    game_running = true;
+    for (uint8_t& player_state : game->player_states) {
+        player_state = 0x6;
+    }
+    for (uint8_t& player_id : game->player_ids) {
+        player_id = 0xAA;
+    }
+    for (Vector2int& player_position : game->player_positions) {
+        player_position = Vector2int{0x7FFF, 0x7FFF};
+    }
+}
 
 void LogMessageReceived(const std::vector<uint8_t>& message) {    
     if (!message.empty()) {
@@ -27,50 +41,63 @@ void LogMessageReceived(const std::vector<uint8_t>& message) {
 
     std::cout << "Received message (" << message.size() << " bytes):" << std::endl;
     for (uint8_t c : message) {
-        printf("%x ", c);
+        printf("%x | ", c);
     }
-    std::cout << std::endl;
+    printf("\n");
 }
 
-void SendToClient(size_t client_index, const std::vector<uint8_t>& message) {
-    std::lock_guard<std::mutex> lock(clients_mutex);
+void SendToClient(std::shared_ptr<websocket::stream<tcp::socket>> client, const std::vector<uint8_t>& message) {
     std::cout << message.size() << " bytes to send: " << std::endl;
-    if (client_index < clients.size()) {
-        try {
-            clients[client_index]->binary(true);
-            clients[client_index]->write(boost::asio::buffer(message));
-        } catch (const std::exception& e) {
-            std::cerr << "Error sending message to client " << client_index << ": " << e.what() << std::endl;
-            clients.erase(clients.begin() + client_index);
-        }
-    } else {
-        std::cerr << "Invalid client index: " << client_index << std::endl;
+    for (uint8_t x : message){
+        printf("%x | ", x);
     }
+    printf("\n");
+    try {
+        client->binary(true);
+        client->write(boost::asio::buffer(message));
+    } catch (const std::exception& e) {
+        std::cerr << "Error sending message to client " << ": " << e.what() << std::endl;
+        clients.erase(std::find(clients.begin(), clients.end(), client));
+    }
+    
 }
 
 void SendBackPlayerId(size_t client_index) {
     std::vector<uint8_t> msg = {msg_assign_id, static_cast<uint8_t>(client_index), msg_end};
+    game_state.player_ids[client_index] = client_index;
     for (uint8_t x : msg){
         printf("%x | ", x);
     }
-    SendToClient(client_index, msg);
+    printf("\n");
+    SendToClient(clients[client_index], msg);
 }
 
 void BroadcastMessage(const std::vector<uint8_t>& message) {
-    for (int i = 0; i < int(clients.size()); i++) {
-        SendToClient(i, message);
+    for (auto& client : clients) {
+        SendToClient(client, message);
         std::cout << "broadcasting " << message.size() << " bytes" << std::endl;
     }
 }
 
 void UpdateGameState(const std::vector<uint8_t>& message) {
-    std::vector<uint8_t> msg;
-    msg.push_back(msg_update);
-    for (int i = 1; i < int(message.size() - 1); i++) {
-        msg.push_back(message[i]);
-    }
-    msg.push_back(msg_end);
-    BroadcastMessage(msg);
+    //std::vector<uint8_t> msg;
+    //msg.push_back(msg_update);
+    //std::array<uint8_t, 26> bytes_msg;
+    //std::cout << "updating" << std::endl;
+    //for (int i = 0; i < 26; i++) {
+    //    bytes_msg[i] = message[i];
+    //}
+    //printf("\n");
+    //
+    //game_state.FromBytes(bytes_msg);
+    //std::array<uint8_t, 24> bytes = game_state.ToBytes();
+    //std::cout << "to game state" << std::endl;
+    //for (int i=0; i < 24; i++) {
+    //    msg.push_back(bytes[i]);
+    //}
+    //printf("\n");
+    //msg.push_back(msg_end);
+    BroadcastMessage(message);
 }
 
 void ParseMessageReceived(const std::vector<uint8_t>& message) {
@@ -98,59 +125,90 @@ void ParseMessageReceived(const std::vector<uint8_t>& message) {
 }
 
 
-void HandleWebSocketMessage(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
+
+//------------------------------------------------------------------------------
+
+void StartSession(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
     try {
+        // Accept the websocket handshake
         ws->accept();
-        ws->binary(true);
-        std::vector<uint8_t> buffer(32); // Adjust size as needed
-        for(;;) {
-            size_t bytes_read = ws->read_some(boost::asio::buffer(buffer));
-            if (bytes_read > 0) {
-                std::cout << "Received " << bytes_read << " bytes" << std::endl;
-            }
-            std::vector<uint8_t> message;
-            for (size_t i = 0; i < bytes_read; i++) {
-                message.push_back(buffer[i]);
-            }
-            ParseMessageReceived(message);
+
+        // Add the client to the clients vector
+        {
+            std::lock_guard<std::mutex> lock(clients_mutex);
+            clients.push_back(ws);
         }
-        buffer.clear();
+
+        for(;;) {
+            // This buffer will hold the incoming message
+            beast::flat_buffer buffer;
+
+            // Read a message
+            ws->read(buffer);
+            std::vector<uint8_t> message;
+            for (size_t i = 0; i < buffer.size(); i++){
+                message.push_back(boost::asio::buffer_cast<const uint8_t*>(buffer.data())[i]);
+            }
+
+            // Parse the received message
+            ParseMessageReceived(message);
+
+            // Echo the message back (if needed)
+            ws->write(buffer.data());
+        }
     }
-    catch(boost::beast::system_error const& se) {
-        if(se.code() != websocket::error::closed)
-            std::cerr << "Error: " << se.code().message() << std::endl;
+    catch (const beast::system_error& se) {
+        if (se.code() != websocket::error::closed) {
+            std::cerr << "WebSocket error: " << se.code().message() << std::endl;
+        }
     }
-    catch(std::exception const& e) {
+    catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
 
-    std::lock_guard<std::mutex> lock(clients_mutex);
-    std::remove(clients.begin(), clients.end(), ws), clients.end();
+    // Remove the client from the clients list when the session ends
+    {
+        std::lock_guard<std::mutex> lock(clients_mutex);
+        clients.erase(std::remove_if(clients.begin(), clients.end(),
+            [ws](const std::shared_ptr<websocket::stream<tcp::socket>>& client_ws) {
+                return client_ws == ws;
+            }), clients.end());
+    }
 }
+//------------------------------------------------------------------------------
 
-int main() {
-    try {
-        boost::asio::io_context ioc;
-        boost::asio::ip::tcp::acceptor acceptor(ioc, {boost::asio::ip::make_address("192.168.1.42"), 9000});
+int main()
+{
+    InitGameState(&game_state);
+    try
+    {
+        // Check command line arguments.
+        auto const address = net::ip::make_address("192.168.1.42");
+        auto const port = static_cast<unsigned short>(std::atoi("9000"));
 
-        std::cout << "Server listening on port 9000" << std::endl;
+        // The io_context is required for all I/O
+        net::io_context ioc{1};
 
-        for(;;) {
+        // The acceptor receives incoming connections
+        tcp::acceptor acceptor{ioc, {address, port}};
+        std::cout << "listening on " << address << ":" << port << std::endl;
+        
+        for (;;) {
+            // This will receive the new connection
             tcp::socket socket{ioc};
+
+            // Block until we get a connection
             acceptor.accept(socket);
+
+            // Create a shared pointer for the WebSocket stream
             auto ws = std::make_shared<websocket::stream<tcp::socket>>(std::move(socket));
-            
-            {
-                std::lock_guard<std::mutex> lock(clients_mutex);
-                clients.push_back(ws);
-            }
-            
-            std::thread(&HandleWebSocketMessage, ws).detach();
+
+            // Launch the session in a new thread
+            std::thread(&StartSession, ws).detach();
         }
     }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;
     }
-    return 0;
 }

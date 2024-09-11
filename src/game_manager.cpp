@@ -4,8 +4,8 @@ void InitGameState(GameState* game){
     for (uint8_t& player_state : game->player_states) {
         player_state = uint8_t(PlayerState::UNREGISTERED);
     }
-    for (uint8_t player_id : game->player_ids) {
-        player_id = 0xFF;
+    for (uint8_t& player_id : game->player_ids) {
+        player_id = 0xA;
     }
     for (Vector2int& player_position : game->player_positions) {
         player_position = Vector2int{0x7FFF, 0x7FFF};
@@ -13,7 +13,6 @@ void InitGameState(GameState* game){
 }
 
 void RequestStateUpdate(GameState* game, Connection* conn, Player* player) {
-    //if (conn->last_received->data[0] != msg_update) return;
     if (int(player->RequestedState()) <= int(PlayerState::IDLE) && (game->player_states[int(player->Id())] != uint8_t(player->RequestedState()))) {
         game->player_states[int(player->Id())] = uint8_t(player->RequestedState());
         SendGameStateRequest(game, conn);
@@ -21,17 +20,22 @@ void RequestStateUpdate(GameState* game, Connection* conn, Player* player) {
 }
 
 void ParseAssignPlayerId(GameState* game, Connection* conn, Player* player){
-    player->SetId(int(conn->last_received->data[1]));
-    game->player_ids[int(conn->last_received->data[1])] = int(conn->last_received->data[1]);
-    this_client_id = int(conn->last_received->data[1]);
+    if (!conn->connected || data_from_server.size() == 0) return;
+    if (num_players_connected == 4) {
+        std::cout << "Server Full" << std::endl;
+        return;
+    }
+    num_players_connected++;
+    player->SetId(data_from_server[1]);
+    game->player_ids[data_from_server[1]] = data_from_server[1];
+    this_client_id = int(data_from_server[1]);
 }
 
 void UpdateGameState(GameState* game, Connection* conn){
+    if (data_from_server.size() < 26) return;
     std::array<uint8_t, 26> last_received_bytes;
-    std::cout << "recieved from server" <<  std::endl;
-    for (int i = 0; i < conn->last_received->numBytes; i++) {
-        last_received_bytes[i] = conn->last_received->data[i];
-        printf("%x | ", conn->last_received->data[i]);
+    for (size_t i = 0; i < data_from_server.size(); i++) {
+        last_received_bytes[i] = data_from_server[i];
     }
     printf("\n");
     game->FromBytes(last_received_bytes);
@@ -40,13 +44,15 @@ void UpdateGameState(GameState* game, Connection* conn){
 
 void ParseGameState(GameState* game, Connection* conn, Player* player) {
     if (!conn->connected) return;
-    if (conn->last_received->numBytes < 1) return;
+    if (data_from_server.size() < 1) return;
+
     std::cout << "recieved from server" <<  std::endl;
-    printf("[ %x ] ", conn->last_received->data[0]);
-    for (int i = 0; i < conn->last_received->numBytes; i++) {
-        printf("%x | ", conn->last_received->data[i]);
+    printf("[ %x ]\n", data_from_server[0]);
+    for (int i = 0; i < int(data_from_server.size()); i++) {
+        printf("%x | ", data_from_server[i]);
     }
-    switch (conn->last_received->data[0]){
+    printf("\n");
+    switch (data_from_server[0]){
         case msg_connect:
             std::cout << "Connected To Server" << std::endl;
             break;
@@ -54,7 +60,7 @@ void ParseGameState(GameState* game, Connection* conn, Player* player) {
             std::cout << "Disconnected From Server" << std::endl;
             break;
         case msg_assign_id:
-            std::cout << "Assigned ID: " << int(conn->last_received->data[1]) << std::endl;
+            std::cout << "Assigned ID: " << int(data_from_server[1]) << std::endl;
             ParseAssignPlayerId(game, conn, player);
             break;
         case msg_update:
@@ -63,26 +69,23 @@ void ParseGameState(GameState* game, Connection* conn, Player* player) {
             break;
     }
 
-    //LogGameState(*game);
-    
-    // if (game->player_states[player->Id() != uint8_t(player->RequestedState())]) {
-    //     game->player_states[player->Id()] = uint8_t(player->RequestedState());
-    //     for (int i = 0; i < sizeof(game->ToBytes()); i++) {
-    //         printf(" %x |", (game->ToBytes())[i]);
-    //     }
-    // }
-    //SendGameState(game, conn);
-    conn->last_received->numBytes = 0;
+    data_from_server.clear();
 }
 
 void SendGameStateRequest(GameState* game, Connection* conn) {
     if (!conn->connected) return;
-    uint8_t bytes_to_send[game->ToBytes().size() + 2];
+    std::array<uint8_t, 26> bytes_to_send;
     bytes_to_send[0] = msg_update;
     std::array<uint8_t, 24> game_bytes = game->ToBytes();
-    for (int i = 1; i < game_bytes.size(); i++) {
-        bytes_to_send[i] = game_bytes[i-1];
+    for (int i = 0; i < 24; i++) {
+        bytes_to_send[i+1] = game_bytes[i];
     }
     bytes_to_send[25] = msg_end;
+    std::cout << "requesting new game state" << std::endl;
+    for (int i = 0; i < 26; i++) {
+        printf("%x | ", bytes_to_send[i]);
+    }
+    printf("\n");
+
     ClientSendBytes(conn, (void*)&bytes_to_send, 26);
 }
