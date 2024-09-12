@@ -4,6 +4,13 @@
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <functional>
+#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <thread>
+#include <vector>
+#include <algorithm>
 
 #define msg_connect 0x1a
 #define msg_disconnect 0x2a
@@ -14,23 +21,21 @@
 #define msg_signature 0x7a
 #define msg_from_server 0x8a
 
-extern bool game_running;
+namespace beast = boost::beast;         // from <boost/beast.hpp>
+namespace http = beast::http;           // from <boost/beast/http.hpp>
+namespace websocket = beast::websocket; // from <boost/beast/websocket.hpp>
+namespace net = boost::asio;            // from <boost/asio.hpp>
+using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
+extern bool game_running;
+extern int num_connections;
+extern std::vector<std::shared_ptr<websocket::stream<tcp::socket>>> clients;
+extern std::mutex clients_mutex; // Mutex to protect the clients vector
 
 typedef struct Vector2int {
     uint16_t x;
     uint16_t y;
 } Vector2int;
-
-// enum PlayerState {
-//     MOVE_RIGHT, = 0x0
-//     MOVE_LEFT, 0x1
-//     MOVE_UP, 0x2
-//     MOVE_DOWN, 0x3
-//     IDLE, 0x4
-//     ALL_PLAYER_STATES,
-//     UNREGISTERED
-// };
 
 
 typedef struct GameState {
@@ -81,5 +86,3 @@ typedef struct GameState {
 } GameState;
 
 extern GameState game_state;
-
-void InitGameState(GameState* game);

@@ -109,3 +109,19 @@ void DrawGameState(GameState* game){
         player.Draw();
     }
 }
+
+void DrawLobbyScene(GameState* game) {
+    int screen_width = GetScreenWidth();
+    int screen_height = GetScreenHeight();
+    bool player_ready[4] = 
+        { game->player_states[0] == PlayerState::READY, 
+          game->player_states[1] == PlayerState::READY, 
+          game->player_states[2] == PlayerState::READY, 
+          game->player_states[3] == PlayerState::READY };
+
+    DrawRectangle(screen_width/2 - 400, screen_height/2 - 400, 200, 200, player_ready[0] ? GREEN : RED);
+    DrawRectangle(screen_width/2 + 200, screen_height/2 - 400, 200, 200, player_ready[1] ? GREEN : RED);
+    DrawRectangle(screen_width/2 - 400, screen_height/2 + 200, 200, 200, player_ready[2] ? GREEN : RED);
+    DrawRectangle(screen_width/2 + 200, screen_height/2 + 200, 200, 200, player_ready[3] ? GREEN : RED);
+
+}

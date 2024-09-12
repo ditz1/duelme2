@@ -14,6 +14,7 @@
 extern int this_client_id;
 extern int num_players_connected;
 extern std::vector<uint8_t> data_from_server;
+extern int current_game_stage;
 
 typedef struct Vector2int {
     uint16_t x;
@@ -34,6 +35,7 @@ enum PlayerState {
     MOVE_UP,
     MOVE_DOWN,
     IDLE,
+    READY,
     ALL_PLAYER_STATES,
     UNREGISTERED
 };

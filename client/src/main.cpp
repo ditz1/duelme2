@@ -9,7 +9,7 @@ int main() {
     
     InitWindow(800, 450, "client");
     SetTargetFPS(60);
-
+    
     GameState game_state;
     InitGameState(&game_state);
 
@@ -28,12 +28,14 @@ int main() {
         emscripten_sleep(10); 
     }
 
-    uint8_t buf = msg_connect;
+    std::array<uint8_t, 32> buf;
+    buf[0] = msg_connect;
+    ClientSendBytes(&conn, (void*)buf.data(), 32);
 
-    ClientSendBytes(&conn, (void*)&buf, 1);
 
-
-    uint8_t msg[3] = {msg_ping, 0x00, msg_end};
+    buf[0] = msg_ping;
+    buf[1] = 0x00;
+    buf[2] = msg_end;
 
     while (!WindowShouldClose()) {
         ParseGameState(&game_state, &conn, &client_player);
@@ -44,7 +46,7 @@ int main() {
         }
         if (IsKeyPressed(KEY_P)){
             std::cout << "ping" << std::endl;
-            ClientSendBytes(&conn, (void*)msg, 3);
+            ClientSendBytes(&conn, (void*)buf.begin(), 32);
         }
         client_player.PollInput();
         RequestStateUpdate(&game_state, &conn, &client_player);        
@@ -58,8 +60,8 @@ int main() {
 
     }
 
-    buf = msg_disconnect;
-    ClientSendBytes(&conn, (void*)&buf, 1);
+    buf[0] = msg_disconnect;
+    ClientSendBytes(&conn, (void*)&buf, 32);
 
     std::cout << "Closing application" << std::endl;
 
