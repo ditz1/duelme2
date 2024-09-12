@@ -15,34 +15,29 @@ Vector2int Player::Position() {
 }
 
 void Player::PollInput() {
-    int reset_state_flag = 0;
     if (IsKeyDown(KEY_D)){
         _requested_state = uint8_t(MOVE_RIGHT);
-    } else {
-        reset_state_flag++;
+        return;
     }   
-
     if (IsKeyDown(KEY_A)){
         _requested_state = uint8_t(MOVE_LEFT);
-    } else {
-        reset_state_flag++;
-    }
-
+        return;
+    } 
     if (IsKeyDown(KEY_W)){
         _requested_state = uint8_t(MOVE_UP);
-    } else {
-        reset_state_flag++;
-    }
+        return;
+    } 
 
     if (IsKeyDown(KEY_S)){
         _requested_state = uint8_t(MOVE_DOWN);
-    } else {
-        reset_state_flag++;
-    }
+        return;
+    } 
 
-    if (reset_state_flag == uint8_t(IDLE)) {
+    if (IsKeyUp(KEY_D) || IsKeyUp(KEY_A) || IsKeyUp(KEY_W) || IsKeyUp(KEY_S)){
         _requested_state = uint8_t(IDLE);
+        return;
     }
+    
 }
 
 PlayerState Player::State() {

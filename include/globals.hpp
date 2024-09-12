@@ -50,8 +50,9 @@ static std::map<PlayerState, std::string> PlayerStateToStringMap = {
 
 typedef struct GameState {
     std::array<uint8_t, 4> player_ids;
-    std::array<Vector2int, 4> player_positions;
+    std::array<uint8_t, 4> player_hps;
     std::array<uint8_t, 4> player_states;
+    std::array<Vector2int, 4> player_positions;
     typedef union {
         uint16_t u;
         struct {
@@ -59,47 +60,37 @@ typedef struct GameState {
             uint8_t b1;
         } b;
     } u16tou8s;
-    std::array<uint8_t, 24> ToBytes(){
-        std::array<uint8_t, 24> bytes;
-        for (int i = 0; i < 24; i+=6){
-            bytes[i] = player_ids[i/6];
-            bytes[i+1] = player_states[i/6];
+    std::array<uint8_t, 28> ToBytes(){
+        std::array<uint8_t, 28> bytes;
+        for (int i = 0; i < 28; i+=7){
+            bytes[i] = player_ids[i/7];
+            bytes[i+1] = player_states[i/7];
             u16tou8s x;
-            x.u = player_positions[i/6].x;
+            x.u = player_positions[i/7].x;
             bytes[i+2] = x.b.b1;
             bytes[i+3] = x.b.b0;
             u16tou8s y;
-            y.u = player_positions[i/6].y;
+            y.u = player_positions[i/7].y;
             bytes[i+4] = y.b.b1;
             bytes[i+5] = y.b.b0;
+            bytes[i+6] = player_hps[i/7];
         }
-        printf("TO BYTES\n");
-        for (int i = 0; i < 24; i++) {
-            printf("%x | ", bytes[i]);
-        }
-        printf("\n");
         return bytes;
     }
-    void FromBytes(std::array<uint8_t, 26> bytes){
-        for (int i = 1; i < 25; i+=6){
-            player_ids[i/6] = bytes[i];
-            player_states[i/6] = bytes[i+1];
+    void FromBytes(std::array<uint8_t, 32> bytes){
+        for (int i = 1; i < 29; i+=7){
+            player_ids[i/7] = bytes[i];
+            player_states[i/7] = bytes[i+1];
             u16tou8s x;
             x.b.b1 = bytes[i+2];
             x.b.b0 = bytes[i+3];
-            player_positions[i/6].x = x.u;
+            player_positions[i/7].x = x.u;
             u16tou8s y;
             y.b.b1 = bytes[i+4];
             y.b.b0 = bytes[i+5];
-            player_positions[i/6].y = y.u;
+            player_positions[i/7].y = y.u;
+            player_hps[i/7] = bytes[i+6];
         }
-        printf("FROM BYTES\n");
-        for (int i = 0; i < 4; i++){
-            printf("player: %x\n", player_ids[i]);
-            printf("state: %x\n", player_states[i]);
-            printf("pos: %x , %x\n", player_positions[i].x, player_positions[i].y);
-        }
-        printf("\n");
     }
 
 } GameState;

@@ -15,9 +15,14 @@ public:
     uint8_t Id();
     void inline SetId(int id) { _id = uint8_t(id); }
     Vector2int Position();
+    void inline SetPosition(Vector2int position) { _position = position; }
+    void inline SetState(PlayerState state) { _state = state; }
+    int inline Hp() { return _hp; }
+    void inline SetHp(int hp) { _hp = hp; }
 private:
     uint8_t _id;
     Vector2int _position;
+    int _hp;
     PlayerState _state;
     uint8_t _requested_state;
     Color color;

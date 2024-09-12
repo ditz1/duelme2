@@ -15,20 +15,23 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 std::vector<std::shared_ptr<websocket::stream<tcp::socket>>> clients;
 std::mutex clients_mutex; // Mutex to protect the clients vector
 
+
 void InitGameState(GameState* game){
     std::cout << "init game" << std::endl;
     game_running = true;
     for (uint8_t& player_state : game->player_states) {
-        player_state = 0x6;
+        player_state = 0xBB;
+    }
+    for (uint8_t& player_hp : game->player_hps){
+        player_hp = 0xCC;
     }
     for (uint8_t& player_id : game->player_ids) {
         player_id = 0xAA;
     }
     for (Vector2int& player_position : game->player_positions) {
-        player_position = Vector2int{0x7FFF, 0x7FFF};
+        player_position = Vector2int{0xEEEE, 0xFFFF};
     }
 }
-
 void LogMessageReceived(const std::vector<uint8_t>& message) {    
     if (!message.empty()) {
         switch(message[0]) {
@@ -65,6 +68,8 @@ void SendToClient(std::shared_ptr<websocket::stream<tcp::socket>> client, const 
 void SendBackPlayerId(size_t client_index) {
     std::vector<uint8_t> msg = {msg_assign_id, static_cast<uint8_t>(client_index), msg_end};
     game_state.player_ids[client_index] = client_index;
+    game_state.player_positions[client_index].x = 200;
+    game_state.player_positions[client_index].y = 200;
     for (uint8_t x : msg){
         printf("%x | ", x);
     }
@@ -79,25 +84,76 @@ void BroadcastMessage(const std::vector<uint8_t>& message) {
     }
 }
 
+void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::array<uint8_t, 32>& last_recieved_bytes, GameState& game_state){
+    GameState req;
+    req.FromBytes(last_recieved_bytes);
+
+    std::array<uint8_t, 32> tmp;
+    tmp[0] = msg_update;
+    for (int i = 0; i < 28; i++){
+        tmp[i+1] = current_game_state[i];
+    }
+    tmp[29] = msg_end;
+    GameState curr;
+    curr.FromBytes(tmp);
+
+    for (int i = 0; i < 4; i++){
+        if (req.player_states[i] != curr.player_states[i]){
+            game_state.player_states[i] = req.player_states[i];
+        }
+        game_state.player_positions[i].x = req.player_positions[i].x;
+        game_state.player_positions[i].y = req.player_positions[i].y;
+        switch(game_state.player_states[i]){
+            case 0:
+                game_state.player_positions[i].x += 100;
+                break;
+            case 1:
+                game_state.player_positions[i].x -= 100;
+                break;
+            case 2:
+                game_state.player_positions[i].y -= 100;
+                break;
+            case 3:
+                game_state.player_positions[i].y += 100;
+                break;
+            case 4:
+                break;
+            default:
+                break;
+        }    
+        if (req.player_hps[i] != curr.player_hps[i]){
+            game_state.player_hps[i] = req.player_hps[i];
+        }
+    }
+}
+
 void UpdateGameState(const std::vector<uint8_t>& message) {
-    //std::vector<uint8_t> msg;
-    //msg.push_back(msg_update);
-    //std::array<uint8_t, 26> bytes_msg;
-    //std::cout << "updating" << std::endl;
-    //for (int i = 0; i < 26; i++) {
-    //    bytes_msg[i] = message[i];
-    //}
-    //printf("\n");
-    //
-    //game_state.FromBytes(bytes_msg);
-    //std::array<uint8_t, 24> bytes = game_state.ToBytes();
-    //std::cout << "to game state" << std::endl;
-    //for (int i=0; i < 24; i++) {
-    //    msg.push_back(bytes[i]);
-    //}
-    //printf("\n");
-    //msg.push_back(msg_end);
-    BroadcastMessage(message);
+    if (message.size() < 32) return;
+
+    std::vector<uint8_t> response;
+    std::array<uint8_t, 32> last_received_bytes;
+    
+    for (size_t i = 0; i < 32; i++) {
+        last_received_bytes[i] = message[i];
+    }
+    
+    game_state.FromBytes(last_received_bytes);
+
+    std::array<uint8_t, 28> curr_game_bytes = game_state.ToBytes();
+
+    ParseGameStateRequest(curr_game_bytes, last_received_bytes, game_state);
+
+    std::array<uint8_t, 28> updated_game_bytes = game_state.ToBytes();
+
+    response.push_back(msg_update);
+    for (uint8_t x : updated_game_bytes){
+        response.push_back(x);
+    }
+    response.push_back(msg_end);
+    response.push_back(0x0);
+    response.push_back(0x0);
+    
+    BroadcastMessage(response);
 }
 
 void ParseMessageReceived(const std::vector<uint8_t>& message) {
@@ -146,7 +202,7 @@ void StartSession(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
             // Read a message
             ws->read(buffer);
             std::vector<uint8_t> message;
-            for (size_t i = 0; i < buffer.size(); i++){
+            for (size_t i = 0; i < 32; i++){
                 message.push_back(boost::asio::buffer_cast<const uint8_t*>(buffer.data())[i]);
             }
 

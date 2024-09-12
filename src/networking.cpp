@@ -49,12 +49,14 @@ EM_BOOL OnMessage(int eventType, const EmscriptenWebSocketMessageEvent *websocke
             case msg_update:
                 for (int i = 0; i < dataLength; i++) {
                     data_from_server.push_back(binaryData[i]);
+                    printf("%x | ", binaryData[i]);
                 }
                 break;
             default:
                 std::cout << "Recieved Malformed Data" << std::endl;
                 break;
         }
+         
     }
     conn->last_received = (EmscriptenWebSocketMessageEvent*)websocketEvent;
     return EM_TRUE;
