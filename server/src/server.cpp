@@ -14,9 +14,10 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
 std::vector<std::shared_ptr<websocket::stream<tcp::socket>>> clients;
 std::mutex clients_mutex; // Mutex to protect the clients vector
-
+int num_connections = -1;
 
 void InitGameState(GameState* game){
+    if (game_running) return;
     std::cout << "init game" << std::endl;
     game_running = true;
     for (uint8_t& player_state : game->player_states) {
@@ -29,7 +30,7 @@ void InitGameState(GameState* game){
         player_id = 0xAA;
     }
     for (Vector2int& player_position : game->player_positions) {
-        player_position = Vector2int{0xEEEE, 0xFFFF};
+        player_position = Vector2int{0xDDDD, 0xEEEE};
     }
 }
 void LogMessageReceived(const std::vector<uint8_t>& message) {    
@@ -66,8 +67,10 @@ void SendToClient(std::shared_ptr<websocket::stream<tcp::socket>> client, const 
 }
 
 void SendBackPlayerId(size_t client_index) {
+    if (client_index >= clients.size()) return;
     std::vector<uint8_t> msg = {msg_assign_id, static_cast<uint8_t>(client_index), msg_end};
     game_state.player_ids[client_index] = client_index;
+
     game_state.player_positions[client_index].x = 200;
     game_state.player_positions[client_index].y = 200;
     for (uint8_t x : msg){
@@ -77,6 +80,19 @@ void SendBackPlayerId(size_t client_index) {
     SendToClient(clients[client_index], msg);
 }
 
+void ReAssignPlayerIds() {
+    for (size_t i = 0; i < clients.size(); i++) {
+        SendBackPlayerId(i);
+    }
+    for (size_t i = 3; i > clients.size(); i--){
+        game_state.player_ids[i] = 0xAA;
+        game_state.player_positions[i].x = 0xDDDD;
+        game_state.player_positions[i].y = 0xEEEE;
+        game_state.player_states[i] = 0xBB;
+        game_state.player_hps[i] = 0xCC;
+    }
+}
+
 void BroadcastMessage(const std::vector<uint8_t>& message) {
     for (auto& client : clients) {
         SendToClient(client, message);
@@ -84,6 +100,11 @@ void BroadcastMessage(const std::vector<uint8_t>& message) {
     }
 }
 
+// this function is meant to be unique to the client,
+// i.e. the client's request should only be changing
+// their own player state, it should never affect
+// the state of the other players, that is the 
+// responsibility of the server 
 void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::array<uint8_t, 32>& last_recieved_bytes, GameState& game_state){
     GameState req;
     req.FromBytes(last_recieved_bytes);
@@ -97,34 +118,32 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     GameState curr;
     curr.FromBytes(tmp);
 
-    for (int i = 0; i < 4; i++){
-        if (req.player_states[i] != curr.player_states[i]){
-            game_state.player_states[i] = req.player_states[i];
-        }
-        game_state.player_positions[i].x = req.player_positions[i].x;
-        game_state.player_positions[i].y = req.player_positions[i].y;
-        switch(game_state.player_states[i]){
-            case 0:
-                game_state.player_positions[i].x += 100;
-                break;
-            case 1:
-                game_state.player_positions[i].x -= 100;
-                break;
-            case 2:
-                game_state.player_positions[i].y -= 100;
-                break;
-            case 3:
-                game_state.player_positions[i].y += 100;
-                break;
-            case 4:
-                break;
-            default:
-                break;
-        }    
-        if (req.player_hps[i] != curr.player_hps[i]){
-            game_state.player_hps[i] = req.player_hps[i];
-        }
+    int sender_id = last_recieved_bytes[30];
+    std::cout << "sender id: " << sender_id << std::endl;
+    
+    // state update
+    if (req.player_states[sender_id] != curr.player_states[sender_id]){ 
+        game_state.player_states[sender_id] = req.player_states[sender_id];
     }
+    // position update
+    if (req.player_positions[sender_id].x != curr.player_positions[sender_id].x || req.player_positions[sender_id].y != curr.player_positions[sender_id].y){ 
+        game_state.player_positions[sender_id] = req.player_positions[sender_id];
+    }
+    switch(game_state.player_states[sender_id]){
+        case 0: game_state.player_positions[sender_id].x += 100; break;
+        case 1: game_state.player_positions[sender_id].x -= 100; break;
+        case 2: game_state.player_positions[sender_id].y -= 100; break;
+        case 3: game_state.player_positions[sender_id].y += 100; break;
+        case 4:
+            break;
+        default:
+            break;
+    }    
+    // hp update
+    if (req.player_hps[sender_id] != curr.player_hps[sender_id]){
+        game_state.player_hps[sender_id] = req.player_hps[sender_id];
+    }
+    
 }
 
 void UpdateGameState(const std::vector<uint8_t>& message) {
@@ -137,8 +156,6 @@ void UpdateGameState(const std::vector<uint8_t>& message) {
         last_received_bytes[i] = message[i];
     }
     
-    game_state.FromBytes(last_received_bytes);
-
     std::array<uint8_t, 28> curr_game_bytes = game_state.ToBytes();
 
     ParseGameStateRequest(curr_game_bytes, last_received_bytes, game_state);
@@ -149,9 +166,9 @@ void UpdateGameState(const std::vector<uint8_t>& message) {
     for (uint8_t x : updated_game_bytes){
         response.push_back(x);
     }
+    response.push_back(msg_signature);
+    response.push_back(msg_from_server);
     response.push_back(msg_end);
-    response.push_back(0x0);
-    response.push_back(0x0);
     
     BroadcastMessage(response);
 }
@@ -161,7 +178,7 @@ void ParseMessageReceived(const std::vector<uint8_t>& message) {
         switch(message[0]) {
             case msg_connect:
                 LogMessageReceived(message);
-                SendBackPlayerId(clients.size() - 1);
+                SendBackPlayerId(num_connections);
                 break;
             case msg_disconnect:
                 break;
@@ -171,7 +188,7 @@ void ParseMessageReceived(const std::vector<uint8_t>& message) {
                 break;
             case msg_ping:
                 std::cout << "PING" << std::endl;
-                SendBackPlayerId(clients.size() - 1);
+                SendBackPlayerId(num_connections);
                 break;
             default:
                 std::cout << "Unknown message" << std::endl;
@@ -193,24 +210,21 @@ void StartSession(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
         {
             std::lock_guard<std::mutex> lock(clients_mutex);
             clients.push_back(ws);
+            num_connections++;
+            std::cout << "client connected -- " << clients.size() << " clients remain" << std::endl;
         }
 
         for(;;) {
-            // This buffer will hold the incoming message
             beast::flat_buffer buffer;
 
-            // Read a message
             ws->read(buffer);
             std::vector<uint8_t> message;
             for (size_t i = 0; i < 32; i++){
                 message.push_back(boost::asio::buffer_cast<const uint8_t*>(buffer.data())[i]);
             }
 
-            // Parse the received message
             ParseMessageReceived(message);
 
-            // Echo the message back (if needed)
-            ws->write(buffer.data());
         }
     }
     catch (const beast::system_error& se) {
@@ -222,13 +236,15 @@ void StartSession(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
 
-    // Remove the client from the clients list when the session ends
     {
         std::lock_guard<std::mutex> lock(clients_mutex);
         clients.erase(std::remove_if(clients.begin(), clients.end(),
             [ws](const std::shared_ptr<websocket::stream<tcp::socket>>& client_ws) {
                 return client_ws == ws;
             }), clients.end());
+        std::cout << "client disconnected -- " << clients.size() << " clients remain" << std::endl;
+        ReAssignPlayerIds();
+        num_connections--;
     }
 }
 //------------------------------------------------------------------------------

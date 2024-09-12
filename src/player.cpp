@@ -3,7 +3,7 @@
 Player::Player() {
     _requested_state = 0;
     _state = IDLE;
-    _position = {400, 225};
+    _position = {0xEEEE, 0xDDDD};
 }
 
 Player::~Player() {
@@ -44,13 +44,31 @@ PlayerState Player::State() {
     return _state;
 }
 
+void Player::SetId(int id) {
+    _id = id;
+    switch(_id){
+        case 0:
+            _color = RED;
+            break;
+        case 1:
+            _color = BLUE;
+            break;
+        case 2:
+            _color = GREEN;
+            break;
+        case 3:
+            _color = YELLOW;
+            break;
+    }   
+}
+
 PlayerState Player::RequestedState() {
     return PlayerState(_requested_state);
 }
 
 
 void Player::Draw() {
-    DrawCircleV(V2intToV2(_position), 20, RED);
+    DrawCircleV(V2intToV2(_position), 20, _color);
 }
 
 uint8_t Player::Id() {

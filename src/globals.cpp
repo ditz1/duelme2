@@ -5,6 +5,7 @@ int num_players_connected = 0;
 
 std::vector<uint8_t> data_from_server;
 
+
 std::string PlayerStateToString(PlayerState state) {
     int state_int = static_cast<int>(state);
     if (state_int >= 0 && state_int < ALL_PLAYER_STATES) {

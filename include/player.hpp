@@ -13,7 +13,7 @@ public:
     void Update(GameState& game);
     void Draw();
     uint8_t Id();
-    void inline SetId(int id) { _id = uint8_t(id); }
+    void SetId(int id);
     Vector2int Position();
     void inline SetPosition(Vector2int position) { _position = position; }
     void inline SetState(PlayerState state) { _state = state; }
@@ -25,5 +25,5 @@ private:
     int _hp;
     PlayerState _state;
     uint8_t _requested_state;
-    Color color;
+    Color _color;
 };

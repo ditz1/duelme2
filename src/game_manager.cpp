@@ -11,7 +11,7 @@ void InitGameState(GameState* game){
         player_id = 0xAA;
     }
     for (Vector2int& player_position : game->player_positions) {
-        player_position = Vector2int{0xEEEE, 0xFFFF};
+        player_position = Vector2int{0xDDDD, 0xEEEE};
     }
 }
 
@@ -24,12 +24,7 @@ void RequestStateUpdate(GameState* game, Connection* conn, Player* player) {
 }
 
 void ParseAssignPlayerId(GameState* game, Connection* conn, Player* player){
-    if (!conn->connected || data_from_server.size() == 0) return;
-    if (num_players_connected == 4) {
-        std::cout << "Server Full" << std::endl;
-        return;
-    }
-    num_players_connected++;
+    if (!conn->connected || data_from_server.size() == 0 || data_from_server[0] != msg_assign_id) return;
     player->SetId(data_from_server[1]);
     game->player_ids[data_from_server[1]] = data_from_server[1];
     game->player_positions[data_from_server[1]].x = 200;
@@ -94,12 +89,23 @@ void SendGameStateRequest(GameState* game, Connection* conn) {
         bytes_to_send[i+1] = game_bytes[i];
     }
     std::cout << "requesting new game state" << std::endl;
-    bytes_to_send[29] = msg_end;    
-    bytes_to_send[30] = 0x00;
-    bytes_to_send[31] = 0x00;
+    bytes_to_send[29] = msg_signature;    
+    bytes_to_send[30] = this_client_id;
+    bytes_to_send[31] = msg_end;
     for (int i = 0; i < 32; i++) {
         printf("%x | ", bytes_to_send[i]);
     }
     printf("\n");
     ClientSendBytes(conn, (void*)&bytes_to_send, 32);
+}
+
+void DrawGameState(GameState* game){
+    for (int i = 0; i < 4; i++){
+        Player player;
+        player.SetId(i);
+        player.SetState(PlayerState(game->player_states[i]));
+        player.SetHp(game->player_hps[i]);
+        player.SetPosition(game->player_positions[i]);
+        player.Draw();
+    }
 }

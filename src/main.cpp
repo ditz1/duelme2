@@ -7,7 +7,6 @@
 
 int main() {
     
-
     InitWindow(800, 450, "client");
     SetTargetFPS(60);
 
@@ -15,9 +14,9 @@ int main() {
     InitGameState(&game_state);
 
     Player client_player;
+    std::array<Player, 4> all_players = {Player(), Player(), Player(), Player()};
     Connection conn;
     OpenWebSocket(&conn, "ws://192.168.1.42:9000/ws");
-    client_player.SetId(0);
 
     
     if (conn.ws <= 0) {
@@ -51,12 +50,16 @@ int main() {
         RequestStateUpdate(&game_state, &conn, &client_player);        
         BeginDrawing();
             ClearBackground(DARKGRAY);
-            client_player.Draw();
+            //client_player.Draw();
+            DrawGameState(&game_state);
             DrawDebugInfo(game_state, client_player);
             
         EndDrawing();
 
     }
+
+    buf = msg_disconnect;
+    ClientSendBytes(&conn, (void*)&buf, 1);
 
     std::cout << "Closing application" << std::endl;
 
