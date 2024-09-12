@@ -1,9 +1,10 @@
-#include <cstdlib>
 #include <functional>
 #include <iostream>
 #include <string>
+#include <cstdlib>
 #include <thread>
 #include <vector>
+#include <algorithm>
 #include "../inc/s_protocol.hpp"
 
 namespace beast = boost::beast;         // from <boost/beast.hpp>
@@ -61,7 +62,8 @@ void SendToClient(std::shared_ptr<websocket::stream<tcp::socket>> client, const 
         client->write(boost::asio::buffer(message));
     } catch (const std::exception& e) {
         std::cerr << "Error sending message to client " << ": " << e.what() << std::endl;
-        clients.erase(std::find(clients.begin(), clients.end(), client));
+        auto it = std::find(clients.begin(), clients.end(), client);
+        clients.erase(it);
     }
     
 }
@@ -267,7 +269,8 @@ int main()
         
         for (;;) {
             // This will receive the new connection
-            tcp::socket socket{ioc};
+            boost::asio::any_io_executor ex = ioc.get_executor();
+            tcp::socket socket{ex};
 
             // Block until we get a connection
             acceptor.accept(socket);

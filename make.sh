@@ -1,7 +1,7 @@
 sudo rm /var/www/html/index.* 
-cd build
+cd client/build
 make
 sudo cp index.* /var/www/html
-cd ../server/build
+cd ../../server/build/
 make
 ./program
