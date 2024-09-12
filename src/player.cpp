@@ -33,7 +33,7 @@ void Player::PollInput() {
         return;
     } 
 
-    if (IsKeyUp(KEY_D) || IsKeyUp(KEY_A) || IsKeyUp(KEY_W) || IsKeyUp(KEY_S)){
+    if (IsKeyUp(KEY_D) && IsKeyUp(KEY_A) && IsKeyUp(KEY_W) && IsKeyUp(KEY_S)){
         _requested_state = uint8_t(IDLE);
         return;
     }

@@ -16,7 +16,7 @@ void InitGameState(GameState* game){
 }
 
 void RequestStateUpdate(GameState* game, Connection* conn, Player* player) {
-    if (int(player->RequestedState()) <= int(PlayerState::IDLE) && (game->player_states[int(player->Id())] != uint8_t(player->RequestedState()))) {
+    if (int(player->RequestedState()) <= int(PlayerState::IDLE) && int(game->player_states[player->Id()]) != int(player->RequestedState())){
         game->player_states[int(player->Id())] = uint8_t(player->RequestedState());
         SendGameStateRequest(game, conn);
         std::cout << "Requesting State Update" << std::endl;
@@ -43,7 +43,6 @@ void UpdateGameState(GameState* game, Connection* conn){
     for (size_t i = 0; i < 32; i++) {
         last_received_bytes[i] = data_from_server[i];
     }
-    printf("\n");
     data_from_server.clear();
     GameState new_game_state;
     new_game_state.FromBytes(last_received_bytes);
@@ -80,6 +79,7 @@ void ParseGameState(GameState* game, Connection* conn, Player* player) {
             UpdateGameState(game, conn);
             break;
     }
+    conn->last_received->numBytes = 0;
     player->SetHp(game->player_hps[int(player->Id())]);
     player->SetState(PlayerState(game->player_states[int(player->Id())]));
     player->SetPosition((game->player_positions[int(player->Id())]));
