@@ -37,7 +37,16 @@ void Player::PollInput() {
         _requested_state = uint8_t(IDLE);
         return;
     }
+
+    if (IsKeyPressed(KEY_SPACE)){
+        _ready = !_ready;
+        return;
+    }
     
+}
+
+bool Player::Ready() {
+    return _ready;
 }
 
 PlayerState Player::State() {

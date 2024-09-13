@@ -20,6 +20,10 @@
 #define msg_ping 0x6a
 #define msg_signature 0x7a
 #define msg_from_server 0x8a
+// for lobby
+#define msg_lobby 0x1b
+#define msg_player_ready 0x2b
+#define msg_switch_to_game 0x3b
 
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>
@@ -31,6 +35,8 @@ extern bool game_running;
 extern int num_connections;
 extern std::vector<std::shared_ptr<websocket::stream<tcp::socket>>> clients;
 extern std::mutex clients_mutex; // Mutex to protect the clients vector
+extern int current_game_stage;
+extern std::array<bool, 4> player_ready;
 
 typedef struct Vector2int {
     uint16_t x;

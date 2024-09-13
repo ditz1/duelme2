@@ -47,6 +47,7 @@ EM_BOOL OnMessage(int eventType, const EmscriptenWebSocketMessageEvent *websocke
             case msg_disconnect:
             case msg_assign_id:
             case msg_update:
+            case msg_lobby:
                 for (int i = 0; i < dataLength; i++) {
                     data_from_server.push_back(binaryData[i]);
                     printf("%x | ", binaryData[i]);

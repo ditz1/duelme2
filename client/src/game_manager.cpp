@@ -16,6 +16,7 @@ void InitGameState(GameState* game){
 }
 
 void RequestStateUpdate(GameState* game, Connection* conn, Player* player) {
+    if (current_game_stage < 1) return;
     if (int(player->RequestedState()) <= int(PlayerState::IDLE) && int(game->player_states[player->Id()]) != int(player->RequestedState())){
         game->player_states[int(player->Id())] = uint8_t(player->RequestedState());
         SendGameStateRequest(game, conn);
@@ -80,6 +81,18 @@ void ParseGameState(GameState* game, Connection* conn, Player* player) {
     player->SetPosition((game->player_positions[int(player->Id())]));
 }
 
+void SendReadyRequest(Player* player, Connection* conn){
+    if (!conn->connected) return;
+    if (!(player->Ready())) return;
+    std::array<uint8_t, 32> bytes_to_send;
+    bytes_to_send[0] = msg_lobby;
+    bytes_to_send[1] = msg_player_ready;
+    bytes_to_send[2] = msg_signature;
+    bytes_to_send[3] = player->Id();
+    bytes_to_send[4] = msg_end;
+    ClientSendBytes(conn, (void*)&bytes_to_send, 32);
+}
+
 void SendGameStateRequest(GameState* game, Connection* conn) {
     if (!conn->connected) return;
     std::array<uint8_t, 32> bytes_to_send;
@@ -99,6 +112,26 @@ void SendGameStateRequest(GameState* game, Connection* conn) {
     ClientSendBytes(conn, (void*)&bytes_to_send, 32);
 }
 
+void ParseLobbyState(GameState* game){
+    if (data_from_server.size() < 32) return;
+    if (data_from_server[0] != msg_lobby) return;
+    std::array<uint8_t, 32> last_received_bytes;
+    std::copy(data_from_server.begin(), data_from_server.end(), last_received_bytes.begin());
+    data_from_server.clear();
+    if (last_received_bytes[1] == msg_switch_to_game){
+        current_game_stage = 1;
+        return;
+    }
+    int players_connected = last_received_bytes[1];
+    for (int i = 2; i < 6; i++){
+        last_received_bytes[i] > 0 ? player_ready[i-2] = true : player_ready[i-2] = false;
+    }    
+}
+
+void ParseEndState(GameState* game, Connection* conn, Player* player){
+    std::cout << "ERROR: End state not yet implemented" << std::endl;
+}
+
 void DrawGameState(GameState* game){
     for (int i = 0; i < 4; i++){
         Player player;
@@ -110,15 +143,9 @@ void DrawGameState(GameState* game){
     }
 }
 
-void DrawLobbyScene(GameState* game) {
+void DrawLobbyState(GameState* game) {
     int screen_width = GetScreenWidth();
     int screen_height = GetScreenHeight();
-    bool player_ready[4] = 
-        { game->player_states[0] == PlayerState::READY, 
-          game->player_states[1] == PlayerState::READY, 
-          game->player_states[2] == PlayerState::READY, 
-          game->player_states[3] == PlayerState::READY };
-
     DrawRectangle(screen_width/2 - 400, screen_height/2 - 400, 200, 200, player_ready[0] ? GREEN : RED);
     DrawRectangle(screen_width/2 + 200, screen_height/2 - 400, 200, 200, player_ready[1] ? GREEN : RED);
     DrawRectangle(screen_width/2 - 400, screen_height/2 + 200, 200, 200, player_ready[2] ? GREEN : RED);

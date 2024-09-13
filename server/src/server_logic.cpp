@@ -24,6 +24,7 @@ void ParseMessageReceived(std::array<uint8_t, 32>& message) {
             case msg_connect:
                 LogMessageReceived(message);
                 SendBackPlayerId(num_connections);
+                UpdateLobbyState(message);
                 break;
             case msg_disconnect:
                 break;
@@ -35,8 +36,17 @@ void ParseMessageReceived(std::array<uint8_t, 32>& message) {
                 std::cout << "PING" << std::endl;
                 SendBackPlayerId(num_connections);
                 break;
+            case msg_lobby:
+                std::cout << "LOBBY" << std::endl;
+                UpdateLobbyState(message);
+                ChangeGameState();
+                break;
             default:
                 std::cout << "Unknown message" << std::endl;
+                std::cout << "Message: " << std::endl;
+                for (uint8_t x : message){
+                    printf("%x | ", x);
+                }
                 break;
         }
     }
@@ -77,6 +87,7 @@ void ReAssignPlayerIds() {
         game_state.player_states[i] = 0xBB;
         game_state.player_hps[i] = 0xCC;
     }
+    player_ready = {false, false, false, false};
 }
 
 void SendBackPlayerId(size_t client_id) {

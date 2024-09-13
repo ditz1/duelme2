@@ -9,4 +9,8 @@
 #define msg_ping 0x6a
 #define msg_signature 0x7a
 #define msg_from_server 0x8a
+// for lobby
+#define msg_lobby 0x1b
+#define msg_player_ready 0x2b
+#define msg_switch_to_game 0x3b
 

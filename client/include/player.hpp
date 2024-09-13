@@ -14,6 +14,7 @@ public:
     void Draw();
     uint8_t Id();
     void SetId(int id);
+    bool Ready();
     Vector2int Position();
     void inline SetPosition(Vector2int position) { _position = position; }
     void inline SetState(PlayerState state) { _state = state; }
@@ -23,6 +24,7 @@ private:
     uint8_t _id;
     Vector2int _position;
     int _hp;
+    bool _ready;
     PlayerState _state;
     uint8_t _requested_state;
     Color _color;

@@ -4,6 +4,7 @@
 #include <game_manager.hpp>
 #include <helpers.hpp>
 
+int current_game_stage = 0;
 
 int main() {
     
@@ -38,7 +39,23 @@ int main() {
     buf[2] = msg_end;
 
     while (!WindowShouldClose()) {
-        ParseGameState(&game_state, &conn, &client_player);
+
+        switch (current_game_stage){
+            case 0:
+                ParseAssignPlayerId(&game_state, &conn, &client_player);
+                if (IsKeyPressed(KEY_SPACE)){
+                    SendReadyRequest(&client_player, &conn);
+                }
+                ParseLobbyState(&game_state);
+                break;
+            case 1:
+                ParseGameState(&game_state, &conn, &client_player);
+                break;
+            case 2:
+                ParseEndState(&game_state, &conn, &client_player);
+                break;
+
+        }
 
 
         if (IsKeyPressed(KEY_L)){            
@@ -53,7 +70,17 @@ int main() {
         BeginDrawing();
             ClearBackground(DARKGRAY);
             //client_player.Draw();
-            DrawGameState(&game_state);
+            switch(current_game_stage){
+                case 0:
+                    DrawLobbyState(&game_state);
+                    break;
+                case 1:
+                    DrawGameState(&game_state);
+                    break;
+                case 2:
+                    DrawText("Game Over", 400, 225, 20, RED);
+                    break;
+            }
             DrawDebugInfo(game_state, client_player);
             
         EndDrawing();

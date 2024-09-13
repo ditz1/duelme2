@@ -18,6 +18,40 @@ void UpdateGameState(std::array<uint8_t, 32>& message) {
     BroadcastMessage(response);
 }
 
+void UpdateLobbyState(std::array<uint8_t, 32>& message) {
+    if (message[0] != msg_lobby) return;
+    if (message[2] == msg_signature) {
+        ParsePlayerReadyRequest(message);
+    }
+    std::array<uint8_t, 32> response;
+    response[0] = msg_lobby;
+    response[1] = clients.size();
+    response[2] = player_ready[0];
+    response[3] = player_ready[1];
+    response[4] = player_ready[2];
+    response[5] = player_ready[3];
+    response[6] = msg_signature;
+    response[7] = msg_from_server;
+    response[8] = msg_end;
+    BroadcastMessage(response);
+}
+
+void ChangeGameState(){
+    size_t players_ready = 0;
+    for (int i = 0; i < 4; i++){
+        if (player_ready[i]) players_ready++;
+    }
+    if (clients.size() == players_ready){
+        std::array<uint8_t, 32> response;
+        response[0] = msg_lobby;
+        response[1] = msg_switch_to_game;
+        response[2] = msg_signature;
+        response[3] = msg_from_server;
+        response[3] = msg_end;
+        BroadcastMessage(response);
+        InitGameState(&game_state);
+    }
+}
 
 // this function is meant to be unique to the client,
 // i.e. the client's request should only be changing
@@ -64,6 +98,15 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     }
     
 }
+
+void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message){
+    if (message[0] != msg_lobby) return;
+    if (message[1] == msg_player_ready){
+        player_ready[message[3]] = !player_ready[message[3]];
+        std::cout << "Player " << int(message[3]) << " is ready: " << player_ready[message[3]] << std::endl;
+    }
+}
+
 
 void InitGameState(GameState* game){
     if (game_running) return;

@@ -4,6 +4,8 @@ int this_client_id;
 int num_players_connected = 0;
 
 std::vector<uint8_t> data_from_server;
+std::array<bool, 4> player_ready = {false, false, false, false};
+
 
 
 std::string PlayerStateToString(PlayerState state) {

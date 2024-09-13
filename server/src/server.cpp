@@ -3,11 +3,6 @@
 #include "../inc/server_logic.hpp"
 
 
-std::vector<std::shared_ptr<websocket::stream<tcp::socket>>> clients;
-std::mutex clients_mutex; // Mutex to protect the clients vector
-int num_connections = -1;
-
-
 //------------------------------------------------------------------------------
 void StartSession(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
     try {
@@ -29,7 +24,7 @@ void StartSession(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
            auto bytes = buffer.data();
            std::array<uint8_t, 32> message;
            
-           if(buffer.size() == 32) {
+           if (buffer.size() == 32) {
                std::copy_n(static_cast<uint8_t*>(bytes.data()), 32, message.begin());
                ParseMessageReceived(message);
            } else {
