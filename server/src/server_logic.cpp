@@ -22,14 +22,14 @@ void ParseMessageReceived(std::array<uint8_t, 32>& message) {
     if (!message.empty()) {
         switch(message[0]) {
             case msg_connect:
-                LogMessageReceived(message);
+                //LogMessageReceived(message);
                 SendBackPlayerId(num_connections);
                 UpdateLobbyState(message);
                 break;
             case msg_disconnect:
                 break;
             case msg_update:
-                LogMessageReceived(message);
+                //LogMessageReceived(message);
                 UpdateGameState(message);
                 break;
             case msg_ping:
@@ -53,26 +53,27 @@ void ParseMessageReceived(std::array<uint8_t, 32>& message) {
 }
 
 void SendToClient(std::shared_ptr<websocket::stream<tcp::socket>> client, std::array<uint8_t, 32> message) {
-    std::cout << message.size() << " bytes to send: " << std::endl;
-    for (uint8_t x : message){
-        printf("%x | ", x);
-    }
-    printf("\n");
+    // std::cout << message.size() << " bytes to send: " << std::endl;
+    // for (uint8_t x : message){
+    //     printf("%x | ", x);
+    // }
+    // printf("\n");
     try {
         client->binary(true);
         client->write(boost::asio::buffer(message));
     } catch (const std::exception& e) {
         std::cerr << "Error sending message to client " << ": " << e.what() << std::endl;
         auto it = std::find(clients.begin(), clients.end(), client);
-        clients.erase(it);
+        std::remove(clients.begin(), clients.end(), clients.at(it - clients.begin()));         
     }
     
 }
 
 void BroadcastMessage(std::array<uint8_t, 32>& message) {
+    
     for (auto& client : clients) {
         SendToClient(client, message);
-        std::cout << "broadcasting " << message.size() << " bytes" << std::endl;
+        //std::cout << "broadcasting " << message.size() << " bytes" << std::endl;
     }
 }
 
@@ -119,9 +120,9 @@ void SendBackPlayerId(size_t client_id) {
             break;
     }
     
-    for (uint8_t x : msg){
-        printf("%x | ", x);
-    }
-    printf("\n");
+    //for (uint8_t x : msg){
+    //    printf("%x | ", x);
+    //}
+    // printf("\n");
     SendToClient(clients[client_id], msg);
 }

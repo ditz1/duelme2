@@ -1,7 +1,36 @@
 #include "../inc/game_state.hpp"
+#include <chrono>
+#include <thread>
+
+void UpdateGameStateWithoutRequest() {
+    std::cout << "test" << std::endl;
+    for (int i = 0; i < 4; i++){
+        switch(game_state.player_states[i]){
+            case 0: game_state.player_positions[i].x += 2; break;
+            case 1: game_state.player_positions[i].x -= 2; break;
+            case 2: game_state.player_positions[i].y -= 2; break;
+            case 3: game_state.player_positions[i].y += 2; break;
+            case 4:
+                break;
+            default:
+                break;
+        }
+    }
+    std::array<uint8_t, 32> response;
+    response[0] = msg_update;
+    std::array<uint8_t, 28> updated_game_bytes = game_state.ToBytes();
+    std::copy(updated_game_bytes.begin(), updated_game_bytes.end(), response.begin() + 1);
+    response[29] = msg_end;
+    response[30] = msg_from_server;
+    response[31] = msg_end;
+    BroadcastMessage(response);
+
+}
+
 
 void UpdateGameState(std::array<uint8_t, 32>& message) {
-    if (message[0] != msg_update) return;
+    if (message[0] != msg_update) return; 
+
     std::array<uint8_t, 32> response;    
     
     std::array<uint8_t, 28> curr_game_bytes = game_state.ToBytes();
@@ -72,8 +101,8 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     curr.FromBytes(tmp);
 
     int sender_id = last_recieved_bytes[30];
-    std::cout << "sender id: " << sender_id << std::endl;
-    
+    //std::cout << "sender id: " << sender_id << std::endl;
+    //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     // state update
     if (req.player_states[sender_id] != curr.player_states[sender_id]){ 
         game_state.player_states[sender_id] = req.player_states[sender_id];
@@ -83,10 +112,10 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
         game_state.player_positions[sender_id] = req.player_positions[sender_id];
     }
     switch(game_state.player_states[sender_id]){
-        case 0: game_state.player_positions[sender_id].x += 100; break;
-        case 1: game_state.player_positions[sender_id].x -= 100; break;
-        case 2: game_state.player_positions[sender_id].y -= 100; break;
-        case 3: game_state.player_positions[sender_id].y += 100; break;
+        case 0: game_state.player_positions[sender_id].x += 7; break;
+        case 1: game_state.player_positions[sender_id].x -= 7; break;
+        case 2: game_state.player_positions[sender_id].y -= 7; break;
+        case 3: game_state.player_positions[sender_id].y += 7; break;
         case 4:
             break;
         default:

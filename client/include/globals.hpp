@@ -16,6 +16,8 @@ extern int num_players_connected;
 extern std::vector<uint8_t> data_from_server;
 extern int current_game_stage;
 extern std::array<bool, 4> player_ready;
+extern bool developer_mode;
+
 
 typedef struct Vector2int {
     uint16_t x;

@@ -6,5 +6,6 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
 void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message);
 void UpdateGameState(std::array<uint8_t, 32>& message);
 void ChangeGameState();
+void UpdateGameStateWithoutRequest();
 void UpdateLobbyState(std::array<uint8_t, 32>& message);
 void InitGameState(GameState* game);

@@ -40,7 +40,7 @@ EM_BOOL OnMessage(int eventType, const EmscriptenWebSocketMessageEvent *websocke
     } else {
         const uint8_t* binaryData = websocketEvent->data;
         size_t dataLength = websocketEvent->numBytes;        
-        std::cout << "Received binary message of " << dataLength << " bytes" << std::endl;
+        if (developer_mode) std::cout << "Received binary message of " << dataLength << " bytes" << std::endl;
         data_from_server.clear();
         switch(binaryData[0]){
             case msg_connect:
@@ -50,7 +50,7 @@ EM_BOOL OnMessage(int eventType, const EmscriptenWebSocketMessageEvent *websocke
             case msg_lobby:
                 for (int i = 0; i < dataLength; i++) {
                     data_from_server.push_back(binaryData[i]);
-                    printf("%x | ", binaryData[i]);
+                    if (developer_mode) printf("%x | ", binaryData[i]);
                 }
                 break;
             default:

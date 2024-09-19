@@ -40,6 +40,10 @@ int main() {
 
     while (!WindowShouldClose()) {
 
+        if (IsKeyPressed(KEY_V)){
+            developer_mode = !developer_mode;
+        }
+
         switch (current_game_stage){
             case 0:
                 ParseAssignPlayerId(&game_state, &conn, &client_player);

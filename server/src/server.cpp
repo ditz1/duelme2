@@ -28,7 +28,7 @@ void StartSession(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
                std::copy_n(static_cast<uint8_t*>(bytes.data()), 32, message.begin());
                ParseMessageReceived(message);
            } else {
-               std::cout << "malformed byte string recieved (!= 32)" << std::endl;
+                std::cout << "Invalid message size: " << buffer.size() << std::endl;
            }
 
         }

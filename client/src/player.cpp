@@ -27,7 +27,6 @@ void Player::PollInput() {
         _requested_state = uint8_t(MOVE_UP);
         return;
     } 
-
     if (IsKeyDown(KEY_S)){
         _requested_state = uint8_t(MOVE_DOWN);
         return;
