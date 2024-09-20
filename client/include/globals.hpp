@@ -37,6 +37,10 @@ enum PlayerState {
     MOVE_LEFT,
     MOVE_UP,
     MOVE_DOWN,
+    PUNCH,
+    KICK,
+    JUMP,
+    BLOCK,
     IDLE,
     ALL_PLAYER_STATES,
     UNREGISTERED
@@ -48,8 +52,12 @@ static std::map<PlayerState, std::string> PlayerStateToStringMap = {
     {MOVE_LEFT, "MOVE_LEFT"},
     {MOVE_UP, "MOVE_UP"},
     {MOVE_DOWN, "MOVE_DOWN"},
+    {PUNCH, "PUNCH"},
+    {KICK, "KICK"},
+    {JUMP, "JUMP"},
+    {BLOCK, "BLOCK"},
     {ALL_PLAYER_STATES, "ALL_PLAYER_STATES"},
-    {UNREGISTERED, "UNREGISTERED"},
+    {UNREGISTERED, "UNREGISTERED"}
 };
 
 typedef struct GameState {

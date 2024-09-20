@@ -4,13 +4,14 @@
 
 void UpdateGameStateWithoutRequest() {
     std::cout << "test" << std::endl;
+    std::cout << " this should never be logging (UpdateGameStateWithoutRequest() - server/src/game_state.cpp)" << std::endl;
     for (int i = 0; i < 4; i++){
-        switch(game_state.player_states[i]){
-            case 0: game_state.player_positions[i].x += 2; break;
-            case 1: game_state.player_positions[i].x -= 2; break;
-            case 2: game_state.player_positions[i].y -= 2; break;
-            case 3: game_state.player_positions[i].y += 2; break;
-            case 4:
+        switch(PlayerState(game_state.player_states[i])){
+            case MOVE_RIGHT: game_state.player_positions[i].x += 2; break;
+            case MOVE_LEFT: game_state.player_positions[i].x -= 2; break;
+            case MOVE_UP: game_state.player_positions[i].y -= 2; break;
+            case MOVE_DOWN: game_state.player_positions[i].y += 2; break;
+            case IDLE:
                 break;
             default:
                 break;
@@ -111,12 +112,12 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     if (req.player_positions[sender_id].x != curr.player_positions[sender_id].x || req.player_positions[sender_id].y != curr.player_positions[sender_id].y){ 
         game_state.player_positions[sender_id] = req.player_positions[sender_id];
     }
-    switch(game_state.player_states[sender_id]){
-        case 0: game_state.player_positions[sender_id].x += 7; break;
-        case 1: game_state.player_positions[sender_id].x -= 7; break;
-        case 2: game_state.player_positions[sender_id].y -= 7; break;
-        case 3: game_state.player_positions[sender_id].y += 7; break;
-        case 4:
+    switch(PlayerState(game_state.player_states[sender_id])){
+        case MOVE_RIGHT: game_state.player_positions[sender_id].x += 7; break;
+        case MOVE_LEFT: game_state.player_positions[sender_id].x -= 7; break;
+        case MOVE_UP: game_state.player_positions[sender_id].y -= 7; break;
+        case MOVE_DOWN: game_state.player_positions[sender_id].y += 7; break;
+        case IDLE:
             break;
         default:
             break;

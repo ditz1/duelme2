@@ -133,16 +133,21 @@ void ParseEndState(GameState* game, Connection* conn, Player* player){
     std::cout << "ERROR: End state not yet implemented" << std::endl;
 }
 
-void DrawGameState(GameState* game){
+void DrawGameState(std::array<Player, 4> players){
     for (int i = 0; i < 4; i++){
-        Player player;
-        player.SetId(i);
-        player.SetState(PlayerState(game->player_states[i]));
-        player.SetHp(game->player_hps[i]);
-        player.SetPosition(game->player_positions[i]);
-        player.Draw();
+        players[i].Draw();
+        AnimatePlayer(players[i]);
     }
 }
+void UpdateClientPlayerCopies(std::array<Player, 4>& players, GameState* game){
+    for (int i = 0; i < 4; i++){
+        players[i];
+        players[i].SetState(PlayerState(game->player_states[i]));
+        players[i].SetHp(game->player_hps[i]);
+        players[i].SetPosition(game->player_positions[i]);
+    }
+}
+
 
 void DrawLobbyState(GameState* game) {
     int screen_width = GetScreenWidth();

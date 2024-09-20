@@ -1,9 +1,15 @@
 #include <player.hpp>
+#include <player_anims.hpp>
 
 Player::Player() {
     _requested_state = 0;
     _state = IDLE;
     _position = {0xEEEE, 0xDDDD};
+    _current_anim = 0;
+    _is_animating = false;
+    _player_face_dir = 1;
+    _hp = 100;
+    anim_frame_counter = 0;
 }
 
 Player::~Player() {
@@ -12,6 +18,29 @@ Player::~Player() {
 
 Vector2int Player::Position() {
     return _position;
+}
+
+void Player::PollAttackInput() {
+    if (IsKeyPressed(KEY_H)){
+        _is_animating = true;
+        _requested_state = uint8_t(PUNCH);
+        return;
+    } 
+    if (IsKeyPressed(KEY_J)){
+        _is_animating = true;
+        _requested_state = uint8_t(KICK);
+        return;
+    }
+    if (IsKeyPressed(KEY_K)){
+        _is_animating = true;
+        _requested_state = uint8_t(JUMP);
+        return;
+    }
+    if (IsKeyPressed(KEY_L)){
+        _is_animating = true;
+        _requested_state = uint8_t(BLOCK);
+        return;
+    }
 }
 
 void Player::PollInput() {
@@ -30,9 +59,12 @@ void Player::PollInput() {
     if (IsKeyDown(KEY_S)){
         _requested_state = uint8_t(MOVE_DOWN);
         return;
-    } 
+    }
 
-    if (IsKeyUp(KEY_D) && IsKeyUp(KEY_A) && IsKeyUp(KEY_W) && IsKeyUp(KEY_S)){
+    PollAttackInput();
+
+
+    if (IsKeyUp(KEY_D) && IsKeyUp(KEY_A) && IsKeyUp(KEY_W) && IsKeyUp(KEY_S) && !_is_animating){
         _requested_state = uint8_t(IDLE);
         return;
     }

@@ -16,6 +16,9 @@ int main() {
 
     Player client_player;
     std::array<Player, 4> all_players = {Player(), Player(), Player(), Player()};
+    for (int i = 0; i < 4; i++) {
+        all_players[i].SetId(i);
+    }
     Connection conn;
     OpenWebSocket(&conn, "ws://192.168.1.42:9000/ws");
 
@@ -53,6 +56,7 @@ int main() {
                 ParseLobbyState(&game_state);
                 break;
             case 1:
+                UpdateClientPlayerCopies(all_players, &game_state);
                 ParseGameState(&game_state, &conn, &client_player);
                 break;
             case 2:
@@ -79,7 +83,7 @@ int main() {
                     DrawLobbyState(&game_state);
                     break;
                 case 1:
-                    DrawGameState(&game_state);
+                    DrawGameState(all_players);
                     break;
                 case 2:
                     DrawText("Game Over", 400, 225, 20, RED);

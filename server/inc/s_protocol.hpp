@@ -43,6 +43,19 @@ typedef struct Vector2int {
     uint16_t y;
 } Vector2int;
 
+enum PlayerState {
+    MOVE_RIGHT,
+    MOVE_LEFT,
+    MOVE_UP,
+    MOVE_DOWN,
+    PUNCH,
+    KICK,
+    JUMP,
+    BLOCK,
+    IDLE,
+    ALL_PLAYER_STATES,
+    UNREGISTERED
+};
 
 typedef struct GameState {
     std::array<uint8_t, 4> player_ids;
