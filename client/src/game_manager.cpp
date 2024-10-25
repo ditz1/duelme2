@@ -17,7 +17,11 @@ void InitGameState(GameState* game){
 
 void RequestStateUpdate(GameState* game, Connection* conn, Player* player) {
     if (current_game_stage < 1) return;
-    if (int(player->RequestedState()) < int(PlayerState::IDLE)){ //  && int(game->player_states[player->Id()]) != int(player->RequestedState())
+    if ((int(player->RequestedState()) <= int(PlayerState::IDLE))) { 
+        
+        if (player->RequestedState() == PlayerState::IDLE 
+            && (player->State() == PlayerState::IDLE)) return;
+            
         game->player_states[int(player->Id())] = uint8_t(player->RequestedState());
         SendGameStateRequest(game, conn);
         //std::cout << "Requesting State Update" << std::endl;
@@ -102,14 +106,9 @@ void SendGameStateRequest(GameState* game, Connection* conn) {
     for (int i = 0; i < 28; i++) {
         bytes_to_send[i+1] = game_bytes[i];
     }
-    //std::cout << "requesting new game state" << std::endl;
     bytes_to_send[29] = msg_signature;    
     bytes_to_send[30] = this_client_id;
     bytes_to_send[31] = msg_end;
-    //for (int i = 0; i < 32; i++) {
-    //    printf("%x | ", bytes_to_send[i]);
-    //}
-    //printf("\n");
     ClientSendBytes(conn, (void*)&bytes_to_send, 32);
 }
 
@@ -139,12 +138,37 @@ void DrawGameState(std::array<Player, 4> players){
         AnimatePlayer(players[i]);
     }
 }
+
+// this is basically a paraphrased version of the checks in Player::ProcessPlayerAnimLogic
+void UpdatePlayerCopyAnimInfo(Player& copy) {
+    if (copy.Id() == this_client_id) return;
+
+    if (copy.State() < 4 || copy.State() == PlayerState::IDLE) {
+        copy.SetIsAnimating(false);
+        copy.anim_frame_counter = 0;
+    }
+
+    if (copy.anim_frame_counter >= 60) {
+        copy.anim_frame_counter = 0;
+    }
+    
+    if (copy.IsAnimating()) copy.anim_frame_counter++;
+
+    if (copy.State() <= 7 && copy.State() >= 4) {
+        copy.SetIsAnimating(true);
+        if (copy.anim_frame_counter >= 60) { // cheat forward some frames to avoid lag?
+            copy.anim_frame_counter = 0;
+            copy.SetIsAnimating(false);
+        }
+    }
+}
+
 void UpdateClientPlayerCopies(std::array<Player, 4>& players, GameState* game){
     for (int i = 0; i < 4; i++){
-        players[i];
         players[i].SetState(PlayerState(game->player_states[i]));
         players[i].SetHp(game->player_hps[i]);
         players[i].SetPosition(game->player_positions[i]);
+        UpdatePlayerCopyAnimInfo(players[i]);
     }
 }
 
@@ -156,5 +180,4 @@ void DrawLobbyState(GameState* game) {
     DrawRectangle(screen_width/2 + 200, screen_height/2 - 400, 200, 200, player_ready[1] ? GREEN : RED);
     DrawRectangle(screen_width/2 - 400, screen_height/2 + 200, 200, 200, player_ready[2] ? GREEN : RED);
     DrawRectangle(screen_width/2 + 200, screen_height/2 + 200, 200, 200, player_ready[3] ? GREEN : RED);
-
 }

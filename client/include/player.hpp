@@ -11,9 +11,11 @@ public:
     PlayerState State();
     PlayerState RequestedState();
     void inline SetRequestedState(PlayerState state) { _requested_state = uint8_t(state); }
+    void inline SetIsAnimating(bool is_animating) { _is_animating = is_animating; }
     void PollInput();
     void Update(GameState& game);
     void Draw();
+    bool inline IsAnimating() { return _is_animating; }
     uint8_t Id();
     void SetId(int id);
     bool Ready();
@@ -27,6 +29,7 @@ public:
 
 private:
     void PollAttackInput();
+    void ProcessPlayerAnimLogic();
     uint8_t _id;
     Vector2int _position;
     int _hp;

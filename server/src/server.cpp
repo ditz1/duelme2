@@ -6,10 +6,10 @@
 //------------------------------------------------------------------------------
 void StartSession(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
     try {
-        // Accept the websocket handshake
+        // websocket handshake
         ws->accept();
 
-        // Add the client to the clients vector
+        // add the client to the clients vector
         {
             std::lock_guard<std::mutex> lock(clients_mutex);
             clients.push_back(ws);
@@ -60,29 +60,28 @@ int main()
     InitGameState(&game_state);
     try
     {
-        // Check command line arguments.
         auto const address = net::ip::make_address("192.168.1.42");
         auto const port = static_cast<unsigned short>(std::atoi("9000"));
 
-        // The io_context is required for all I/O
+        // the io_context is required
         net::io_context ioc{1};
 
-        // The acceptor receives incoming connections
+        // the acceptor receives incoming connections
         tcp::acceptor acceptor{ioc, {address, port}};
         std::cout << "listening on " << address << ":" << port << std::endl;
         
         for (;;) {
-            // This will receive the new connection
+            // receive the new connection
             boost::asio::any_io_executor ex = ioc.get_executor();
             tcp::socket socket{ex};
 
-            // Block until we get a connection
+            // block until we get a connection
             acceptor.accept(socket);
 
-            // Create a shared pointer for the WebSocket stream
+            // create a shared pointer for the ws stream
             auto ws = std::make_shared<websocket::stream<tcp::socket>>(std::move(socket));
 
-            // Launch the session in a new thread
+            // launch the session in a new thread
             std::thread(&StartSession, ws).detach();
         }
     }

@@ -3,7 +3,9 @@
 #include <thread>
 
 void UpdateGameStateWithoutRequest() {
-    std::cout << "test" << std::endl;
+    // if somehow this is triggered, dont break the game
+    // but log that it happened and most likely it was desync,
+    // so eventually add some kind of resolve strategy but this should still never happen
     std::cout << " this should never be logging (UpdateGameStateWithoutRequest() - server/src/game_state.cpp)" << std::endl;
     for (int i = 0; i < 4; i++){
         switch(PlayerState(game_state.player_states[i])){
@@ -102,8 +104,6 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     curr.FromBytes(tmp);
 
     int sender_id = last_recieved_bytes[30];
-    //std::cout << "sender id: " << sender_id << std::endl;
-    //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     // state update
     if (req.player_states[sender_id] != curr.player_states[sender_id]){ 
         game_state.player_states[sender_id] = req.player_states[sender_id];

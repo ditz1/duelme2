@@ -41,11 +41,21 @@ int main() {
     buf[1] = 0x00;
     buf[2] = msg_end;
 
-    while (!WindowShouldClose()) {
+    if (client_player.Id() > 0 && client_player.Id() < 4) {
+        all_players[client_player.Id()] = client_player;
+    }
 
-        if (IsKeyPressed(KEY_V)){
-            developer_mode = !developer_mode;
-        }
+    while (!WindowShouldClose()) {
+        // todo: really we should just move the client_player into the all_players array
+        // but i dont want to rewrite the draw function since even though it would be better to have pointers
+        // so do this for now but this is still bad
+
+        // born to do id forced to do Id
+        all_players[client_player.Id()] = client_player;
+        all_players[client_player.Id()].anim_frame_counter = client_player.anim_frame_counter;
+        all_players[client_player.Id()].SetState(client_player.State());
+        all_players[client_player.Id()].SetIsAnimating(client_player.IsAnimating());
+
 
         switch (current_game_stage){
             case 0:
