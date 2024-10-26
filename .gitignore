@@ -2,3 +2,6 @@
 build
 server/build
 server/.vscode
+anim_testing/game
+anim_testing/.vscode
+
