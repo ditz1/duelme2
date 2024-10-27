@@ -43,6 +43,7 @@ void AnimatePlayer(Player& player) {
 
 void AnimatePlayerPunch(Player& player){
     if (player.anim_frame_counter == 0){
+        player.AssignTexture(PlayerState::PUNCH);
     } else {
         DrawCircle(player.Position().x, player.Position().y, 20, PURPLE);
         DrawTexture(player.tex, player.Position().x, player.Position().y, RAYWHITE);
@@ -86,6 +87,7 @@ void AnimatePlayerMoveLeft(Player& player){
 }   
 void AnimatePlayerIdle(Player& player){
     if (player.anim_frame_counter == 0){
+       player.AssignTexture(PlayerState::IDLE);
     } else {
        
     } 

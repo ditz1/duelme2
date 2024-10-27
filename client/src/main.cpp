@@ -18,6 +18,8 @@ int main() {
 
     Player client_player;
 
+    std::cout << "test" << std::endl;
+
 
     std::array<Player, 4> all_players = {Player(), Player(), Player(), Player()};
     for (int i = 0; i < 4; i++) {

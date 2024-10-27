@@ -15,6 +15,17 @@ Player::Player() {
     anim_current_frame = 0;
     buffer_offset = 0;
     fc_delay = 12;
+    _textures_loaded = false;
+    texs.die_fc = 0;
+    texs.enterblock_fc = 0;
+    texs.idle_fc = 0;
+    texs.inblock_fc = 0;
+    texs.jump_fc = 0;
+    texs.kick_fc = 0;
+    texs.nair_fc = 0;
+    texs.punch_fc = 0;
+    texs.unblock_fc = 0;
+    texs.walk_fc = 0;
 }
 
 Player::~Player() {
@@ -27,11 +38,95 @@ Vector2int Player::Position() {
     return _position;
 }
 
+void Player::LoadTextures() {
+    if (_textures_loaded) return;
+    std::string prefix = "red";
+    switch (_id) {
+        case 0:
+            prefix = "red";
+            break;
+        case 1:
+            prefix = "blue";
+            break;
+        case 2:
+            prefix = "green";
+            break;
+        case 3:
+            prefix = "yellow";
+            break;
+    }
+    texs.die_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_die.gif").c_str(), &texs.die_fc);
+    texs.die = LoadTextureFromImage(texs.die_img);
+    
+    texs.enterblock_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_enterblock.gif").c_str(), &texs.enterblock_fc);
+    texs.enterblock = LoadTextureFromImage(texs.enterblock_img);
+    
+    texs.idle_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_idle.gif").c_str(), &texs.idle_fc);
+    texs.idle = LoadTextureFromImage(texs.idle_img);
+    
+    texs.inblock_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_inblock.gif").c_str(), &texs.inblock_fc);
+    texs.inblock = LoadTextureFromImage(texs.inblock_img);
+    
+    texs.jump_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_jump.gif").c_str(), &texs.jump_fc);
+    texs.jump = LoadTextureFromImage(texs.jump_img);
+    
+    texs.kick_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_kick.gif").c_str(), &texs.kick_fc);
+    texs.kick = LoadTextureFromImage(texs.kick_img);
+    
+    texs.nair_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_nair.gif").c_str(), &texs.nair_fc);
+    texs.nair = LoadTextureFromImage(texs.nair_img);
+    
+    texs.punch_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_punch.gif").c_str(), &texs.punch_fc);
+    texs.punch = LoadTextureFromImage(texs.punch_img);
+    
+    texs.unblock_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_unblock.gif").c_str(), &texs.unblock_fc);
+    texs.unblock = LoadTextureFromImage(texs.unblock_img);
+    
+    texs.walk_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_walk.gif").c_str(), &texs.walk_fc);
+    texs.walk = LoadTextureFromImage(texs.walk_img);
+
+    _textures_loaded = true;
+
+}
 void Player::SetTexture(int texture_id) { // later we will have a map of textures
     if (texture_id < 0) return;
     std::cout << "Loading texture" << std::endl;
-    img = LoadImageAnim("/assets/stickman.gif", &anim_frame_counter);
-    tex = LoadTextureFromImage(img);
+    //img = LoadImageAnim("/assets/test.gif", &anim_frame_counter);
+    //tex = LoadTextureFromImage(img);
+}
+
+void Player::AssignTexture(PlayerState state){
+
+    std::cout << "Assigning texture" << std::endl;
+    switch (state) {
+     case MOVE_RIGHT:
+     case MOVE_LEFT:
+            tex = texs.walk;
+            img = texs.walk_img;
+            break;
+        case IDLE:
+            tex = texs.idle;
+            img = texs.idle_img;
+            break;
+        case BLOCK:
+            tex = texs.inblock;
+            img = texs.inblock_img;
+            break;
+        case JUMP:
+            tex = texs.jump;
+            img = texs.jump_img;
+            break;
+        case KICK:
+            tex = texs.kick;
+            img = texs.kick_img;
+            break;
+        case PUNCH:
+            tex = texs.punch;
+            img = texs.punch_img;
+            break;
+        default:
+            break;
+    }
 }
 
 
@@ -50,8 +145,35 @@ void Player::ProcessPlayerAnimLogic() {
 
      // this is 4 because single byte per channel (RGBA)
     buffer_offset = img.width * img.height * 4 * anim_current_frame;
+
+    
     
     if (_is_animating) {
+        switch (_state){
+        case PUNCH:
+            texs.punch_fc++;
+            break;
+        case KICK:
+            texs.kick_fc++;
+            break;
+        case JUMP:
+            texs.jump_fc++;
+            break;
+        case BLOCK:
+            texs.inblock_fc++;
+            break;
+        case MOVE_RIGHT:
+            texs.walk_fc++;
+            break;
+        case MOVE_LEFT:
+            texs.walk_fc++;
+            break;
+        case IDLE:
+            texs.idle_fc++;
+            break;
+        default:
+            break;
+        }
         anim_frame_counter++;
         fc++; // total fc
         if (fc >= fc_delay) {
@@ -63,9 +185,11 @@ void Player::ProcessPlayerAnimLogic() {
             buffer_offset = img.width*img.height*4*anim_current_frame;
             // WARNING: data size (frame size) and pixel format must match already created texture
             // "void* pixels" is pointer to image raw data
-            UpdateTexture(tex, ((unsigned char *)img.data) + buffer_offset);
+            UpdateTexture(texs.punch, ((unsigned char *)texs.punch_img.data) + buffer_offset);
             fc = 0;
         }
+    } else {
+
     }
 
     if (_requested_state <= 7 && _requested_state >= 4) {
@@ -163,7 +287,8 @@ void Player::SetId(int id) {
         case 3:
             _color = YELLOW;
             break;
-    }   
+    }
+    LoadTextures();
 }
 
 PlayerState Player::RequestedState() {

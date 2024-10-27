@@ -3,6 +3,47 @@
 #include <globals.hpp>
 #include <networking.hpp>
 
+typedef struct PlayerTextures {
+    Texture2D die;
+    Image die_img;
+    int die_fc;
+    
+    Texture2D enterblock;
+    Image enterblock_img;
+    int enterblock_fc;
+
+    Texture2D idle;
+    Image idle_img;
+    int idle_fc;
+
+    Texture2D inblock;
+    Image inblock_img;
+    int inblock_fc;
+
+    Texture2D jump;
+    Image jump_img;
+    int jump_fc;
+    // kameha
+    Texture2D kick;
+    Image kick_img;
+    int kick_fc;
+
+    Texture2D nair;
+    Image nair_img;
+    int nair_fc;
+
+    Texture2D punch;
+    Image punch_img;
+    int punch_fc;
+    
+    Texture2D unblock;
+    Image unblock_img;
+    int unblock_fc;
+
+    Texture2D walk;
+    Image walk_img;
+    int walk_fc;
+} PlayerTextures;
 
 typedef class Player {
 public:
@@ -27,7 +68,9 @@ public:
     void inline SetHp(int hp) { _hp = hp; }
     void ProcessPlayerAnimLogic();    
     void SetTexture(int texture_id);
+    void LoadTextures();
     void PlayAnimOnce(PlayerState state);
+    void AssignTexture(PlayerState state);
 
     // anim stuff, supposed to replicate "dummy" from anim_testing
     int anim_frame_counter;
@@ -37,9 +80,11 @@ public:
     int fc_delay; // this should be global
     Texture2D tex; // this should be loaded from img anyway
     Image img;
+    PlayerTextures texs;
 
 private:
     void PollAttackInput();
+    bool _textures_loaded;
     uint8_t _id;
     Vector2int _position;
     int _hp;
@@ -52,8 +97,5 @@ private:
     Color _color;
 
     // image stuff, these will be assigned from characters later, for now just a placeholder
-
-    
-
 
 } Player;
