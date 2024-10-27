@@ -7,7 +7,8 @@
 
 void InitGameState(GameState* game);
 void ParseGameState(GameState* game, Connection* conn, Player* player);
-void ParseLobbyState(GameState* game);
+void ParseLobbyState(GameState* game, std::array<Player, 4>& players);
+void LoadGameState(GameState* game, std::array<Player, 4>& players);
 void ParseEndState(GameState* game, Connection* conn, Player* player);
 void ParseAssignPlayerId(GameState* game, Connection* conn, Player* player);
 void SendReadyRequest(Player* player, Connection* conn);

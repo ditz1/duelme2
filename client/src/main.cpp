@@ -12,9 +12,13 @@ int main() {
     SetTargetFPS(60);
     
     GameState game_state;
+
+
     InitGameState(&game_state);
 
     Player client_player;
+
+
     std::array<Player, 4> all_players = {Player(), Player(), Player(), Player()};
     for (int i = 0; i < 4; i++) {
         all_players[i].SetId(i);
@@ -36,14 +40,20 @@ int main() {
     buf[0] = msg_connect;
     ClientSendBytes(&conn, (void*)buf.data(), 32);
 
+    client_player.SetTexture(1);
 
     buf[0] = msg_ping;
     buf[1] = 0x00;
     buf[2] = msg_end;
 
+    std::cout << "Loading texture" << std::endl;
+
     if (client_player.Id() > 0 && client_player.Id() < 4) {
         all_players[client_player.Id()] = client_player;
-    }
+    } 
+
+    // eventually will need something for managing the texture assignment
+    // all_players[client_player.Id()].SetTexture(1);
 
     while (!WindowShouldClose()) {
         // todo: really we should just move the client_player into the all_players array
@@ -63,7 +73,7 @@ int main() {
                 if (IsKeyPressed(KEY_SPACE)){
                     SendReadyRequest(&client_player, &conn);
                 }
-                ParseLobbyState(&game_state);
+                ParseLobbyState(&game_state, all_players);
                 break;
             case 1:
                 UpdateClientPlayerCopies(all_players, &game_state);
@@ -99,7 +109,7 @@ int main() {
                     DrawText("Game Over", 400, 225, 20, RED);
                     break;
             }
-            DrawDebugInfo(game_state, client_player);
+            DrawDebugInfo(game_state, client_player, all_players);
             
         EndDrawing();
 
@@ -108,7 +118,11 @@ int main() {
     buf[0] = msg_disconnect;
     ClientSendBytes(&conn, (void*)&buf, 32);
 
+
     std::cout << "Closing application" << std::endl;
+
+    //UnloadTexture(client_player.tex);
+    //UnloadImage(client_player.img);
 
     CloseWebSocket(&conn);
     CloseWindow();

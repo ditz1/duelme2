@@ -112,7 +112,7 @@ void SendGameStateRequest(GameState* game, Connection* conn) {
     ClientSendBytes(conn, (void*)&bytes_to_send, 32);
 }
 
-void ParseLobbyState(GameState* game){
+void ParseLobbyState(GameState* game, std::array<Player, 4>& all_players){
     if (data_from_server.size() < 32) return;
     if (data_from_server[0] != msg_lobby) return;
     std::array<uint8_t, 32> last_received_bytes;
@@ -120,12 +120,21 @@ void ParseLobbyState(GameState* game){
     data_from_server.clear();
     if (last_received_bytes[1] == msg_switch_to_game){
         current_game_stage = 1;
+        LoadGameState(game, all_players);
         return;
     }
     int players_connected = last_received_bytes[1];
     for (int i = 2; i < 6; i++){
         last_received_bytes[i] > 0 ? player_ready[i-2] = true : player_ready[i-2] = false;
-    }    
+    }
+
+}
+
+void LoadGameState(GameState* game, std::array<Player, 4>& players){
+    for (int i = 0; i < 4; i++){
+        if (i == this_client_id) continue;
+        players[i].SetTexture(1);
+    }
 }
 
 void ParseEndState(GameState* game, Connection* conn, Player* player){
@@ -150,14 +159,35 @@ void UpdatePlayerCopyAnimInfo(Player& copy) {
 
     if (copy.anim_frame_counter >= 60) {
         copy.anim_frame_counter = 0;
+        copy.anim_current_frame = 0;
+        return;
     }
+        
+    // this is 4 because single byte per channel (RGBA)
+    copy.buffer_offset = copy.img.width * copy.img.height * 4 * copy.anim_current_frame;
     
-    if (copy.IsAnimating()) copy.anim_frame_counter++;
+    if (copy.IsAnimating()){
+        copy.anim_frame_counter++;
+        copy.fc++; // total fc
+        if (copy.fc >= copy.fc_delay) {
+            // move to next frame
+            copy.anim_current_frame++;
+            if (copy.anim_current_frame >= copy.anim_frame_counter) copy.anim_current_frame = 0; // if final frame is reached we return to first frame
+            // get memory offset position for next frame data in image.data
+            copy.buffer_offset = copy.img.width*copy.img.height*4*copy.anim_current_frame;
+            // WARNING: data size (frame size) and pixel format must match already created texture
+            // "void* pixels" is pointer to image raw data
+            UpdateTexture(copy.tex, ((unsigned char *)copy.img.data) + copy.buffer_offset);
+            copy.fc = 0;
+        }
+    }
 
     if (copy.State() <= 7 && copy.State() >= 4) {
         copy.SetIsAnimating(true);
         if (copy.anim_frame_counter >= 60) { // cheat forward some frames to avoid lag?
             copy.anim_frame_counter = 0;
+            copy.anim_current_frame = 0;
+
             copy.SetIsAnimating(false);
         }
     }

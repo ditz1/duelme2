@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 if(EMSCRIPTEN)
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
     set(PLATFORM_WEB "PLATFORM_WEB")
+    
 else()
     set(CMAKE_C_COMPILER "gcc")
     set(CMAKE_CXX_COMPILER "g++")
@@ -35,7 +36,16 @@ if(EMSCRIPTEN)
         set(RAYLIB_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/lib/libraylibweb.a")
     endif()
 
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY -s FORCE_FILESYSTEM=1 -s NO_DISABLE_EXCEPTION_CATCHING")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3 \
+                                                          -DPLATFORM_WEB \
+                                                          -static \
+                                                          --preload-file ../assets \
+                                                          -s ASSERTIONS=1 \
+                                                          -s WASM=1 \
+                                                          -s ASYNCIFY \
+                                                          -s FORCE_FILESYSTEM=1 \
+                                                          -s NO_DISABLE_EXCEPTION_CATCHING \
+                                                          -s INITIAL_MEMORY=268435456")
     target_compile_definitions(index PRIVATE ${PLATFORM_WEB})
 else()
     set(RAYLIB_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/lib/libraylib.a")
