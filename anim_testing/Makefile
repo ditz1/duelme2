@@ -4,4 +4,4 @@ win:
 mac:
 	clang -std=c++11 main.cpp -o game \
 	-framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL \
-	-I. -L../client/lib/ -lraylib
+	-I. -L../client/lib/ -lraylibmac -lstdc++
