@@ -5,27 +5,15 @@ Player::Player() {
     _requested_state = 0;
     _state = IDLE;
     _position = {0xEEEE, 0xDDDD};
-    _current_anim = 0;
+    current_anim = 0;
     _is_animating = false;
     _player_face_dir = 1;
-    anim_frame_counter = 0;
     _hp = 100;
     fc = 0;
-    anim_frame_counter = 0;
     anim_current_frame = 0;
     buffer_offset = 0;
     fc_delay = 12;
     _textures_loaded = false;
-    texs.die_fc = 0;
-    texs.enterblock_fc = 0;
-    texs.idle_fc = 0;
-    texs.inblock_fc = 0;
-    texs.jump_fc = 0;
-    texs.kick_fc = 0;
-    texs.nair_fc = 0;
-    texs.punch_fc = 0;
-    texs.unblock_fc = 0;
-    texs.walk_fc = 0;
 }
 
 Player::~Player() {
@@ -55,35 +43,30 @@ void Player::LoadTextures() {
             prefix = "yellow";
             break;
     }
-    texs.die_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_die.gif").c_str(), &texs.die_fc);
-    texs.die = LoadTextureFromImage(texs.die_img);
-    
-    texs.enterblock_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_enterblock.gif").c_str(), &texs.enterblock_fc);
-    texs.enterblock = LoadTextureFromImage(texs.enterblock_img);
-    
-    texs.idle_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_idle.gif").c_str(), &texs.idle_fc);
-    texs.idle = LoadTextureFromImage(texs.idle_img);
-    
-    texs.inblock_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_inblock.gif").c_str(), &texs.inblock_fc);
-    texs.inblock = LoadTextureFromImage(texs.inblock_img);
-    
-    texs.jump_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_jump.gif").c_str(), &texs.jump_fc);
-    texs.jump = LoadTextureFromImage(texs.jump_img);
-    
-    texs.kick_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_kick.gif").c_str(), &texs.kick_fc);
-    texs.kick = LoadTextureFromImage(texs.kick_img);
-    
-    texs.nair_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_nair.gif").c_str(), &texs.nair_fc);
-    texs.nair = LoadTextureFromImage(texs.nair_img);
-    
-    texs.punch_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_punch.gif").c_str(), &texs.punch_fc);
-    texs.punch = LoadTextureFromImage(texs.punch_img);
-    
-    texs.unblock_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_unblock.gif").c_str(), &texs.unblock_fc);
-    texs.unblock = LoadTextureFromImage(texs.unblock_img);
-    
-    texs.walk_img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_walk.gif").c_str(), &texs.walk_fc);
-    texs.walk = LoadTextureFromImage(texs.walk_img);
+
+    texs[0].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_idle.gif").c_str(), &texs[0].fc);
+    texs[0].tex = LoadTextureFromImage(texs[0].img);
+
+    texs[1].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_walk.gif").c_str(), &texs[1].fc);
+    texs[1].tex = LoadTextureFromImage(texs[1].img);
+
+    texs[2].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_punch.gif").c_str(), &texs[2].fc);
+    texs[2].tex = LoadTextureFromImage(texs[2].img);
+
+    texs[3].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_kick.gif").c_str(), &texs[3].fc);
+    texs[3].tex = LoadTextureFromImage(texs[3].img);
+
+    texs[4].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_jump.gif").c_str(), &texs[4].fc);
+    texs[4].tex = LoadTextureFromImage(texs[4].img);
+
+    texs[5].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_enterblock.gif").c_str(), &texs[5].fc);
+    texs[5].tex = LoadTextureFromImage(texs[5].img);
+
+    texs[6].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_die.gif").c_str(), &texs[6].fc);
+    texs[6].tex = LoadTextureFromImage(texs[6].img);
+
+    img = &texs[0].img;
+    tex = &texs[0].tex;
 
     _textures_loaded = true;
 
@@ -96,33 +79,44 @@ void Player::SetTexture(int texture_id) { // later we will have a map of texture
 }
 
 void Player::AssignTexture(PlayerState state){
-
-    std::cout << "Assigning texture" << std::endl;
+    _is_animating = true;
+    
     switch (state) {
-     case MOVE_RIGHT:
-     case MOVE_LEFT:
-            tex = texs.walk;
-            img = texs.walk_img;
-            break;
         case IDLE:
-            tex = texs.idle;
-            img = texs.idle_img;
+            img = &texs[0].img;
+            tex = &texs[0].tex;
+            current_anim = 0;
             break;
-        case BLOCK:
-            tex = texs.inblock;
-            img = texs.inblock_img;
-            break;
-        case JUMP:
-            tex = texs.jump;
-            img = texs.jump_img;
-            break;
-        case KICK:
-            tex = texs.kick;
-            img = texs.kick_img;
+        case MOVE_RIGHT:
+        case MOVE_LEFT: 
+            img = &texs[1].img;
+            tex = &texs[1].tex;
+            current_anim = 1;
             break;
         case PUNCH:
-            tex = texs.punch;
-            img = texs.punch_img;
+            img = &texs[2].img;
+            tex = &texs[2].tex;
+            current_anim = 2;
+            break;
+        case KICK:
+            img = &texs[3].img;
+            tex = &texs[3].tex;
+            current_anim = 3;
+            break;
+        case MOVE_UP:
+            img = &texs[4].img;
+            tex = &texs[4].tex;
+            current_anim = 4;
+            break;
+        case BLOCK:
+            img = &texs[5].img;
+            tex = &texs[5].tex;
+            current_anim = 5;
+            break;
+        case MOVE_DOWN:
+            img = &texs[6].img;
+            tex = &texs[6].tex;
+            current_anim = 6;
             break;
         default:
             break;
@@ -132,81 +126,30 @@ void Player::AssignTexture(PlayerState state){
 
 void Player::ProcessPlayerAnimLogic() {
 
-    if (_requested_state < 4 || _requested_state == PlayerState::IDLE) {
-        _is_animating = false;
-        anim_frame_counter = 0;
-    }
-
-    if (anim_frame_counter >= 60) {
-        anim_frame_counter = 0;
+    if (anim_current_frame >= 60) {
+        texs[current_anim].fc = 0;
         anim_current_frame = 0;
         return;
     }
 
      // this is 4 because single byte per channel (RGBA)
-    buffer_offset = img.width * img.height * 4 * anim_current_frame;
+    buffer_offset = img->width * img->height * 4 * anim_current_frame;
 
-    
-    
-    if (_is_animating) {
-        switch (_state){
-        case PUNCH:
-            texs.punch_fc++;
-            break;
-        case KICK:
-            texs.kick_fc++;
-            break;
-        case JUMP:
-            texs.jump_fc++;
-            break;
-        case BLOCK:
-            texs.inblock_fc++;
-            break;
-        case MOVE_RIGHT:
-            texs.walk_fc++;
-            break;
-        case MOVE_LEFT:
-            texs.walk_fc++;
-            break;
-        case IDLE:
-            texs.idle_fc++;
-            break;
-        default:
-            break;
-        }
-        anim_frame_counter++;
-        fc++; // total fc
-        if (fc >= fc_delay) {
-            // move to next frame
-            anim_current_frame++;
-            if (anim_current_frame >= anim_frame_counter) anim_current_frame = 0; // if final frame is reached we return to first frame
-            // get memory offset position for next frame data in image.data
-            // this is 4 because single byte per channel (RGBA)
-            buffer_offset = img.width*img.height*4*anim_current_frame;
-            // WARNING: data size (frame size) and pixel format must match already created texture
-            // "void* pixels" is pointer to image raw data
-            UpdateTexture(texs.punch, ((unsigned char *)texs.punch_img.data) + buffer_offset);
-            fc = 0;
-        }
-    } else {
-
+    fc++; // total fc
+    if (fc >= fc_delay) {
+        // move to next frame
+        anim_current_frame++;
+        if (anim_current_frame >= texs[current_anim].fc) anim_current_frame = 0; // if final frame is reached we return to first frame
+        // get memory offset position for next frame data in image.data
+        // this is 4 because single byte per channel (RGBA)
+        buffer_offset = img->width*img->height*4*anim_current_frame;
+        // WARNING: data size (frame size) and pixel format must match already created texture
+        // "void* pixels" is pointer to image raw data
+        UpdateTexture(*tex, ((unsigned char *)img->data) + buffer_offset);
+        fc = 0;
     }
-
-    if (_requested_state <= 7 && _requested_state >= 4) {
-        _is_animating = true;
-            if (anim_frame_counter >= 60){
-                anim_frame_counter = 0;
-                anim_current_frame = 0;
-                _is_animating = false;
-        }
-    }
-
 
     if (_id != this_client_id) return;
-
-    if (PlayerState(_requested_state) != _state) {
-        anim_frame_counter = 0;
-    }
 
 }
 
@@ -251,9 +194,8 @@ void Player::PollInput() {
     PollAttackInput();
     ProcessPlayerAnimLogic();
 
-    if (IsKeyUp(KEY_D) && IsKeyUp(KEY_A) && IsKeyUp(KEY_W) && IsKeyUp(KEY_S) && !_is_animating){
+    if (IsKeyUp(KEY_D) && IsKeyUp(KEY_A) && IsKeyUp(KEY_W) && IsKeyUp(KEY_S) && IsKeyUp(KEY_H) && IsKeyUp(KEY_J) && IsKeyUp(KEY_K) && IsKeyUp(KEY_L)){
         _requested_state = uint8_t(IDLE);
-        anim_frame_counter = 0;
         return;
     }
 

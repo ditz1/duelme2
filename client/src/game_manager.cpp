@@ -152,45 +152,30 @@ void DrawGameState(std::array<Player, 4> players){
 void UpdatePlayerCopyAnimInfo(Player& copy) {
     if (copy.Id() == this_client_id) return;
 
-    if (copy.State() < 4 || copy.State() == PlayerState::IDLE) {
-        copy.SetIsAnimating(false);
-        copy.anim_frame_counter = 0;
-    }
+    copy.AssignTexture(copy.State());
 
-    if (copy.anim_frame_counter >= 60) {
-        copy.anim_frame_counter = 0;
+    if (copy.anim_current_frame >= 60) {
+        copy.texs[copy.current_anim].fc = 0;
         copy.anim_current_frame = 0;
         return;
     }
         
     // this is 4 because single byte per channel (RGBA)
-    copy.buffer_offset = copy.img.width * copy.img.height * 4 * copy.anim_current_frame;
+    copy.buffer_offset = copy.img->width * copy.img->height * 4 * copy.anim_current_frame;
     
-    if (copy.IsAnimating()){
-        copy.anim_frame_counter++;
-        copy.fc++; // total fc
-        if (copy.fc >= copy.fc_delay) {
-            // move to next frame
-            copy.anim_current_frame++;
-            if (copy.anim_current_frame >= copy.anim_frame_counter) copy.anim_current_frame = 0; // if final frame is reached we return to first frame
-            // get memory offset position for next frame data in image.data
-            copy.buffer_offset = copy.img.width*copy.img.height*4*copy.anim_current_frame;
-            // WARNING: data size (frame size) and pixel format must match already created texture
-            // "void* pixels" is pointer to image raw data
-            UpdateTexture(copy.tex, ((unsigned char *)copy.img.data) + copy.buffer_offset);
-            copy.fc = 0;
-        }
+    copy.fc++; // total fc
+    if (copy.fc >= copy.fc_delay) {
+        // move to next frame
+        copy.anim_current_frame++;
+        if (copy.anim_current_frame >= copy.texs[copy.current_anim].fc) copy.anim_current_frame = 0; // if final frame is reached we return to first frame
+        // get memory offset position for next frame data in image.data
+        copy.buffer_offset = copy.img->width*copy.img->height*4*copy.anim_current_frame;
+        // WARNING: data size (frame size) and pixel format must match already created texture
+        // "void* pixels" is pointer to image raw data
+        UpdateTexture(*(copy.tex), ((unsigned char *)copy.img->data) + copy.buffer_offset);
+        copy.fc = 0;
     }
-
-    if (copy.State() <= 7 && copy.State() >= 4) {
-        copy.SetIsAnimating(true);
-        if (copy.anim_frame_counter >= 60) { // cheat forward some frames to avoid lag?
-            copy.anim_frame_counter = 0;
-            copy.anim_current_frame = 0;
-
-            copy.SetIsAnimating(false);
-        }
-    }
+    
 }
 
 void UpdateClientPlayerCopies(std::array<Player, 4>& players, GameState* game){

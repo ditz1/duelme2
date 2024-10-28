@@ -3,47 +3,11 @@
 #include <globals.hpp>
 #include <networking.hpp>
 
-typedef struct PlayerTextures {
-    Texture2D die;
-    Image die_img;
-    int die_fc;
-    
-    Texture2D enterblock;
-    Image enterblock_img;
-    int enterblock_fc;
-
-    Texture2D idle;
-    Image idle_img;
-    int idle_fc;
-
-    Texture2D inblock;
-    Image inblock_img;
-    int inblock_fc;
-
-    Texture2D jump;
-    Image jump_img;
-    int jump_fc;
-    // kameha
-    Texture2D kick;
-    Image kick_img;
-    int kick_fc;
-
-    Texture2D nair;
-    Image nair_img;
-    int nair_fc;
-
-    Texture2D punch;
-    Image punch_img;
-    int punch_fc;
-    
-    Texture2D unblock;
-    Image unblock_img;
-    int unblock_fc;
-
-    Texture2D walk;
-    Image walk_img;
-    int walk_fc;
-} PlayerTextures;
+typedef struct AnimData {
+    Image img;
+    Texture2D tex;
+    int fc = 0;
+} AnimData;
 
 typedef class Player {
 public:
@@ -73,14 +37,14 @@ public:
     void AssignTexture(PlayerState state);
 
     // anim stuff, supposed to replicate "dummy" from anim_testing
-    int anim_frame_counter;
     int fc; // frame counter total, mainly needed for delay
     int anim_current_frame;
     unsigned int buffer_offset; // offset to move pointer in img data
+    int current_anim;
     int fc_delay; // this should be global
-    Texture2D tex; // this should be loaded from img anyway
-    Image img;
-    PlayerTextures texs;
+    Texture2D* tex; // this should be loaded from img anyway
+    Image* img;
+    std::array<AnimData, 7> texs;
 
 private:
     void PollAttackInput();
@@ -89,7 +53,6 @@ private:
     Vector2int _position;
     int _hp;
     bool _is_animating;
-    int _current_anim;
     int _player_face_dir;
     bool _ready;
     PlayerState _state;

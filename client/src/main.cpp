@@ -64,7 +64,7 @@ int main() {
 
         // born to do id forced to do Id
         all_players[client_player.Id()] = client_player;
-        all_players[client_player.Id()].anim_frame_counter = client_player.anim_frame_counter;
+        all_players[client_player.Id()].anim_current_frame = client_player.anim_current_frame;
         all_players[client_player.Id()].SetState(client_player.State());
         all_players[client_player.Id()].SetIsAnimating(client_player.IsAnimating());
 

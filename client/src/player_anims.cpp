@@ -2,7 +2,7 @@
 
 void AnimatePlayer(Player& player) {
     if (player.IsAnimating()){            
-        std::cout << player.anim_frame_counter << " | " <<
+        std::cout << player.texs[player.current_anim].fc << " | " <<
         player.fc << " | " << player.anim_current_frame << " | " << player.buffer_offset << " | " << player.fc_delay << std::endl;
     }
     
@@ -42,52 +42,50 @@ void AnimatePlayer(Player& player) {
 
 
 void AnimatePlayerPunch(Player& player){
-    if (player.anim_frame_counter == 0){
+    if (player.texs[player.current_anim].fc == 0){
         player.AssignTexture(PlayerState::PUNCH);
     } else {
         DrawCircle(player.Position().x, player.Position().y, 20, PURPLE);
-        DrawTexture(player.tex, player.Position().x, player.Position().y, RAYWHITE);
+        DrawTexture(*(player.tex), player.Position().x, player.Position().y, RAYWHITE);
     }
 }
 void AnimatePlayerKick(Player& player){
-    if (player.anim_frame_counter == 0){
+    if (player.texs[player.current_anim].fc == 0){
     } else {
         DrawCircle(player.Position().x, player.Position().y, 20, PURPLE);        
-        DrawTexture(player.tex, player.Position().x, player.Position().y, RAYWHITE);
+        DrawTexture(*(player.tex), player.Position().x, player.Position().y, RAYWHITE);
     }
 }
 
 void AnimatePlayerJump(Player& player){
-    if (player.anim_frame_counter == 0){
+    if (player.texs[player.current_anim].fc == 0){
         //std::cout << "player jump" << std::endl;
         // jump logic will be way more complicated than anything else
         // should probably not confine it to this
     } else {
-        DrawTexture(player.tex, player.Position().x, player.Position().y, RAYWHITE);
+        DrawTexture(*(player.tex), player.Position().x, player.Position().y, RAYWHITE);
     }
 }
 void AnimatePlayerBlock(Player& player){
-    if (player.anim_frame_counter == 0){
+    if (player.texs[player.current_anim].fc == 0){
     } else {
         DrawCircle(player.Position().x, player.Position().y, 20, PURPLE);
-        DrawTexture(player.tex, player.Position().x, player.Position().y, RAYWHITE);
+        DrawTexture(*(player.tex), player.Position().x, player.Position().y, RAYWHITE);
     }
 }
 void AnimatePlayerMoveRight(Player& player){
-    if (player.anim_frame_counter == 0){
+    if (player.texs[player.current_anim].fc == 0){
     } else {
         
     }
 }
 void AnimatePlayerMoveLeft(Player& player){
-    if (player.anim_frame_counter == 0){
-    } else {
+    if (player.texs[player.current_anim].fc == 0){
         
     }
 }   
 void AnimatePlayerIdle(Player& player){
-    if (player.anim_frame_counter == 0){
-       player.AssignTexture(PlayerState::IDLE);
+    if (player.texs[player.current_anim].fc == 0){
     } else {
        
     } 
