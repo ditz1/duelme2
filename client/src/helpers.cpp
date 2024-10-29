@@ -27,6 +27,7 @@ void DrawDebugInfo(GameState game, Player& client_player, std::array<Player, 4> 
             DrawText(TextFormat("CurrentAnimFrame: %d", client_player.texs[client_player.current_anim].fc), x_start, y_start + y_spacing * 4, font_size, RAYWHITE);
             DrawText(TextFormat("IsAnimating: %d", client_player.IsAnimating()), x_start, y_start + y_spacing * 5, font_size, RAYWHITE);
             DrawText(TextFormat("Current Anim FC: %d", client_player.anim_current_frame), x_start, y_start + y_spacing * 6, font_size, RAYWHITE);
+            DrawText(TextFormat("FaceDir: %d", client_player.FaceDir()), x_start, y_start + y_spacing * 7, font_size, RAYWHITE);
 }
 
 void LogGameState(GameState game, Connection* conn) {

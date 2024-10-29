@@ -24,7 +24,6 @@ void RequestStateUpdate(GameState* game, Connection* conn, Player* player) {
             
         game->player_states[int(player->Id())] = uint8_t(player->RequestedState());
         SendGameStateRequest(game, conn);
-        //std::cout << "Requesting State Update" << std::endl;
     }
 }
 
@@ -151,6 +150,13 @@ void DrawGameState(std::array<Player, 4> players){
 // this is basically a paraphrased version of the checks in Player::ProcessPlayerAnimLogic
 void UpdatePlayerCopyAnimInfo(Player& copy) {
     if (copy.Id() == this_client_id) return;
+
+
+    if (copy.State() == MOVE_LEFT && copy.FaceDir() == 1) {
+        copy.SetFaceDir(-1);
+    } else if (copy.State() == MOVE_RIGHT && copy.FaceDir() == -1) {
+        copy.SetFaceDir(1);
+    }
 
     copy.AssignTexture(copy.State());
 

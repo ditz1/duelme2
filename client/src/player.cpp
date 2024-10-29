@@ -29,6 +29,7 @@ Vector2int Player::Position() {
 
 void Player::LoadTextures() {
     if (_textures_loaded) return;
+    std::array<std::string, 7> anims = {"idle", "walk", "punch", "kick", "jump", "enterblock", "die"};
     std::string prefix = "red";
     switch (_id) {
         case 0:
@@ -45,26 +46,13 @@ void Player::LoadTextures() {
             break;
     }
 
-    texs[0].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_idle.gif").c_str(), &texs[0].fc);
-    texs[0].tex = LoadTextureFromImage(texs[0].img);
+    for (int i = 0; i < 7; i++) {
+        texs[i].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_" + anims[i] + ".gif").c_str(), &texs[i].fc);
+        texs[i].tex = LoadTextureFromImage(texs[i].img);
+    }
+    draw_data.source = {0.0f, 0.0f, (float)texs[0].img.width, (float)texs[0].img.height};
+    draw_data.dest = {0.0f, 0.0f, (float)texs[0].img.width * draw_data.scale, (float)texs[0].img.height * draw_data.scale};
 
-    texs[1].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_walk.gif").c_str(), &texs[1].fc);
-    texs[1].tex = LoadTextureFromImage(texs[1].img);
-
-    texs[2].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_punch.gif").c_str(), &texs[2].fc);
-    texs[2].tex = LoadTextureFromImage(texs[2].img);
-
-    texs[3].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_kick.gif").c_str(), &texs[3].fc);
-    texs[3].tex = LoadTextureFromImage(texs[3].img);
-
-    texs[4].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_jump.gif").c_str(), &texs[4].fc);
-    texs[4].tex = LoadTextureFromImage(texs[4].img);
-
-    texs[5].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_enterblock.gif").c_str(), &texs[5].fc);
-    texs[5].tex = LoadTextureFromImage(texs[5].img);
-
-    texs[6].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_die.gif").c_str(), &texs[6].fc);
-    texs[6].tex = LoadTextureFromImage(texs[6].img);
 
     img = &texs[0].img;
     tex = &texs[0].tex;
@@ -124,8 +112,17 @@ void Player::AssignTexture(PlayerState state){
     }
 }
 
+void Player::SetFaceDir(int dir) {
+    _player_face_dir = dir;
+}
 
 void Player::ProcessPlayerAnimLogic() {
+
+    if (_state == MOVE_LEFT && _player_face_dir == 1) {
+        _player_face_dir = -1;
+    } else if (_state == MOVE_RIGHT && _player_face_dir == -1) {
+        _player_face_dir = 1;
+    }
 
     if (_is_attacking && (anim_current_frame >= texs[current_anim].fc - 1)) {
         _is_attacking = false;
@@ -256,9 +253,13 @@ void Player::Draw() {
     Vector2 pos = V2intToV2(_position);
     float scale = 3.0f;
     DrawCircleV(V2intToV2(_position), 20, _color);
-    pos.x -= ((tex->width / 2) * scale);
-    pos.y -= ((tex->height / 2) * scale);
-    DrawTextureEx(*tex, pos, 0.0f, scale, RAYWHITE);
+    pos.x -= ((tex->width / 2) * draw_data.scale);
+    pos.y -= ((tex->height / 2) * draw_data.scale);
+    
+    draw_data.source.width *= _player_face_dir;
+    pos.x *= -1.0f;
+    pos.y *= -1.0f;
+    DrawTexturePro(*tex, draw_data.source, draw_data.dest, pos, 0.0f, RAYWHITE);
 
 }
 

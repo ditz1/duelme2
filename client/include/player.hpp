@@ -9,6 +9,12 @@ typedef struct AnimData {
     int fc = 0;
 } AnimData;
 
+typedef struct DrawData {
+    Rectangle source;
+    Rectangle dest;
+    float scale = 6.0f;
+} DrawData;
+
 typedef class Player {
 public:
     Player();
@@ -35,6 +41,9 @@ public:
     void LoadTextures();
     void PlayAnimOnce(PlayerState state);
     void AssignTexture(PlayerState state);
+    void SetFaceDir(int dir);
+    
+    DrawData draw_data;
 
     // anim stuff, supposed to replicate "dummy" from anim_testing
     int fc; // frame counter total, mainly needed for delay
@@ -45,6 +54,7 @@ public:
     Texture2D* tex; // this should be loaded from img anyway
     Image* img;
     std::array<AnimData, 7> texs;
+    int face_dir;
 
 private:
     void PollAttackInput();
