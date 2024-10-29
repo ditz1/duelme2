@@ -48,6 +48,7 @@ public:
 
 private:
     void PollAttackInput();
+    void ResetState();
     bool _textures_loaded;
     uint8_t _id;
     Vector2int _position;
@@ -58,6 +59,7 @@ private:
     PlayerState _state;
     uint8_t _requested_state;
     Color _color;
+    bool _is_attacking;
 
     // image stuff, these will be assigned from characters later, for now just a placeholder
 

@@ -84,6 +84,7 @@ void ParseGameState(GameState* game, Connection* conn, Player* player) {
     player->SetHp(game->player_hps[int(player->Id())]);
     player->SetState(PlayerState(game->player_states[int(player->Id())]));
     player->SetPosition((game->player_positions[int(player->Id())]));
+    player->AssignTexture(player->State());
 }
 
 void SendReadyRequest(Player* player, Connection* conn){
@@ -133,7 +134,6 @@ void ParseLobbyState(GameState* game, std::array<Player, 4>& all_players){
 void LoadGameState(GameState* game, std::array<Player, 4>& players){
     for (int i = 0; i < 4; i++){
         if (i == this_client_id) continue;
-        players[i].SetTexture(1);
     }
 }
 
@@ -144,7 +144,7 @@ void ParseEndState(GameState* game, Connection* conn, Player* player){
 void DrawGameState(std::array<Player, 4> players){
     for (int i = 0; i < 4; i++){
         players[i].Draw();
-        AnimatePlayer(players[i]);
+        //AnimatePlayer(players[i]);
     }
 }
 

@@ -12,8 +12,9 @@ Player::Player() {
     fc = 0;
     anim_current_frame = 0;
     buffer_offset = 0;
-    fc_delay = 12;
+    fc_delay = 6;
     _textures_loaded = false;
+    _is_attacking = false;
 }
 
 Player::~Player() {
@@ -80,7 +81,7 @@ void Player::SetTexture(int texture_id) { // later we will have a map of texture
 
 void Player::AssignTexture(PlayerState state){
     _is_animating = true;
-    
+
     switch (state) {
         case IDLE:
             img = &texs[0].img;
@@ -126,10 +127,8 @@ void Player::AssignTexture(PlayerState state){
 
 void Player::ProcessPlayerAnimLogic() {
 
-    if (anim_current_frame >= 60) {
-        texs[current_anim].fc = 0;
-        anim_current_frame = 0;
-        return;
+    if (_is_attacking && (anim_current_frame >= texs[current_anim].fc - 1)) {
+        _is_attacking = false;
     }
 
      // this is 4 because single byte per channel (RGBA)
@@ -154,47 +153,62 @@ void Player::ProcessPlayerAnimLogic() {
 }
 
 void Player::PollAttackInput() {
-    if (IsKeyPressed(KEY_H)){
+    if (IsKeyPressed(KEY_H) && !_is_attacking){
         _requested_state = uint8_t(PUNCH);
+        _is_attacking = true;
+        anim_current_frame = 0;
         return;
     } 
-    if (IsKeyPressed(KEY_J)){
+    if (IsKeyPressed(KEY_J) && !_is_attacking){
         _requested_state = uint8_t(KICK);
+        _is_attacking = true;
+        anim_current_frame = 0;
         return;
     }
-    if (IsKeyPressed(KEY_K)){
-        _requested_state = uint8_t(JUMP);
+    if (IsKeyPressed(KEY_K) && !_is_attacking){
+        _requested_state = uint8_t(MOVE_UP);
+        _is_attacking = true;
+        anim_current_frame = 0;
         return;
     }
-    if (IsKeyPressed(KEY_L)){
+    if (IsKeyPressed(KEY_L) && !_is_attacking){
         _requested_state = uint8_t(BLOCK);
+        _is_attacking = true;
+        anim_current_frame = 0;
         return;
     }
 }
 
+void Player::ResetState() {
+}
+
+
 void Player::PollInput() {
     // MOVEMENT // 
-    if (IsKeyDown(KEY_D)){
+    ProcessPlayerAnimLogic();
+
+    if (IsKeyDown(KEY_D) && !_is_attacking){
         _requested_state = uint8_t(MOVE_RIGHT);
         return;
     }   
-    if (IsKeyDown(KEY_A)){
+    if (IsKeyDown(KEY_A) && !_is_attacking){
         _requested_state = uint8_t(MOVE_LEFT);
         return;
     } 
-    if (IsKeyDown(KEY_W)){
+    if (IsKeyDown(KEY_W) && !_is_attacking){
         _requested_state = uint8_t(MOVE_UP);
         return;
     } 
-    if (IsKeyDown(KEY_S)){
+    if (IsKeyDown(KEY_S) && !_is_attacking){
         _requested_state = uint8_t(MOVE_DOWN);
         return;
     }
 
     PollAttackInput();
-    ProcessPlayerAnimLogic();
 
-    if (IsKeyUp(KEY_D) && IsKeyUp(KEY_A) && IsKeyUp(KEY_W) && IsKeyUp(KEY_S) && IsKeyUp(KEY_H) && IsKeyUp(KEY_J) && IsKeyUp(KEY_K) && IsKeyUp(KEY_L)){
+    if (IsKeyUp(KEY_D) && IsKeyUp(KEY_A) && IsKeyUp(KEY_W) && IsKeyUp(KEY_S) 
+        && IsKeyUp(KEY_H) && IsKeyUp(KEY_J) && IsKeyUp(KEY_K) && IsKeyUp(KEY_L)
+        && !_is_attacking){
         _requested_state = uint8_t(IDLE);
         return;
     }
@@ -239,7 +253,13 @@ PlayerState Player::RequestedState() {
 
 
 void Player::Draw() {
+    Vector2 pos = V2intToV2(_position);
+    float scale = 3.0f;
     DrawCircleV(V2intToV2(_position), 20, _color);
+    pos.x -= ((tex->width / 2) * scale);
+    pos.y -= ((tex->height / 2) * scale);
+    DrawTextureEx(*tex, pos, 0.0f, scale, RAYWHITE);
+
 }
 
 uint8_t Player::Id() {

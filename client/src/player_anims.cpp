@@ -1,36 +1,12 @@
 #include <player_anims.hpp>
 
 void AnimatePlayer(Player& player) {
-    if (player.IsAnimating()){            
-        std::cout << player.texs[player.current_anim].fc << " | " <<
-        player.fc << " | " << player.anim_current_frame << " | " << player.buffer_offset << " | " << player.fc_delay << std::endl;
-    }
+    // if (player.IsAnimating()){            
+    //     std::cout << player.texs[player.current_anim].fc << " | " <<
+    //     player.fc << " | " << player.anim_current_frame << " | " << player.buffer_offset << " | " << player.fc_delay << std::endl;
+    // }
     
-    switch(player.State()){
-      case PUNCH:
-          AnimatePlayerPunch(player);
-          break;
-      case KICK:
-          AnimatePlayerKick(player);
-          break;
-      case JUMP:
-          AnimatePlayerJump(player);
-          break;
-      case BLOCK:
-          AnimatePlayerBlock(player);
-          break;
-      case MOVE_RIGHT:
-          AnimatePlayerMoveRight(player);
-          break;
-      case MOVE_LEFT:
-          AnimatePlayerMoveLeft(player);
-          break;
-      case IDLE:
-          AnimatePlayerIdle(player);
-          break;
-      default:
-          break;
-    }
+    DrawTexture(*(player.tex), player.Position().x, player.Position().y, RAYWHITE);
     
 }
 
@@ -39,6 +15,20 @@ void AnimatePlayer(Player& player) {
 // _is_animating being set to false would mean a new anim was triggered or an anim ended
 
 // these functions are meant to contain drawing logic, no game logic should be here
+
+
+
+
+
+
+
+///////////////////////////////////
+////// these are all unused ///////
+///////////////////////////////////
+
+
+
+
 
 
 void AnimatePlayerPunch(Player& player){
@@ -87,6 +77,6 @@ void AnimatePlayerMoveLeft(Player& player){
 void AnimatePlayerIdle(Player& player){
     if (player.texs[player.current_anim].fc == 0){
     } else {
-       
+        DrawTexture(*(player.tex), player.Position().x, player.Position().y, RAYWHITE);
     } 
 }

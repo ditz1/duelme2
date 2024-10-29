@@ -52,7 +52,12 @@ int main() {
 
     if (client_player.Id() > 0 && client_player.Id() < 4) {
         all_players[client_player.Id()] = client_player;
-    } 
+    }
+    
+    for (int i = 0; i < 4; i++) {
+        if (i == client_player.Id()) continue;
+        all_players[i].SetId(i);
+    }
 
     // eventually will need something for managing the texture assignment
     // all_players[client_player.Id()].SetTexture(1);
