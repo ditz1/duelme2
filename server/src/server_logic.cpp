@@ -7,6 +7,10 @@ void LogMessageReceived(std::array<uint8_t, 32>& message) {
             case msg_connect: std::cout << "CONNECT" << std::endl; break;
             case msg_disconnect: std::cout << "DISCONNECT" << std::endl; break;
             case msg_update: std::cout << "UPDATE" << std::endl; break;
+            case msg_ping: std::cout << "PING" << std::endl; break;
+            case msg_lobby: std::cout << "LOBBY" << std::endl; break;
+            case msg_player_ready: std::cout << "PLAYER_READY" << std::endl; break;
+            case msg_switch_to_game: std::cout << "SWITCH_TO_GAME" << std::endl; break;
             default: std::cout << "UNKNOWN" << std::endl; break;
         }
     }
@@ -34,10 +38,12 @@ void ParseMessageReceived(std::array<uint8_t, 32>& message) {
                 break;
             case msg_ping:
                 std::cout << "PING" << std::endl;
+                //LogMessageReceived(message);
                 SendBackPlayerId(num_connections);
                 break;
             case msg_lobby:
                 std::cout << "LOBBY" << std::endl;
+                //LogMessageReceived(message);
                 UpdateLobbyState(message);
                 ChangeGameState();
                 break;

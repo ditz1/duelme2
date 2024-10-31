@@ -15,6 +15,8 @@ Player::Player() {
     fc_delay = 6;
     _textures_loaded = false;
     _is_attacking = false;
+    _ready = false;
+    _name = "";
 }
 
 Player::~Player() {
@@ -179,8 +181,12 @@ void Player::PollAttackInput() {
 void Player::ResetState() {
 }
 
-
 void Player::PollInput() {
+
+    if (IsKeyPressed(KEY_SPACE)){
+        _ready = !_ready;
+        return;
+    }
     // MOVEMENT // 
     ProcessPlayerAnimLogic();
 
@@ -210,10 +216,7 @@ void Player::PollInput() {
         return;
     }
 
-    if (IsKeyPressed(KEY_SPACE)){
-        _ready = !_ready;
-        return;
-    }
+    
     
 }
 
@@ -226,19 +229,24 @@ PlayerState Player::State() {
 }
 
 void Player::SetId(int id) {
+
     _id = id;
     switch(_id){
         case 0:
             _color = RED;
+            //_name == "" ? _name = "P1" : _name;
             break;
         case 1:
             _color = BLUE;
+            //_name == "" ? _name = "P2" : _name;
             break;
         case 2:
             _color = GREEN;
+            //_name == "" ? _name = "P3" : _name;
             break;
         case 3:
             _color = YELLOW;
+            //_name == "" ? _name = "P4" : _name;
             break;
     }
     LoadTextures();
@@ -250,6 +258,11 @@ PlayerState Player::RequestedState() {
 
 
 void Player::Draw() {
+    _bounds.x = V2intToV2(_position).x - tex->width;
+    _bounds.y = V2intToV2(_position).y - (tex->height) - 20;
+    _bounds.width = tex->width * 2;
+    _bounds.height = tex->height * 3;
+
     Vector2 pos = V2intToV2(_position);
     float scale = 3.0f;
     DrawCircleV(V2intToV2(_position), 20, _color);
@@ -260,7 +273,7 @@ void Player::Draw() {
     pos.x *= -1.0f;
     pos.y *= -1.0f;
     DrawTexturePro(*tex, draw_data.source, draw_data.dest, pos, 0.0f, RAYWHITE);
-
+    DrawRectangleLinesEx(_bounds, 2, _color);
 }
 
 uint8_t Player::Id() {

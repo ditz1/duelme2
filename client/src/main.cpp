@@ -24,6 +24,7 @@ int main() {
     std::array<Player, 4> all_players = {Player(), Player(), Player(), Player()};
     for (int i = 0; i < 4; i++) {
         all_players[i].SetId(i);
+        all_players[i].LoadTextures();
     }
     Connection conn;
     OpenWebSocket(&conn, "ws://192.168.1.42:9000/ws");
@@ -96,6 +97,7 @@ int main() {
         if (IsKeyPressed(KEY_L)){            
             LogGameState(game_state, &conn);
         }
+        
         if (IsKeyPressed(KEY_P)){
             std::cout << "ping" << std::endl;
             ClientSendBytes(&conn, (void*)buf.begin(), 32);

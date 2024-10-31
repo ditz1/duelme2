@@ -34,6 +34,7 @@ public:
     Vector2int Position();
     void inline SetPosition(Vector2int position) { _position = position; }
     void inline SetState(PlayerState state) { _state = state; }
+    void inline SetReady(bool ready) { _ready = ready; } 
     int inline Hp() { return _hp; }
     void inline SetHp(int hp) { _hp = hp; }
     void ProcessPlayerAnimLogic();    
@@ -70,7 +71,8 @@ private:
     uint8_t _requested_state;
     Color _color;
     bool _is_attacking;
-
+    std::string _name;
+    Rectangle _bounds; // this will be used for collision detection
     // image stuff, these will be assigned from characters later, for now just a placeholder
 
 } Player;
