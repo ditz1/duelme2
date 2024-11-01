@@ -22,10 +22,9 @@ int main() {
 
 
     std::array<Player, 4> all_players = {Player(), Player(), Player(), Player()};
-    for (int i = 0; i < 4; i++) {
-        all_players[i].SetId(i);
-        all_players[i].LoadTextures();
-    }
+    
+    
+
     Connection conn;
     OpenWebSocket(&conn, "ws://192.168.1.42:9000/ws");
 
@@ -43,7 +42,7 @@ int main() {
     buf[0] = msg_connect;
     ClientSendBytes(&conn, (void*)buf.data(), 32);
 
-    client_player.SetTexture(1);
+    //client_player.SetTexture(1);
 
     buf[0] = msg_ping;
     buf[1] = 0x00;
@@ -51,14 +50,13 @@ int main() {
 
     std::cout << "Loading texture" << std::endl;
 
-    if (client_player.Id() > 0 && client_player.Id() < 4) {
-        all_players[client_player.Id()] = client_player;
-    }
-    
     for (int i = 0; i < 4; i++) {
         if (i == client_player.Id()) continue;
         all_players[i].SetId(i);
     }
+    
+    this_client_id = client_player.Id();
+    
 
     // eventually will need something for managing the texture assignment
     // all_players[client_player.Id()].SetTexture(1);

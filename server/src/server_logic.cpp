@@ -59,11 +59,6 @@ void ParseMessageReceived(std::array<uint8_t, 32>& message) {
 }
 
 void SendToClient(std::shared_ptr<websocket::stream<tcp::socket>> client, std::array<uint8_t, 32> message) {
-    // std::cout << message.size() << " bytes to send: " << std::endl;
-    // for (uint8_t x : message){
-    //     printf("%x | ", x);
-    // }
-    // printf("\n");
     try {
         client->binary(true);
         client->write(boost::asio::buffer(message));

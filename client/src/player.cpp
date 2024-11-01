@@ -15,8 +15,6 @@ Player::Player() {
     fc_delay = 6;
     _textures_loaded = false;
     _is_attacking = false;
-    _ready = false;
-    _name = "";
 }
 
 Player::~Player() {
@@ -187,6 +185,7 @@ void Player::PollInput() {
         _ready = !_ready;
         return;
     }
+
     // MOVEMENT // 
     ProcessPlayerAnimLogic();
 
@@ -209,13 +208,13 @@ void Player::PollInput() {
 
     PollAttackInput();
 
+    
     if (IsKeyUp(KEY_D) && IsKeyUp(KEY_A) && IsKeyUp(KEY_W) && IsKeyUp(KEY_S) 
         && IsKeyUp(KEY_H) && IsKeyUp(KEY_J) && IsKeyUp(KEY_K) && IsKeyUp(KEY_L)
         && !_is_attacking){
         _requested_state = uint8_t(IDLE);
         return;
     }
-
     
     
 }

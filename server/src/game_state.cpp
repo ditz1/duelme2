@@ -132,7 +132,12 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
 void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message){
     if (message[0] != msg_lobby) return;
     if (message[1] == msg_player_ready){
-        player_ready[message[3]] = !player_ready[message[3]];
+        int id = message[3];
+        if (player_ready[id] == false){
+            player_ready[id] = true;
+        } else {
+            player_ready[id] = false;
+        }
         std::cout << "Player " << int(message[3]) << " is ready: " << player_ready[message[3]] << std::endl;
     }
 }

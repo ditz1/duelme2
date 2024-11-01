@@ -87,10 +87,7 @@ void ParseGameState(GameState* game, Connection* conn, Player* player) {
 }
 
 void SendReadyRequest(Player* player, Connection* conn){
-    if (!conn->connected) {
-        std::cout << "Not connected" << std::endl;
-        return;
-    }
+    if (!conn->connected) return;
     std::array<uint8_t, 32> bytes_to_send;
     bytes_to_send[0] = msg_lobby;
     bytes_to_send[1] = msg_player_ready;
