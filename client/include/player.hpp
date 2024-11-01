@@ -24,9 +24,11 @@ public:
     void inline SetRequestedState(PlayerState state) { _requested_state = uint8_t(state); }
     void inline SetIsAnimating(bool is_animating) { _is_animating = is_animating; }
     void PollInput();
-    void Update(GameState& game);
+    void Update();
     void Draw();
     bool inline IsAnimating() { return _is_animating; }
+    bool inline IsAttacking() { return _is_attacking; }
+    void inline SetAttacking(bool is_attacking) { _is_attacking = is_attacking; }   
     uint8_t Id();
     void SetId(int id);
     bool Ready();
@@ -44,7 +46,7 @@ public:
     void SetFaceDir(int dir);
     
     DrawData draw_data;
-
+    PlayerState last_state;
     // anim stuff, supposed to replicate "dummy" from anim_testing
     int fc; // frame counter total, mainly needed for delay
     int anim_current_frame;

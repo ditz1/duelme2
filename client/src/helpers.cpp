@@ -8,15 +8,21 @@ void DrawDebugInfo(GameState game, Player& client_player, std::array<Player, 4> 
             int y_start = 30;
             int y_start_other = 100;
             int x_start_other = GetScreenWidth() - 120;
+            unsigned int frame_gap = 0;
 
             // right side
             DrawFPS(x_start_other, y_start_other - y_spacing);            
             DrawText(TextFormat("Stage: %d", current_game_stage), x_start_other, y_start_other, font_size, RAYWHITE);
             DrawText(TextFormat("Other Players Frame Data"), x_start_other, y_start_other + y_spacing, font_size, RAYWHITE);
-            DrawText(TextFormat("Player 0: %d", all_players[0].texs[all_players[0].current_anim].fc), x_start_other, y_start_other + y_spacing * 2, font_size, RAYWHITE);
-            DrawText(TextFormat("Player 1: %d", all_players[1].texs[all_players[1].current_anim].fc), x_start_other, y_start_other + y_spacing * 3, font_size, RAYWHITE);
-            DrawText(TextFormat("Player 2: %d", all_players[2].texs[all_players[2].current_anim].fc), x_start_other, y_start_other + y_spacing * 4, font_size, RAYWHITE);
-            DrawText(TextFormat("Player 3: %d", all_players[3].texs[all_players[3].current_anim].fc), x_start_other, y_start_other + y_spacing * 5, font_size, RAYWHITE);
+            DrawText(TextFormat("Player 0: %d", all_players[0].anim_current_frame), x_start_other, y_start_other + y_spacing * 2, font_size, RAYWHITE);
+            DrawText(TextFormat("Player 1: %d", all_players[1].anim_current_frame), x_start_other, y_start_other + y_spacing * 3, font_size, RAYWHITE);
+            DrawText(TextFormat("Player 2: %d", all_players[2].anim_current_frame), x_start_other, y_start_other + y_spacing * 4, font_size, RAYWHITE);
+            DrawText(TextFormat("Player 3: %d", all_players[3].anim_current_frame), x_start_other, y_start_other + y_spacing * 5, font_size, RAYWHITE);
+            
+            frame_gap = std::abs(all_players[0].anim_current_frame - all_players[1].anim_current_frame);
+            if (all_players[0].State() == all_players[1].State()) {
+                DrawText(TextFormat("Frame Gap: %d", frame_gap), x_start_other, y_start_other + y_spacing * 6, font_size - 4, RED);
+            } 
 
 
             // left side

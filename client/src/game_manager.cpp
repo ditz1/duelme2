@@ -149,6 +149,10 @@ void DrawGameState(std::array<Player, 4> players){
 // this is basically a paraphrased version of the checks in Player::ProcessPlayerAnimLogic
 void UpdatePlayerCopyAnimInfo(Player& copy) {
     if (copy.Id() == this_client_id) return;
+    if (copy.last_state != copy.State()) {
+        copy.last_state = copy.State();
+        copy.anim_current_frame = 0;
+    }
 
 
     if (copy.State() == MOVE_LEFT && copy.FaceDir() == 1) {
@@ -159,10 +163,8 @@ void UpdatePlayerCopyAnimInfo(Player& copy) {
 
     copy.AssignTexture(copy.State());
 
-    if (copy.anim_current_frame >= 60) {
-        copy.texs[copy.current_anim].fc = 0;
-        copy.anim_current_frame = 0;
-        return;
+    if (copy.IsAttacking() && (copy.anim_current_frame >= copy.texs[copy.current_anim].fc - 1)) {
+        copy.SetAttacking(false);
     }
         
     // this is 4 because single byte per channel (RGBA)

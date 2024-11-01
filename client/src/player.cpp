@@ -14,6 +14,7 @@ Player::Player() {
     buffer_offset = 0;
     fc_delay = 6;
     _textures_loaded = false;
+    last_state = PlayerState::IDLE;
     _is_attacking = false;
 }
 
@@ -149,6 +150,13 @@ void Player::ProcessPlayerAnimLogic() {
 
 }
 
+void Player::Update() {
+    _bounds.x = V2intToV2(_position).x - tex->width;
+    _bounds.y = V2intToV2(_position).y - (tex->height) - 20;
+    _bounds.width = tex->width * 2;
+    _bounds.height = tex->height * 3;
+}
+
 void Player::PollAttackInput() {
     if (IsKeyPressed(KEY_H) && !_is_attacking){
         _requested_state = uint8_t(PUNCH);
@@ -257,10 +265,7 @@ PlayerState Player::RequestedState() {
 
 
 void Player::Draw() {
-    _bounds.x = V2intToV2(_position).x - tex->width;
-    _bounds.y = V2intToV2(_position).y - (tex->height) - 20;
-    _bounds.width = tex->width * 2;
-    _bounds.height = tex->height * 3;
+    
 
     Vector2 pos = V2intToV2(_position);
     float scale = 3.0f;

@@ -101,7 +101,12 @@ int main() {
             ClientSendBytes(&conn, (void*)buf.begin(), 32);
         }
         client_player.PollInput();
-        RequestStateUpdate(&game_state, &conn, &client_player);        
+        RequestStateUpdate(&game_state, &conn, &client_player);
+        for (Player& p : all_players){ 
+            p.Update(); 
+        }        
+
+        /////// draw /////////
         BeginDrawing();
             ClearBackground(DARKGRAY);
             //client_player.Draw();
