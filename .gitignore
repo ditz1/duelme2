@@ -4,4 +4,6 @@ server/build
 server/.vscode
 anim_testing/game*
 anim_testing/.vscode
+.DS_*
+/anim_testing/.DS_*
 
