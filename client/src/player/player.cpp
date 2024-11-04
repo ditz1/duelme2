@@ -29,28 +29,30 @@ Vector2int Player::Position() {
 }
 
 void Player::LoadTextures() {
-    if (_textures_loaded) return;
-    std::array<std::string, 7> anims = {"idle", "walk", "punch", "kick", "jump", "enterblock", "die"};
-    std::string prefix = "red";
-    switch (_id) {
-        case 0:
-            prefix = "red";
-            break;
-        case 1:
-            prefix = "blue";
-            break;
-        case 2:
-            prefix = "green";
-            break;
-        case 3:
-            prefix = "yellow";
-            break;
-    }
+    if (!_textures_loaded) {
+        std::array<std::string, 7> anims = {"idle", "walk", "punch", "kick", "jump", "enterblock", "die"};
+        std::string prefix = "red";
+        switch (_id) {
+            case 0:
+                prefix = "red";
+                break;
+            case 1:
+                prefix = "blue";
+                break;
+            case 2:
+                prefix = "green";
+                break;
+            case 3:
+                prefix = "yellow";
+                break;
+        }
 
-    for (int i = 0; i < 7; i++) {
-        texs[i].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_" + anims[i] + ".gif").c_str(), &texs[i].fc);
-        texs[i].tex = LoadTextureFromImage(texs[i].img);
+        for (int i = 0; i < 7; i++) {
+            texs[i].img = LoadImageAnim(("assets/" + prefix + "/" + prefix + "_" + anims[i] + ".gif").c_str(), &texs[i].fc);
+            texs[i].tex = LoadTextureFromImage(texs[i].img);
+        }
     }
+    
     draw_data.source = {0.0f, 0.0f, (float)texs[0].img.width, (float)texs[0].img.height};
     draw_data.dest = {0.0f, 0.0f, (float)texs[0].img.width * draw_data.scale, (float)texs[0].img.height * draw_data.scale};
 
@@ -151,10 +153,10 @@ void Player::ProcessPlayerAnimLogic() {
 }
 
 void Player::Update() {
-    _bounds.x = V2intToV2(_position).x - tex->width;
-    _bounds.y = V2intToV2(_position).y - (tex->height) - 20;
-    _bounds.width = tex->width * 2;
-    _bounds.height = tex->height * 3;
+    _bounds.x = V2intToV2(_position).x - (tex->width * (draw_data.scale / 6.0f));
+    _bounds.y = V2intToV2(_position).y - (tex->height * (draw_data.scale / 6.0f)) - (20 * (draw_data.scale / 6.0f));
+    _bounds.width = tex->width * (draw_data.scale / 3.0f);
+    _bounds.height = tex->height * (draw_data.scale / 2.0f);
 }
 
 void Player::PollAttackInput() {
@@ -268,7 +270,6 @@ void Player::Draw() {
     
 
     Vector2 pos = V2intToV2(_position);
-    float scale = 3.0f;
     DrawCircleV(V2intToV2(_position), 20, _color);
     pos.x -= ((tex->width / 2) * draw_data.scale);
     pos.y -= ((tex->height / 2) * draw_data.scale);

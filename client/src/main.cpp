@@ -6,6 +6,20 @@
 #include <stage_manager.hpp>
 
 int current_game_stage = 0;
+Stage stage;
+
+std::string test = "RRRRRR \
+                    RRGGRR \
+                    RRRRRR ";
+
+// 7 x 9              0 1 2 3 4 5 6 7 8 9101112
+std::string test2 = " # # # # # # # # # # # # # \
+                      # R R R R R R R R R R R # \
+                      # R R R R R R R R R R R # \
+                      # R R R R R R R R R R R # \
+                      # R R R R R R R R R R R # \
+                      # R R R R R R R R R R R # \
+                      # # # # # # # # # # # # #";
 
 int main() {
     
@@ -14,21 +28,25 @@ int main() {
     
     GameState game_state;
 
-
     InitGameState(&game_state);
 
     Player client_player;
 
     std::array<Player, 4> all_players = {Player(), Player(), Player(), Player()};
 
-    Stage stage;
-    stage.rows = 5;
-    stage.cols = 7;
-    stage.LoadFromString(STAGE_1);
+    stage.rows = 3;
+    stage.cols = 6;
+    stage.LoadFromString(test);
     stage.Generate();
 
     Connection conn;
     OpenWebSocket(&conn, "ws://192.168.1.42:9000/ws");
+
+    Camera2D camera = { 0 };
+    camera.target = { 0, 0 };
+    camera.offset = { 0, 0 };
+    camera.rotation = 0.0f;
+    camera.zoom = 1.0f;
 
     
     if (conn.ws <= 0) {
@@ -44,8 +62,6 @@ int main() {
     buf[0] = msg_connect;
     ClientSendBytes(&conn, (void*)buf.data(), 32);
 
-    //client_player.SetTexture(1);
-
     buf[0] = msg_ping;
     buf[1] = 0x00;
     buf[2] = msg_end;
@@ -58,11 +74,12 @@ int main() {
     }
     
     this_client_id = client_player.Id();
-    
 
+    // while (client_player.Bounds().width >= stage.cell_size) {
+    //     client_player.draw_data.scale -= 0.1f;
+    // }
 
     // eventually will need something for managing the texture assignment
-    // all_players[client_player.Id()].SetTexture(1);
 
     while (!WindowShouldClose()) {
         // todo: really we should just move the client_player into the all_players array
@@ -75,6 +92,12 @@ int main() {
         all_players[client_player.Id()].SetState(client_player.State());
         all_players[client_player.Id()].SetIsAnimating(client_player.IsAnimating());
 
+        if (IsKeyDown(KEY_LEFT)) camera.target.x -= 10;
+        if (IsKeyDown(KEY_RIGHT)) camera.target.x += 10;
+        if (IsKeyDown(KEY_UP)) camera.target.y -= 10;
+        if (IsKeyDown(KEY_DOWN)) camera.target.y += 10;
+        if (IsKeyDown(KEY_COMMA)) camera.zoom += 0.01f;
+        if (IsKeyDown(KEY_PERIOD)) camera.zoom -= 0.01f;
 
         switch (current_game_stage){
             case 0:
@@ -83,6 +106,7 @@ int main() {
                     SendReadyRequest(&client_player, &conn);
                 }
                 ParseLobbyState(&game_state, all_players);
+                AdjustPlayerDimensions(client_player, all_players);
                 break;
             case 1:
                 UpdateClientPlayerCopies(all_players, &game_state);
@@ -103,8 +127,10 @@ int main() {
             std::cout << "ping" << std::endl;
             ClientSendBytes(&conn, (void*)buf.begin(), 32);
         }
+        
         client_player.PollInput();
         RequestStateUpdate(&game_state, &conn, &client_player);
+       
         for (Player& p : all_players){ 
             p.Update(); 
         }        
@@ -117,8 +143,11 @@ int main() {
                     DrawLobbyState(&game_state);
                     break;
                 case 1:
-                    stage.Draw();
-                    DrawGameState(all_players);
+                    BeginMode2D(camera);
+                        stage.Draw();
+                        stage.DrawLines();
+                        DrawGameState(all_players);
+                    EndMode2D();
                     break;
                 case 2:
                     DrawText("Game Over", 400, 225, 20, RED);

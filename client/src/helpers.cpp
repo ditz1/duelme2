@@ -44,3 +44,18 @@ void LogGameState(GameState game, Connection* conn) {
     }
     printf("\n");
 }
+
+void StripStageString(std::string* stage_str) {
+
+    char reserved_chars[] = {'!',' ', '\n', '\r', '\t'};
+
+    for (char c : reserved_chars) {
+        for (int i = 0; i < stage_str->size(); i++) {
+            if (stage_str->at(i) == c) {
+                stage_str->erase(i, 1);
+            } else {
+                stage_str->erase(remove_if(stage_str->begin(), stage_str->end(), isspace));
+            }
+        }
+    }
+}

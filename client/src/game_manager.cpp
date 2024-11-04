@@ -131,7 +131,24 @@ void ParseLobbyState(GameState* game, std::array<Player, 4>& all_players){
 
 void LoadGameState(GameState* game, std::array<Player, 4>& players){
     for (int i = 0; i < 4; i++){
-        if (i == this_client_id) continue;
+        players[i].LoadTextures();        
+    }
+}
+
+void AdjustPlayerDimensions(Player& client, std::array<Player, 4>& all_players){
+    int curr_width = client.tex->width * (client.draw_data.scale / 3.0f);
+    while (curr_width >= stage.cell_size) {
+        client.draw_data.scale -= 0.1f;
+        curr_width = client.tex->width * (client.draw_data.scale / 3.0f);
+    }
+
+    for (auto& player : all_players){
+        if (player.Id() == this_client_id) continue;
+        int curr_width = player.tex->width * (player.draw_data.scale / 3.0f);
+        while (curr_width >= stage.cell_size) {
+            player.draw_data.scale -= 0.1f;
+            curr_width = player.tex->width * (player.draw_data.scale / 3.0f);
+        }
     }
 }
 
@@ -142,7 +159,6 @@ void ParseEndState(GameState* game, Connection* conn, Player* player){
 void DrawGameState(std::array<Player, 4> players){
     for (int i = 0; i < 4; i++){
         players[i].Draw();
-        //AnimatePlayer(players[i]);
     }
 }
 

@@ -1,4 +1,5 @@
 #include <stage_manager.hpp>
+#include <helpers.hpp>
 // 7 x 5
 std::string STAGE_1 = "RGBRGBRGBRGBRGBRGBRGBRGBRGBRGBRGBRG";
 
@@ -41,8 +42,7 @@ void Stage::Generate() {
 
     int width = GetScreenWidth() / cols;
     int height = GetScreenHeight() / rows;
-    int cell_size = width < height ? width : height;
-    std::cout << "cell size: " << cell_size << std::endl;
+    cell_size = width < height ? width : height;
 
     for (StageCell &cell : cells) {
         cell.rect.x = cell.grid_location.x * cell_size;
@@ -63,8 +63,10 @@ void Stage::FillGrid() {
 }
 
 void Stage::LoadFromString(std::string stage_str) {
+    StripStageString(&stage_str);
     int grid_x = 0;
     int grid_y = -1;
+
 
     for (int i = 0; i < stage_str.size(); i++) {
         
@@ -87,6 +89,8 @@ void Stage::LoadFromString(std::string stage_str) {
             cell.color = GREEN;
         } else if (stage_str[i] == 'B') {
             cell.color = BLUE;
+        } else if (stage_str[i] == '#') {
+            cell.color = BLACK;
         } else {
             cell.color = WHITE;
         }
@@ -169,6 +173,8 @@ void Stage::LoadFromFile(std::string file_path) {
             cell.color = GREEN;
         } else if (stage_chars[i] == 'B') {
             cell.color = BLUE;
+        } else if (stage_chars[i] == '#') {
+            cell.color = BLACK;
         } else {
             cell.color = WHITE;
         }

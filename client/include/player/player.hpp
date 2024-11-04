@@ -12,7 +12,7 @@ typedef struct AnimData {
 typedef struct DrawData {
     Rectangle source;
     Rectangle dest;
-    float scale = 6.0f;
+    float scale = 5.0f;
 } DrawData;
 
 typedef class Player {
@@ -37,6 +37,7 @@ public:
     void inline SetPosition(Vector2int position) { _position = position; }
     void inline SetState(PlayerState state) { _state = state; }
     int inline Hp() { return _hp; }
+    Rectangle inline Bounds() { return _bounds; }
     void inline SetHp(int hp) { _hp = hp; }
     void ProcessPlayerAnimLogic();    
     void SetTexture(int texture_id);
