@@ -63,7 +63,20 @@ void Stage::FillGrid() {
 }
 
 void Stage::LoadFromString(std::string stage_str) {
-    StripStageString(&stage_str);
+    if (rows != 0) rows = 0;
+    if (cols != 0) cols = 0;
+
+    for (char c : stage_str) {        
+        if (c == '\n') {
+            rows++;
+        }
+        if (c == '\r') {
+            cols++;
+        }
+    }
+
+    StripStageString(stage_str);
+        
     int grid_x = 0;
     int grid_y = -1;
 
@@ -107,78 +120,12 @@ void Stage::LoadFromFile(std::string file_path) {
         return;
     }
 
+    std::string stage_str;
     char c;
-    bool stage_started = false;
-    bool stage_ended = false;
-    bool stage_is_valid = false;
-
-    int num_chars = 0;
-    std::vector<char> stage_chars;
-    char reserved_chars[] = {'!', ' ', '\n'};
-    int longest_column = 0;
-    int curr_longest_column = 0;
-    // first load stage file to get rows and cols
-    while (file.get(c)) {
-        if (c == '!' && stage_started) stage_ended = true;
-        if (c == '!' && !stage_started) stage_started = true;
-        if (stage_started) {
-            if (c == '\n') {
-                rows++;
-                if (curr_longest_column > longest_column) {
-                    longest_column = curr_longest_column;
-                }
-                curr_longest_column = 0;
-            } else {
-                curr_longest_column++;
-            
-            } 
-            if (rows >= 0) {
-                num_chars++;
-            }
-            bool is_stage_char = true;
-            for (char rc : reserved_chars) {
-                if (c == rc) {
-                    is_stage_char = false;
-                    break;
-                }
-            }
-            if (is_stage_char) stage_chars.push_back(c);
-        }
+    while (file.get(c)){
+        stage_str += c;
     }
+    LoadFromString(stage_str);
 
-    cols = longest_column;
-    
-    // then load into stage
-    int grid_x = 0;
-    int grid_y = -1;
-
-    for (int i = 0; i < stage_chars.size(); i++) {
-        
-        if (i % cols == 0) {
-            grid_x = 0;
-            grid_y++;
-
-            if (grid_y == rows) {
-                break;
-            } 
-        }
-        grid_x = i % cols;
-
-        StageCell cell;
-        cell.grid_location = {(float)grid_x, (float)grid_y};
-
-        if (stage_chars[i] == 'R') {
-            cell.color = RED;
-        } else if (stage_chars[i] == 'G') {
-            cell.color = GREEN;
-        } else if (stage_chars[i] == 'B') {
-            cell.color = BLUE;
-        } else if (stage_chars[i] == '#') {
-            cell.color = BLACK;
-        } else {
-            cell.color = WHITE;
-        }
-        cells.push_back(cell);
-    }
-    is_loaded = true;
+    file.close();
 }

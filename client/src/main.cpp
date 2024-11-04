@@ -4,6 +4,7 @@
 #include <game_manager.hpp>
 #include <helpers.hpp>
 #include <stage_manager.hpp>
+#include <camera_manager.hpp>
 
 int current_game_stage = 0;
 int num_failed_pings = 0;
@@ -14,13 +15,17 @@ std::string test = "RRRRRR \
                     RRRRRR ";
 
 // 7 x 9              0 1 2 3 4 5 6 7 8 9101112
-std::string test2 = " # # # # # # # # # # # # # \
-                      # R R R R R R R R R R R # \
-                      # R R R R R R R R R R R # \
-                      # R R R R R R R R R R R # \
-                      # R R R R R R R R R R R # \
-                      # R R R R R R R R R R R # \
-                      # # # # # # # # # # # # #";
+std::string test2 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \
+                      #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  G  G  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
 
 int main() {
     
@@ -35,9 +40,7 @@ int main() {
 
     std::array<Player, 4> all_players = {Player(), Player(), Player(), Player()};
 
-    stage.rows = 3;
-    stage.cols = 6;
-    stage.LoadFromString(test);
+    stage.LoadFromString(test2);
     stage.Generate();
 
     Connection conn;
@@ -45,7 +48,7 @@ int main() {
 
     Camera2D camera = { 0 };
     camera.target = { 0, 0 };
-    camera.offset = { 0, 0 };
+    camera.offset = { (float)GetScreenWidth() / 2, (float)GetScreenHeight() / 2 };
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
 
@@ -86,12 +89,13 @@ int main() {
         // todo: really we should just move the client_player into the all_players array
         // but i dont want to rewrite the draw function since even though it would be better to have pointers
         // so do this for now but this is still bad
-
+        
         // born to do id forced to do Id
         all_players[client_player.Id()] = client_player;
         all_players[client_player.Id()].anim_current_frame = client_player.anim_current_frame;
         all_players[client_player.Id()].SetState(client_player.State());
         all_players[client_player.Id()].SetIsAnimating(client_player.IsAnimating());
+
 
         if (IsKeyDown(KEY_LEFT)) camera.target.x -= 10;
         if (IsKeyDown(KEY_RIGHT)) camera.target.x += 10;
@@ -135,7 +139,8 @@ int main() {
         for (Player& p : all_players){ 
             p.Update(); 
         }        
-
+        
+        AdjustCameraPosition(all_players, camera);
         /////// draw /////////
         BeginDrawing();
             ClearBackground(DARKGRAY);
@@ -149,6 +154,7 @@ int main() {
                         stage.DrawLines();
                         DrawGameState(all_players);
                     EndMode2D();
+
                     break;
                 case 2:
                     DrawText("Game Over", 400, 225, 20, RED);

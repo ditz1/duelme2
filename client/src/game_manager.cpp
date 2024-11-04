@@ -121,6 +121,7 @@ void ParseLobbyState(GameState* game, std::array<Player, 4>& all_players){
         return;
     }
     int players_connected = last_received_bytes[1];
+    num_players_connected = players_connected;
     for (int i = 2; i < 6; i++){
         last_received_bytes[i] > 0 ? player_ready[i-2] = true : player_ready[i-2] = false;
     }
