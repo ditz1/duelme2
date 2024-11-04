@@ -3,6 +3,7 @@
 #include <player.hpp>
 #include <game_manager.hpp>
 #include <helpers.hpp>
+#include <stage_manager.hpp>
 
 int current_game_stage = 0;
 
@@ -18,12 +19,13 @@ int main() {
 
     Player client_player;
 
-    std::cout << "test" << std::endl;
-
-
     std::array<Player, 4> all_players = {Player(), Player(), Player(), Player()};
-    
-    
+
+    Stage stage;
+    stage.rows = 5;
+    stage.cols = 7;
+    stage.LoadFromString(STAGE_1);
+    stage.Generate();
 
     Connection conn;
     OpenWebSocket(&conn, "ws://192.168.1.42:9000/ws");
@@ -57,6 +59,7 @@ int main() {
     
     this_client_id = client_player.Id();
     
+
 
     // eventually will need something for managing the texture assignment
     // all_players[client_player.Id()].SetTexture(1);
@@ -109,12 +112,12 @@ int main() {
         /////// draw /////////
         BeginDrawing();
             ClearBackground(DARKGRAY);
-            //client_player.Draw();
             switch(current_game_stage){
                 case 0:
                     DrawLobbyState(&game_state);
                     break;
                 case 1:
+                    stage.Draw();
                     DrawGameState(all_players);
                     break;
                 case 2:
