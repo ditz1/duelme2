@@ -17,6 +17,7 @@ extern std::vector<uint8_t> data_from_server;
 extern int current_game_stage;
 extern std::array<bool, 4> player_ready;
 extern bool developer_mode;
+extern int num_failed_pings;
 
 
 typedef struct Vector2int {
@@ -109,3 +110,4 @@ typedef struct GameState {
 
 std::string PlayerStateToString(PlayerState state); 
 Vector2 V2intToV2(Vector2int v);
+void HandleErrors(Connection& conn);

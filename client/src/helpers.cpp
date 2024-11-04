@@ -22,7 +22,8 @@ void DrawDebugInfo(GameState game, Player& client_player, std::array<Player, 4> 
             frame_gap = std::abs(all_players[0].anim_current_frame - all_players[1].anim_current_frame);
             if (all_players[0].State() == all_players[1].State()) {
                 DrawText(TextFormat("Frame Gap: %d", frame_gap), x_start_other, y_start_other + y_spacing * 6, font_size - 4, RED);
-            } 
+            }
+            DrawText(TextFormat("# failed pings: %d", num_failed_pings), x_start_other, y_start_other + y_spacing * 7, font_size - 4, RAYWHITE);
 
 
             // left side

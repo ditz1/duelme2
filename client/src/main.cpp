@@ -6,6 +6,7 @@
 #include <stage_manager.hpp>
 
 int current_game_stage = 0;
+int num_failed_pings = 0;
 Stage stage;
 
 std::string test = "RRRRRR \
@@ -157,6 +158,7 @@ int main() {
             
         EndDrawing();
 
+        HandleErrors(conn);
     }
 
     buf[0] = msg_disconnect;

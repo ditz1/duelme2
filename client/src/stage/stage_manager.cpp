@@ -84,7 +84,7 @@ void Stage::LoadFromString(std::string stage_str) {
         cell.grid_location = {(float)grid_x, (float)grid_y};
 
         if (stage_str[i] == 'R') {
-            cell.color = RED;
+            cell.color = PURPLE;
         } else if (stage_str[i] == 'G') {
             cell.color = GREEN;
         } else if (stage_str[i] == 'B') {

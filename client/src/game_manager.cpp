@@ -57,12 +57,9 @@ void ParseGameState(GameState* game, Connection* conn, Player* player) {
     if (!conn->connected) return;
     if (data_from_server.size() < 1) return;
 
-    //std::cout << "recieved from server" <<  std::endl;
-    //printf("[ %x ]\n", data_from_server[0]);
-    //for (int i = 0; i < int(data_from_server.size()); i++) {
-    //    printf("%x | ", data_from_server[i]);
-    //}
-    //printf("\n");
+    num_failed_pings <= 0 ? num_failed_pings = 0 : num_failed_pings--;
+    
+
     switch (data_from_server[0]){
         case msg_connect:
             std::cout << "Connected To Server" << std::endl;
@@ -99,6 +96,7 @@ void SendReadyRequest(Player* player, Connection* conn){
 
 void SendGameStateRequest(GameState* game, Connection* conn) {
     if (!conn->connected) return;
+    num_failed_pings++;
     std::array<uint8_t, 32> bytes_to_send;
     bytes_to_send[0] = msg_update;
     std::array<uint8_t, 28> game_bytes = game->ToBytes();

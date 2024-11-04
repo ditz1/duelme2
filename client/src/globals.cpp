@@ -23,3 +23,11 @@ Vector2 V2intToV2(Vector2int v) {
     int y = int(v.y);
     return Vector2{float(x), float(y)};
 }
+
+void HandleErrors(Connection& conn){
+    if (num_failed_pings > 10) {
+        std::cout << "Connection lost" << std::endl;
+        conn.connected = false;
+        exit(1);
+    }
+}
