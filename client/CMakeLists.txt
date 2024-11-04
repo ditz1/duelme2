@@ -14,7 +14,9 @@ endif()
 
 include_directories(include)
 include_directories(include/stage)
+include_directories(include/player)
 
+if
 if(EMSCRIPTEN)
     include_directories(${EMSCRIPTEN_ROOT_PATH}/upstream/emscripten/system/include/emscripten)
     include_directories(${EMSDK}/upstream/emscripten/system/include/emscripten)
@@ -24,6 +26,7 @@ endif()
 file(GLOB SOURCES
     "src/*.cpp"
     "src/stage/*.cpp"
+    "src/player/*.cpp"
 )
 
 set(CMAKE_BINARY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build")
