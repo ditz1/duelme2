@@ -5,5 +5,7 @@ server/.vscode
 anim_testing/game*
 anim_testing/.vscode
 .DS_*
-/anim_testing/.DS_*
-
+anim_testing/.DS_*
+stage_testing/.DS_*
+stage_testing/game*
+stage_testing/.vscode

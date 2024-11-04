@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <tuple>
 
 
 void DrawStage(std::vector<StageCell> &stage, int cell_size) {
