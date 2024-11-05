@@ -119,6 +119,13 @@ int ParseLobbyState(GameState* game, std::array<Player, 4>& all_players){
         current_game_stage = 1;
         LoadGameState(game, all_players);
         return 1;
+    } else if (last_received_bytes[1] == msg_load_stage_grid){
+        std::cout << "received load stage grid" << std::endl;
+        if (last_received_bytes[2] == 0 && last_received_bytes[3] == msg_from_server){
+            std::cout << "starting to load stage data" << std::endl;
+            if (!in_loading_screen) in_loading_screen = true;
+            return 1;        
+        }
     }
     int players_connected = last_received_bytes[1];
     num_players_connected = players_connected;
@@ -144,9 +151,22 @@ std::vector<std::array<uint8_t, 32>> CreateStageMessage(std::vector<uint8_t> ser
     return messages;
 }
 
+void ListenStageData(Connection* conn, std::array<Player, 4>& players, Stage& stage){
+   
+}
+
+void StartSendStageData(Connection* conn, std::array<Player, 4>& players, Stage& stage){
+    if (this_client_id != 0) return;
+    std::array<uint8_t, 32> message;
+    message[0] = msg_lobby;
+    message[1] = msg_load_stage_grid;
+    message[2] = this_client_id;
+    message[3] = msg_signature;
+    message[4] = msg_end;
+    ClientSendBytes(conn, (void*)&message, 32);
+}
 
 void SendStageData(Connection* conn, std::array<Player, 4>& players, Stage& stage){
-    if (this_client_id != 0) return;
     std::vector<Rectangle> stage_rects;
     std::vector<Rectangle> player_rects;
     for (StageCell cell : stage.cells){
@@ -158,6 +178,7 @@ void SendStageData(Connection* conn, std::array<Player, 4>& players, Stage& stag
     std::vector<uint8_t> serial_data = SerializeStageData(stage_rects, player_rects);
     std::vector<std::array<uint8_t, 32>> messages = CreateStageMessage(serial_data);
     in_loading_screen = true;
+    StartSendStageData(conn, players, stage);
 }
 
 

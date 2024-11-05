@@ -130,7 +130,6 @@ int main() {
             case 2:
                 ParseEndState(&game_state, &conn, &client_player);
                 break;
-
         }
 
 
@@ -163,6 +162,7 @@ int main() {
             switch(current_game_stage){
                 case 0:
                     DrawLobbyState(&game_state);
+                    DrawText(TextFormat("lobby state: %d", lobby_state), 400, 225, 20, RED);
                     break;
                 case 1:
                     BeginMode2D(camera);

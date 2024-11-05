@@ -35,9 +35,10 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 extern bool game_running;
 extern int num_connections;
 extern std::vector<std::shared_ptr<websocket::stream<tcp::socket>>> clients;
-extern std::mutex clients_mutex; // Mutex to protect the clients vector
+extern std::mutex clients_mutex; // mutex to protect the clients vector
 extern int current_game_stage;
 extern std::array<bool, 4> player_ready;
+extern int loading_stage_phase;
 
 typedef struct Vector2int {
     uint16_t x;

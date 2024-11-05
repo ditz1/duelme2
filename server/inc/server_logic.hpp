@@ -1,5 +1,5 @@
 #pragma once
-#include "../inc/s_protocol.hpp"
+#include <s_protocol.hpp>
 
 void ParseMessageReceived(std::array<uint8_t, 32>& message);
 void SendToClient(std::shared_ptr<websocket::stream<tcp::socket>> client, std::array<uint8_t, 32> message);

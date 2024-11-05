@@ -7,3 +7,4 @@ std::mutex clients_mutex; // Mutex to protect the clients vector
 int num_connections = -1;
 int current_game_stage = 0;
 GameState game_state;
+int loading_stage_phase = 0;
