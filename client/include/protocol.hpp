@@ -13,4 +13,5 @@
 #define msg_lobby 0x1b
 #define msg_player_ready 0x2b
 #define msg_switch_to_game 0x3b
+#define msg_load_stage_grid 0x4b
 

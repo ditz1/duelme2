@@ -109,24 +109,57 @@ void SendGameStateRequest(GameState* game, Connection* conn) {
     ClientSendBytes(conn, (void*)&bytes_to_send, 32);
 }
 
-void ParseLobbyState(GameState* game, std::array<Player, 4>& all_players){
-    if (data_from_server.size() < 32) return;
-    if (data_from_server[0] != msg_lobby) return;
+int ParseLobbyState(GameState* game, std::array<Player, 4>& all_players){
+    if (data_from_server.size() < 32) return 0;
+    if (data_from_server[0] != msg_lobby) return 0;
     std::array<uint8_t, 32> last_received_bytes;
     std::copy(data_from_server.begin(), data_from_server.end(), last_received_bytes.begin());
     data_from_server.clear();
     if (last_received_bytes[1] == msg_switch_to_game){
         current_game_stage = 1;
         LoadGameState(game, all_players);
-        return;
+        return 1;
     }
     int players_connected = last_received_bytes[1];
     num_players_connected = players_connected;
     for (int i = 2; i < 6; i++){
         last_received_bytes[i] > 0 ? player_ready[i-2] = true : player_ready[i-2] = false;
     }
-
+    return 0;
 }
+
+std::vector<uint8_t> SerializeStageData(std::vector<Rectangle>& stage_cells, std::vector<Rectangle>& player_cells){
+    std::vector<uint8_t> data;
+    Rectangle buffer_rect = {-1.0f, -1.0f, -1.0f, -1.0f};
+
+
+    return data;
+}
+
+std::vector<std::array<uint8_t, 32>> CreateStageMessage(std::vector<uint8_t> serialized_data){
+    std::vector<std::array<uint8_t, 32>> messages;
+
+
+
+    return messages;
+}
+
+
+void SendStageData(Connection* conn, std::array<Player, 4>& players, Stage& stage){
+    if (this_client_id != 0) return;
+    std::vector<Rectangle> stage_rects;
+    std::vector<Rectangle> player_rects;
+    for (StageCell cell : stage.cells){
+        if (cell.collidable) stage_rects.push_back(cell.rect);
+    }
+    for (Player player : players){
+        player_rects.push_back(player.Bounds());
+    }
+    std::vector<uint8_t> serial_data = SerializeStageData(stage_rects, player_rects);
+    std::vector<std::array<uint8_t, 32>> messages = CreateStageMessage(serial_data);
+    in_loading_screen = true;
+}
+
 
 void LoadGameState(GameState* game, std::array<Player, 4>& players){
     for (int i = 0; i < 4; i++){

@@ -18,6 +18,7 @@ extern int current_game_stage;
 extern std::array<bool, 4> player_ready;
 extern bool developer_mode;
 extern int num_failed_pings;
+extern bool in_loading_screen;
 
 
 typedef struct Vector2int {

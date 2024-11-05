@@ -16,6 +16,7 @@ include_directories(include)
 include_directories(include/stage)
 include_directories(include/player)
 include_directories(include/raylib)
+include_directories(include/physics)
 
 
 if(EMSCRIPTEN)
@@ -27,7 +28,9 @@ endif()
 file(GLOB SOURCES
     "src/*.cpp"
     "src/stage/*.cpp"
-    "src/player/*.cpp")
+    "src/player/*.cpp"
+    "src/physics/*.cpp"
+)
 
 set(CMAKE_BINARY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build")

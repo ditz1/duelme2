@@ -1,5 +1,5 @@
-#include "../inc/server_logic.hpp"
-#include "../inc/game_state.hpp"
+#include <server_logic.hpp>
+#include <game_state.hpp>
 
 void LogMessageReceived(std::array<uint8_t, 32>& message) {    
     if (!message.empty()) {

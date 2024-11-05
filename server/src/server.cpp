@@ -1,6 +1,7 @@
-#include "../inc/s_protocol.hpp"
-#include "../inc/game_state.hpp"
-#include "../inc/server_logic.hpp"
+#include <s_protocol.hpp>
+#include <game_state.hpp>
+#include <server_logic.hpp>
+#include <physics.hpp>
 
 
 //------------------------------------------------------------------------------

@@ -9,6 +9,7 @@ public:
     void Draw();
     
     Vector2 grid_location;
+    bool collidable;
     char type;
     Rectangle rect;
     Color color;

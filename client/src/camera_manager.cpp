@@ -6,7 +6,6 @@ void AdjustCameraPosition(std::array<Player, 4>& players, Camera2D& camera) {
             AdjustTwoPlayerCamera(players, camera);
             break;
         default:
-            std::cout << "this shouldnt happen" << std::endl;
             break;
     }
 }

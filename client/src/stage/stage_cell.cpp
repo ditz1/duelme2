@@ -4,6 +4,7 @@ StageCell::StageCell() {
     grid_location = {0, 0};
     type = ' ';
     rect = {0, 0, 0, 0};
+    collidable = false;
     color = WHITE;
 }
 

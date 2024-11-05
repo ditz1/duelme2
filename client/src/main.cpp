@@ -8,6 +8,8 @@
 
 int current_game_stage = 0;
 int num_failed_pings = 0;
+bool stage_sent = false;
+bool in_loading_screen = false;
 Stage stage;
 
 std::string test = "RRRRRR \
@@ -84,6 +86,7 @@ int main() {
     // }
 
     // eventually will need something for managing the texture assignment
+    int lobby_state = 0;
 
     while (!WindowShouldClose()) {
         // todo: really we should just move the client_player into the all_players array
@@ -110,8 +113,15 @@ int main() {
                 if (IsKeyPressed(KEY_SPACE)){
                     SendReadyRequest(&client_player, &conn);
                 }
-                ParseLobbyState(&game_state, all_players);
-                AdjustPlayerDimensions(client_player, all_players);
+                lobby_state = ParseLobbyState(&game_state, all_players);
+                switch(lobby_state){
+                    case 0:
+                        break;
+                    case 1:
+                        AdjustPlayerDimensions(client_player, all_players);
+                        SendStageData(&conn, all_players, stage);
+                        break;
+                }
                 break;
             case 1:
                 UpdateClientPlayerCopies(all_players, &game_state);
@@ -144,6 +154,12 @@ int main() {
         /////// draw /////////
         BeginDrawing();
             ClearBackground(DARKGRAY);
+            if (in_loading_screen){
+                DrawText("Loading...", 400, 225, 20, RED);
+                EndDrawing();
+                continue;
+            }
+
             switch(current_game_stage){
                 case 0:
                     DrawLobbyState(&game_state);

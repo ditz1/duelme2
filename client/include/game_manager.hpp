@@ -10,8 +10,11 @@ extern Stage stage;
 
 void InitGameState(GameState* game);
 void ParseGameState(GameState* game, Connection* conn, Player* player);
-void ParseLobbyState(GameState* game, std::array<Player, 4>& players);
+int ParseLobbyState(GameState* game, std::array<Player, 4>& players);
 void LoadGameState(GameState* game, std::array<Player, 4>& players);
+void SendStageData(Connection* conn, std::array<Player, 4>& players, Stage& stage);
+std::vector<uint8_t> SerializeStageData(std::vector<Rectangle>& stage_cells, std::vector<Rectangle>& player_cells);
+std::vector<std::array<uint8_t, 32>> CreateStageMessage(std::vector<uint8_t> serialized_data);
 void ParseEndState(GameState* game, Connection* conn, Player* player);
 void ParseAssignPlayerId(GameState* game, Connection* conn, Player* player);
 void SendReadyRequest(Player* player, Connection* conn);

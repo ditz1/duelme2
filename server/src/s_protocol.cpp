@@ -1,4 +1,4 @@
-#include "../inc/s_protocol.hpp"
+#include <s_protocol.hpp>
 
 bool game_running;
 std::array<bool, 4> player_ready = {false, false, false, false};
