@@ -11,4 +11,4 @@ void UpdateLobbyState(std::array<uint8_t, 32>& message);
 void BroadcastStageData();
 void InitGameState(GameState* game);
 void LoadStageData(std::array<uint8_t, 32>& message);
-void ParseSerialStageData(std::array<uint8_t, 32>& message);
+void ParseSerialStageData(std::array<uint8_t, 32>& message, ServerStage& stage);

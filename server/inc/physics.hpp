@@ -19,6 +19,9 @@ static std::map<uint8_t, Rectangle> PlayerCells = {
 
 typedef struct ServerStage {
     std::vector<Rectangle> cells;
+    std::vector<uint8_t> data;
     uint8_t cell_size;
+    int width;
+    int height;
 } ServerStage;
 

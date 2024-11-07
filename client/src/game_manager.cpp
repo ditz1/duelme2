@@ -115,16 +115,14 @@ int ParseLobbyState(GameState* game, std::array<Player, 4>& all_players){
     std::array<uint8_t, 32> last_received_bytes;
     std::copy(data_from_server.begin(), data_from_server.end(), last_received_bytes.begin());
     data_from_server.clear();
-    if (last_received_bytes[1] == msg_switch_to_game){
-        current_game_stage = 1;
-        LoadGameState(game, all_players);
-        return 1;
-    } else if (last_received_bytes[1] == msg_load_stage_grid){
+    if (last_received_bytes[1] == msg_load_stage_grid){
         std::cout << "received load stage grid" << std::endl;
         if (last_received_bytes[2] == 0 && last_received_bytes[3] == msg_from_server){
             std::cout << "starting to load stage data" << std::endl;
-            if (!in_loading_screen) in_loading_screen = true;
             return 1;        
+        } else if (last_received_bytes[2] == msg_switch_to_game){
+            current_game_stage = 1;
+            return 1;
         }
     }
     int players_connected = last_received_bytes[1];
@@ -145,28 +143,64 @@ std::vector<uint8_t> SerializeStageData(std::vector<Rectangle>& stage_cells, std
 
 std::vector<std::array<uint8_t, 32>> CreateStageMessage(std::vector<uint8_t> serialized_data){
     std::vector<std::array<uint8_t, 32>> messages;
+    std::array<uint8_t, 32> msg;
+    msg[0] = msg_stage_data;
+    msg[1] = 1;
+    msg[2] = 2;
+    msg[3] = 3;
+    msg[4] = 4;
+    msg[5] = msg_end;
 
-
+    messages.push_back(msg);
 
     return messages;
 }
 
-void ListenStageData(Connection* conn, std::array<Player, 4>& players, Stage& stage){
-   
+void ListenStageData(Connection* conn, Player& client, std::array<Player, 4>& players, Stage& stage){
+    if (data_from_server.size() < 32) return;
+    if (data_from_server[0] != msg_stage_data) return;
+    std::array<uint8_t, 32> last_received_bytes;
+    std::copy(data_from_server.begin(), data_from_server.end(), last_received_bytes.begin());
+    data_from_server.clear();
+    if (last_received_bytes[1] == msg_end_stage_data && last_received_bytes[2] == msg_switch_to_game){
+        std::cout << "recieved end stage data" << std::endl;
+        current_game_stage = 1;
+        in_loading_screen = false;
+        return;
+    }
 }
 
 void StartSendStageData(Connection* conn, std::array<Player, 4>& players, Stage& stage){
     if (this_client_id != 0) return;
+    std::cout << "starting to send stage data" << std::endl;
     std::array<uint8_t, 32> message;
     message[0] = msg_lobby;
     message[1] = msg_load_stage_grid;
-    message[2] = this_client_id;
+    message[2] = 0;
     message[3] = msg_signature;
     message[4] = msg_end;
     ClientSendBytes(conn, (void*)&message, 32);
 }
 
-void SendStageData(Connection* conn, std::array<Player, 4>& players, Stage& stage){
+void EndSendStageData(Connection* conn, std::array<Player, 4>& players, Stage& stage){
+    if (this_client_id != 0) return;
+    std::array<uint8_t, 32> message;
+    message[0] = msg_stage_data;
+    message[1] = msg_end_stage_data;
+    message[2] = msg_signature;
+    message[3] = msg_end;
+    ClientSendBytes(conn, (void*)&message, 32);
+}
+
+void SendStageData(Connection* conn, Player& client, std::array<Player, 4>& players, Stage& stage){
+    if (stage_sent) {
+        in_loading_screen = true;
+        StartSendStageData(conn, players, stage);
+        stage_sent = false;
+        return;
+    }
+    if (!in_loading_screen) return;
+    if (this_client_id != 0) return;
     std::vector<Rectangle> stage_rects;
     std::vector<Rectangle> player_rects;
     for (StageCell cell : stage.cells){
@@ -177,15 +211,20 @@ void SendStageData(Connection* conn, std::array<Player, 4>& players, Stage& stag
     }
     std::vector<uint8_t> serial_data = SerializeStageData(stage_rects, player_rects);
     std::vector<std::array<uint8_t, 32>> messages = CreateStageMessage(serial_data);
-    in_loading_screen = true;
-    StartSendStageData(conn, players, stage);
+
+    for (std::array<uint8_t, 32> message : messages){
+        ClientSendBytes(conn, (void*)&message, 32);
+    }
+    std::cout << "sent " << messages.size() << " messages" << std::endl;
+    EndSendStageData(conn, players, stage);
 }
 
 
-void LoadGameState(GameState* game, std::array<Player, 4>& players){
+void LoadGameState(GameState* game, Player& client, std::array<Player, 4>& players){
     for (int i = 0; i < 4; i++){
         players[i].LoadTextures();        
     }
+    AdjustPlayerDimensions(client, players);
 }
 
 void AdjustPlayerDimensions(Player& client, std::array<Player, 4>& all_players){
@@ -196,7 +235,6 @@ void AdjustPlayerDimensions(Player& client, std::array<Player, 4>& all_players){
     }
 
     for (auto& player : all_players){
-        if (player.Id() == this_client_id) continue;
         int curr_width = player.tex->width * (player.draw_data.scale / 3.0f);
         while (curr_width >= stage.cell_size) {
             player.draw_data.scale -= 0.1f;

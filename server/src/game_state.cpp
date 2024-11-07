@@ -63,30 +63,35 @@ void LoadStageData(std::array<uint8_t, 32>& message){
 
 void BroadcastStageData() {
     std::cout << "broadcasting stage data " << loading_stage_phase << std::endl;
-    switch (loading_stage_phase) {
-        case 0:
-            break;
-        case 1:
-            // std::array<uint8_t, 32> response;
-            // response[0] = msg_lobby;
-            // response[1] = msg_load_stage_grid;
-            // response[2] = 0;
-            // response[3] = msg_from_server;
-            // response[4] = msg_end;
-            // BroadcastMessage(response);
-            break;
+
+}
+
+void ParseSerialStageData(std::array<uint8_t, 32>& message, ServerStage& stage){
+    if (message[0] != msg_stage_data) return;
+    if (message[1] == msg_end_stage_data) {
+        loading_stage_phase = 2;
+        ChangeGameState();
+        std::cout << "recieved end stage data, starting game" << std::endl;
+        return;
     }
+
+    std::cout << "parsing serial stage data" << std::endl;
+    for (char c : message){
+        std::cout << c << " | ";
+        stage.data.push_back(c);
+    }
+    std::cout << std::endl;
+    
 }
 
 void UpdateLobbyState(std::array<uint8_t, 32>& message) {
     if (message[0] != msg_lobby) return;
-    if (message[2] == msg_signature) {
-        ParsePlayerReadyRequest(message);
-    } else if (message[1] == msg_load_stage_grid) {
+    if (message[1] == msg_load_stage_grid && message[2] == 0) {
         std::cout << "recieved load stage grid" << std::endl;
         LoadStageData(message);
-        BroadcastStageData();
         return;
+    } else if (message[2] == msg_signature) {
+        ParsePlayerReadyRequest(message);
     }
     std::array<uint8_t, 32> response;
     response[0] = msg_lobby;
@@ -118,15 +123,18 @@ void ChangeGameState(){
             loading_stage_phase++;
             return;
         }
-        std::array<uint8_t, 32> response;
-        response[0] = msg_lobby;
-        response[1] = msg_switch_to_game;
-        response[2] = msg_signature;
-        response[3] = msg_from_server;
-        response[3] = msg_end;
-        BroadcastMessage(response);
-        loading_stage_phase--;
-        InitGameState(&game_state);
+        if (loading_stage_phase > 1) {
+            std::cout << "changing game state" << std::endl;
+            std::array<uint8_t, 32> response;
+            response[0] = msg_stage_data;
+            response[1] = msg_end_stage_data;
+            response[2] = msg_switch_to_game;
+            response[3] = msg_signature;
+            response[4] = msg_from_server;
+            response[5] = msg_end;
+            BroadcastMessage(response);
+            InitGameState(&game_state);
+        }
     }
 }
 

@@ -103,6 +103,7 @@ void Stage::LoadFromString(std::string stage_str) {
         } else if (stage_str[i] == 'B') {
             cell.color = BLUE;
         } else if (stage_str[i] == '#') {
+            cell.collidable = true;
             cell.color = BLACK;
         } else {
             cell.color = WHITE;

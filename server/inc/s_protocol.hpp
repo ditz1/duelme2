@@ -25,6 +25,9 @@
 #define msg_player_ready 0x2b
 #define msg_switch_to_game 0x3b
 #define msg_load_stage_grid 0x4b
+#define msg_stage_data 0x5b
+#define msg_end_stage_data 0x6b
+
 
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>

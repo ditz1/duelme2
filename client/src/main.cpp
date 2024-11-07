@@ -8,7 +8,7 @@
 
 int current_game_stage = 0;
 int num_failed_pings = 0;
-bool stage_sent = false;
+bool stage_sent = true;
 bool in_loading_screen = false;
 Stage stage;
 
@@ -28,6 +28,25 @@ std::string test2 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
+
+void InLoadingScreen(){
+    BeginDrawing();
+        ClearBackground(DARKGRAY);
+        DrawText("Loading...", 400, 225, 20, BLUE);
+        DrawText(TextFormat("current game stage %d", current_game_stage), 400, 250, 20, BLUE);
+    EndDrawing();
+}
+
+void CheckPlayersScale(Player& client, std::array<Player, 4>& players, Stage& stage){
+    if (stage.cell_size <= client.Bounds().width) {
+        AdjustPlayerDimensions(client, players);
+    }
+    for (auto& player : players){
+        if (stage.cell_size <= player.Bounds().width) {
+            AdjustPlayerDimensions(client, players);
+        }
+    }
+}
 
 int main() {
     
@@ -99,7 +118,6 @@ int main() {
         all_players[client_player.Id()].SetState(client_player.State());
         all_players[client_player.Id()].SetIsAnimating(client_player.IsAnimating());
 
-
         if (IsKeyDown(KEY_LEFT)) camera.target.x -= 10;
         if (IsKeyDown(KEY_RIGHT)) camera.target.x += 10;
         if (IsKeyDown(KEY_UP)) camera.target.y -= 10;
@@ -107,6 +125,15 @@ int main() {
         if (IsKeyDown(KEY_COMMA)) camera.zoom += 0.01f;
         if (IsKeyDown(KEY_PERIOD)) camera.zoom -= 0.01f;
 
+        CheckPlayersScale(client_player, all_players, stage);
+
+        if (in_loading_screen) {
+            InLoadingScreen();
+            SendStageData(&conn, client_player, all_players, stage);
+            ListenStageData(&conn, client_player, all_players, stage);
+            continue;
+        }
+       
         switch (current_game_stage){
             case 0:
                 ParseAssignPlayerId(&game_state, &conn, &client_player);
@@ -118,8 +145,8 @@ int main() {
                     case 0:
                         break;
                     case 1:
-                        AdjustPlayerDimensions(client_player, all_players);
-                        SendStageData(&conn, all_players, stage);
+                        SendStageData(&conn, client_player, all_players, stage);
+                        LoadGameState(&game_state, client_player, all_players);
                         break;
                 }
                 break;
@@ -131,7 +158,7 @@ int main() {
                 ParseEndState(&game_state, &conn, &client_player);
                 break;
         }
-
+        
 
         if (IsKeyPressed(KEY_L)){            
             LogGameState(game_state, &conn);
@@ -141,23 +168,19 @@ int main() {
             std::cout << "ping" << std::endl;
             ClientSendBytes(&conn, (void*)buf.begin(), 32);
         }
+
         
-        client_player.PollInput();
-        RequestStateUpdate(&game_state, &conn, &client_player);
-       
         for (Player& p : all_players){ 
             p.Update(); 
-        }        
+        }
+
+        client_player.PollInput();
+        RequestStateUpdate(&game_state, &conn, &client_player);   
         
         AdjustCameraPosition(all_players, camera);
         /////// draw /////////
         BeginDrawing();
             ClearBackground(DARKGRAY);
-            if (in_loading_screen){
-                DrawText("Loading...", 400, 225, 20, RED);
-                EndDrawing();
-                continue;
-            }
 
             switch(current_game_stage){
                 case 0:

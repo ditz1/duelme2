@@ -1,6 +1,8 @@
 #include <server_logic.hpp>
 #include <game_state.hpp>
 
+ServerStage stage;
+
 void LogMessageReceived(std::array<uint8_t, 32>& message) {    
     if (!message.empty()) {
         switch(message[0]) {
@@ -11,6 +13,8 @@ void LogMessageReceived(std::array<uint8_t, 32>& message) {
             case msg_lobby: std::cout << "LOBBY" << std::endl; break;
             case msg_player_ready: std::cout << "PLAYER_READY" << std::endl; break;
             case msg_switch_to_game: std::cout << "SWITCH_TO_GAME" << std::endl; break;
+            case msg_load_stage_grid: std::cout << "LOAD_STAGE_GRID" << std::endl; break;
+            case msg_stage_data: std::cout << "STAGE_DATA" << std::endl; break;
             default: std::cout << "UNKNOWN" << std::endl; break;
         }
     }
@@ -40,6 +44,11 @@ void ParseMessageReceived(std::array<uint8_t, 32>& message) {
                 std::cout << "PING" << std::endl;
                 //LogMessageReceived(message);
                 SendBackPlayerId(num_connections);
+                break;
+            case msg_stage_data:
+                std::cout << "STAGE DATA" << std::endl;
+                ParseSerialStageData(message, stage);
+                //LogMessageReceived(message);
                 break;
             case msg_lobby:
                 std::cout << "LOBBY" << std::endl;
