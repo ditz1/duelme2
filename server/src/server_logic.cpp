@@ -38,7 +38,7 @@ void ParseMessageReceived(std::array<uint8_t, 32>& message) {
                 break;
             case msg_update:
                 //LogMessageReceived(message);
-                UpdateGameState(message);
+                UpdateGameState(message, stage);
                 break;
             case msg_ping:
                 std::cout << "PING" << std::endl;

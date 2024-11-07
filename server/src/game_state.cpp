@@ -31,14 +31,14 @@ void UpdateGameStateWithoutRequest() {
 }
 
 
-void UpdateGameState(std::array<uint8_t, 32>& message) {
+void UpdateGameState(std::array<uint8_t, 32>& message, ServerStage& stage) {
     if (message[0] != msg_update) return; 
 
     std::array<uint8_t, 32> response;    
     
     std::array<uint8_t, 28> curr_game_bytes = game_state.ToBytes();
 
-    ParseGameStateRequest(curr_game_bytes, message, game_state);
+    ParseGameStateRequest(curr_game_bytes, message, game_state, stage);
 
     std::array<uint8_t, 28> updated_game_bytes = game_state.ToBytes();
 
@@ -69,16 +69,23 @@ void BroadcastStageData() {
 void ParseSerialStageData(std::array<uint8_t, 32>& message, ServerStage& stage){
     if (message[0] != msg_stage_data) return;
     if (message[1] == msg_end_stage_data) {
+        stage.LoadDataIntoCells();
+        for (Rectangle& cell : stage.cells){
+            printf("x: %d y: %d width: %d height: %d\n", cell.x, cell.y, cell.width, cell.height);
+        }
+        printf("scale: %f player width: %d player height: %d\n", stage.scale, stage.player_width, stage.player_height);
         loading_stage_phase = 2;
         ChangeGameState();
         std::cout << "recieved end stage data, starting game" << std::endl;
         return;
     }
 
-    std::cout << "parsing serial stage data" << std::endl;
-    for (char c : message){
-        std::cout << c << " | ";
-        stage.data.push_back(c);
+    //std::cout << "parsing serial stage data" << std::endl;
+    //for (uint8_t c : message){
+    //    printf("%x ", c);
+    //}
+    for (int i = 2; i < 32; i++){
+        stage.data.push_back(message[i]);
     }
     std::cout << std::endl;
     
@@ -143,7 +150,7 @@ void ChangeGameState(){
 // their own player state, it should never affect
 // the state of the other players, that is the 
 // responsibility of the server 
-void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::array<uint8_t, 32>& last_recieved_bytes, GameState& game_state){
+void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::array<uint8_t, 32>& last_recieved_bytes, GameState& game_state, ServerStage& stage){
     GameState req;
     req.FromBytes(last_recieved_bytes);
 
@@ -165,6 +172,14 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     if (req.player_positions[sender_id].x != curr.player_positions[sender_id].x || req.player_positions[sender_id].y != curr.player_positions[sender_id].y){ 
         game_state.player_positions[sender_id] = req.player_positions[sender_id];
     }
+     // hp update
+    if (req.player_hps[sender_id] != curr.player_hps[sender_id]){
+        game_state.player_hps[sender_id] = req.player_hps[sender_id];
+    }
+    if (stage.ProcessPlayerCollision(game_state.player_positions[sender_id])){
+        game_state.player_positions[sender_id] = curr.player_positions[sender_id];
+        std::cout << "collision detected" << std::endl;
+    }
     switch(PlayerState(game_state.player_states[sender_id])){
         case MOVE_RIGHT: game_state.player_positions[sender_id].x += 7; break;
         case MOVE_LEFT: game_state.player_positions[sender_id].x -= 7; break;
@@ -174,10 +189,12 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
             break;
         default:
             break;
-    }    
-    // hp update
-    if (req.player_hps[sender_id] != curr.player_hps[sender_id]){
-        game_state.player_hps[sender_id] = req.player_hps[sender_id];
+    }
+    for (Vector2int pos : game_state.player_positions){
+        if (stage.ProcessPlayerCollision(pos)){
+            game_state.player_positions[sender_id] = curr.player_positions[sender_id];
+            std::cout << "collision detected" << std::endl;
+        }    
     }
     
 }

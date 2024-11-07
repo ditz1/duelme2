@@ -17,7 +17,6 @@ std::string PlayerStateToString(PlayerState state) {
     return "INVALID_STATE";
 }
 
-
 Vector2 V2intToV2(Vector2int v) {
     int x = int(v.x);
     int y = int(v.y);
@@ -30,4 +29,19 @@ void HandleErrors(Connection& conn){
         conn.connected = false;
         exit(1);
     }
+}
+
+std::tuple<uint8_t, uint8_t> Float16ToBytes(float f) {
+    uint16_t bits = (uint16_t)f;
+    union {
+        uint16_t b;
+        struct as_bits {
+            uint8_t b2;
+            uint8_t b1;
+        } as_bits;
+    } u;
+    u.b = bits;
+    uint8_t b1 = u.as_bits.b1;
+    uint8_t b2 = u.as_bits.b2;
+    return std::make_tuple(b1, b2);
 }

@@ -10,6 +10,8 @@ int current_game_stage = 0;
 int num_failed_pings = 0;
 bool stage_sent = true;
 bool in_loading_screen = false;
+bool stage_message_created = false;
+
 Stage stage;
 
 std::string test = "RRRRRR \
@@ -158,7 +160,7 @@ int main() {
                 ParseEndState(&game_state, &conn, &client_player);
                 break;
         }
-        
+
 
         if (IsKeyPressed(KEY_L)){            
             LogGameState(game_state, &conn);

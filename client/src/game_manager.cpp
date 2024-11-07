@@ -1,4 +1,6 @@
 #include <game_manager.hpp>
+#include <thread>
+#include <chrono>
 
 void InitGameState(GameState* game){
     for (uint8_t& player_state : game->player_states) {
@@ -122,7 +124,7 @@ int ParseLobbyState(GameState* game, std::array<Player, 4>& all_players){
             return 1;        
         } else if (last_received_bytes[2] == msg_switch_to_game){
             current_game_stage = 1;
-            return 1;
+            return 0;
         }
     }
     int players_connected = last_received_bytes[1];
@@ -133,28 +135,6 @@ int ParseLobbyState(GameState* game, std::array<Player, 4>& all_players){
     return 0;
 }
 
-std::vector<uint8_t> SerializeStageData(std::vector<Rectangle>& stage_cells, std::vector<Rectangle>& player_cells){
-    std::vector<uint8_t> data;
-    Rectangle buffer_rect = {-1.0f, -1.0f, -1.0f, -1.0f};
-
-
-    return data;
-}
-
-std::vector<std::array<uint8_t, 32>> CreateStageMessage(std::vector<uint8_t> serialized_data){
-    std::vector<std::array<uint8_t, 32>> messages;
-    std::array<uint8_t, 32> msg;
-    msg[0] = msg_stage_data;
-    msg[1] = 1;
-    msg[2] = 2;
-    msg[3] = 3;
-    msg[4] = 4;
-    msg[5] = msg_end;
-
-    messages.push_back(msg);
-
-    return messages;
-}
 
 void ListenStageData(Connection* conn, Player& client, std::array<Player, 4>& players, Stage& stage){
     if (data_from_server.size() < 32) return;
@@ -190,6 +170,89 @@ void EndSendStageData(Connection* conn, std::array<Player, 4>& players, Stage& s
     message[2] = msg_signature;
     message[3] = msg_end;
     ClientSendBytes(conn, (void*)&message, 32);
+    stage_sent = true;
+}
+
+void CheckData(std::vector<uint8_t>& data, std::vector<Rectangle>& stage_cells, std::vector<Rectangle>& player_cells) {
+    for (Rectangle rect : stage_cells){
+        printf("%x | %x | %x | %x\n", (uint16_t)rect.x, (uint16_t)rect.y, (uint16_t)rect.width, (uint16_t)rect.height);
+    }
+    int i = 0;
+    for (uint8_t byte : data){
+        printf("%x | ", byte);
+        i++;
+        if (i > 4) {
+            printf("\n");
+            i = 0;
+        }
+    }
+    printf("\n");
+}
+
+std::vector<uint8_t> SerializeStageData(std::vector<Rectangle>& stage_cells, std::array<Player, 4>& players){
+    std::vector<uint8_t> data;
+    for (Rectangle rect : stage_cells){
+        std::cout << "x: " << rect.x << " y: " << rect.y << " width: " << rect.width << " height: " << rect.height << std::endl;
+        std::tuple<uint8_t, uint8_t> x_bytes = Float16ToBytes(rect.x);
+        std::tuple<uint8_t, uint8_t> y_bytes = Float16ToBytes(rect.y);
+        std::tuple<uint8_t, uint8_t> width_bytes = Float16ToBytes(rect.width);
+        std::tuple<uint8_t, uint8_t> height_bytes = Float16ToBytes(rect.height);
+        data.push_back(std::get<0>(x_bytes));
+        data.push_back(std::get<1>(x_bytes));
+        data.push_back(std::get<0>(y_bytes));
+        data.push_back(std::get<1>(y_bytes));
+        data.push_back(std::get<0>(width_bytes));
+        data.push_back(std::get<1>(width_bytes));
+        data.push_back(std::get<0>(height_bytes));
+        data.push_back(std::get<1>(height_bytes));
+    }
+    
+    data.push_back(0xFF);
+    data.push_back(0xFF);
+    data.push_back(0xFF);
+    data.push_back(0xFF);
+
+    std::cout << "scale: " << players[0].draw_data.scale << " player width: " << players[0].tex->width << " player height: " << players[0].tex->height << std::endl;
+
+    data.push_back(uint8_t((players[0].draw_data.scale) * 10.0f));
+    std::tuple<uint8_t, uint8_t> width_bytes = Float16ToBytes(players[0].tex->width);
+    data.push_back(std::get<1>(width_bytes));
+    data.push_back(std::get<0>(width_bytes));
+    std::tuple<uint8_t, uint8_t> height_bytes = Float16ToBytes(players[0].tex->height);
+    data.push_back(std::get<1>(height_bytes));
+    data.push_back(std::get<0>(height_bytes));
+    
+
+    return data;
+}
+
+
+
+std::vector<std::array<uint8_t, 32>> CreateStageMessage(std::vector<uint8_t> serialized_data){
+    std::vector<std::array<uint8_t, 32>> messages;
+    std::cout << "serialized data size: " << serialized_data.size() << std::endl;
+    
+    int num_messages = serialized_data.size() / 30;
+    if (serialized_data.size() % 30 != 0) num_messages++;
+    std::cout << "num messages: " << num_messages << std::endl;
+    for (int i = 0; i < num_messages; i++){
+        std::array<uint8_t, 32> message;
+        message[0] = msg_stage_data;
+        message[1] = i;
+        for (int j = 0; j < 30; j++){
+            if (i*30 + j < serialized_data.size()){
+                message[j+2] = serialized_data[i*30 + j];
+            } else {
+                message[j+2] = msg_end;
+                break;
+            }
+        }
+        messages.push_back(message);
+    }
+
+
+    stage_message_created = true;
+    return messages;
 }
 
 void SendStageData(Connection* conn, Player& client, std::array<Player, 4>& players, Stage& stage){
@@ -201,19 +264,26 @@ void SendStageData(Connection* conn, Player& client, std::array<Player, 4>& play
     }
     if (!in_loading_screen) return;
     if (this_client_id != 0) return;
+    if (stage_message_created) return;
     std::vector<Rectangle> stage_rects;
     std::vector<Rectangle> player_rects;
     for (StageCell cell : stage.cells){
         if (cell.collidable) stage_rects.push_back(cell.rect);
     }
+    player_rects.push_back(client.Bounds());
     for (Player player : players){
         player_rects.push_back(player.Bounds());
     }
-    std::vector<uint8_t> serial_data = SerializeStageData(stage_rects, player_rects);
+    std::vector<uint8_t> serial_data = SerializeStageData(stage_rects, players);
     std::vector<std::array<uint8_t, 32>> messages = CreateStageMessage(serial_data);
 
-    for (std::array<uint8_t, 32> message : messages){
+    for (std::array<uint8_t, 32>& message : messages){
+        //for (uint8_t c : message){
+        //    printf("%x ", c);
+        //}
+        printf("\n");
         ClientSendBytes(conn, (void*)&message, 32);
+        //std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     std::cout << "sent " << messages.size() << " messages" << std::endl;
     EndSendStageData(conn, players, stage);

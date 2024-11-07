@@ -10,18 +10,25 @@ typedef struct Rectangle {
     uint16_t height;
 } Rectangle;
 
-static std::map<uint8_t, Rectangle> PlayerCells = {
-    {0, Rectangle{0, 0, 0, 0}},
-    {1, Rectangle{0, 0, 0, 0}},
-    {2, Rectangle{0, 0, 0, 0}},
-    {3, Rectangle{0, 0, 0, 0}}
-};
+typedef union U16ToU8 {
+    uint16_t u;
+    struct {
+        uint8_t b0;
+        uint8_t b1;
+    } b;
+} U16ToU8;
 
-typedef struct ServerStage {
+typedef class ServerStage {
+public:
+    void LoadDataIntoCells();
+    bool ProcessPlayerCollision(Vector2int player_position);
     std::vector<Rectangle> cells;
     std::vector<uint8_t> data;
     uint8_t cell_size;
+    float scale;
     int width;
     int height;
+    int player_width;
+    int player_height;
 } ServerStage;
 

@@ -20,6 +20,7 @@ extern bool developer_mode;
 extern int num_failed_pings;
 extern bool in_loading_screen;
 extern bool stage_sent;
+extern bool stage_message_created;
 
 
 typedef struct Vector2int {
@@ -113,3 +114,4 @@ typedef struct GameState {
 std::string PlayerStateToString(PlayerState state); 
 Vector2 V2intToV2(Vector2int v);
 void HandleErrors(Connection& conn);
+std::tuple<uint8_t, uint8_t> Float16ToBytes(float f);
