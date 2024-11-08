@@ -212,7 +212,7 @@ int main() {
             switch(current_game_stage){
                 case 0:
                     DrawLobbyState(&game_state);
-                    DrawText(TextFormat("lobby state: %d", lobby_state), 400, 225, 20, RED);
+                    DrawText(TextFormat("lobby state: %d", lobby_state), 400, 225, 20, BLUE);
                     break;
                 case 1:
                     BeginMode2D(camera);

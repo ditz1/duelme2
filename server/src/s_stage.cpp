@@ -45,7 +45,6 @@ void ServerStage::LoadDataIntoCells() {
 
 bool ServerStage::ProcessPlayerCollision(Vector2int player_position) {
     // from Player::Update
-
     // brute force for now
 
     Rectangle player_rect;
@@ -62,4 +61,26 @@ bool ServerStage::ProcessPlayerCollision(Vector2int player_position) {
         }
     }
     return false;
+}
+
+std::tuple<bool,bool,bool,bool> ServerStage::ProcessPlayerCollisionDirection(Vector2int player_position) {
+    // from Player::Update
+    // brute force for now
+    Rectangle player_rect;
+    player_rect.x = uint16_t((float)player_position.x - ((float)player_width * scale / 6.0f));
+    player_rect.y = uint16_t((float)player_position.y - ((float)player_height * scale / 6.0f) - (20.0f * scale / 6.0f));
+    player_rect.width = uint16_t((float)player_width * scale / 3.0f);
+    player_rect.height = uint16_t((float)player_height * scale / 2.0f);
+    std::tuple<bool,bool,bool,bool> direction = {false, false, false, false};
+
+    for (Rectangle cell : cells){
+        switch(RectRectCollisionDirection(player_rect, cell)){
+            case 1: std::get<0>(direction) = true; break;
+            case 2: std::get<1>(direction) = true; break;
+            case 3: std::get<2>(direction) = true; break;
+            case 4: std::get<3>(direction) = true; break;
+            default: break;
+        }
+    }
+    return direction;
 }

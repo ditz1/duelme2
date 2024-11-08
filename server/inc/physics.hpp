@@ -1,5 +1,6 @@
 #pragma once
 #include <s_protocol.hpp>
+#include <math.h>
 #include <cstdint>
 
 typedef struct Rectangle {
@@ -20,4 +21,5 @@ typedef union U16ToU8 {
 
 Rectangle PlayerPosToRect(Vector2int player_position, float scale, int player_width, int player_height);
 bool RectRectCollision(Rectangle rect1, Rectangle rect2);
+int RectRectCollisionDirection(Rectangle rect1, Rectangle rect2); // 0 = no collision, 1 = right, 2 = left, 3 = top, 4 = bottom
 

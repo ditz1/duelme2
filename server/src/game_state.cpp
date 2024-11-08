@@ -297,24 +297,27 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     if (req.player_hps[sender_id] != curr.player_hps[sender_id]){
         game_state.player_hps[sender_id] = req.player_hps[sender_id];
     }
-    if (!(stage.ProcessPlayerCollision(game_state.player_positions[sender_id])) && game_state.player_states[IDLE])  {
-            game_state.player_states[sender_id] = AIRBORNE;
-    }
 
+    if (!stage.ProcessPlayerCollision(game_state.player_positions[sender_id]) && game_state.player_states[sender_id] == IDLE)  {
+        game_state.player_states[sender_id] = AIRBORNE;
+    }
+    
+    
     switch(PlayerState(game_state.player_states[sender_id])){
         case MOVE_RIGHT: PlayerMoveRight(stage, sender_id); break;
         case MOVE_LEFT: PlayerMoveLeft(stage, sender_id); break;
         case MOVE_UP: PlayerMoveUp(stage, sender_id); break;
         case MOVE_DOWN: PlayerMoveDown(stage, sender_id); break;
         case AIRBORNE:
-            game_state.player_positions[sender_id].y += 5;
             break;
         case IDLE:
             break;
         default:
             break;
     }
-    
+    if (!stage.ProcessPlayerCollision(game_state.player_positions[sender_id]) && game_state.player_states[sender_id] != MOVE_UP)  {
+        game_state.player_positions[sender_id].y += 5;
+    }
 }
 
 void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message){
