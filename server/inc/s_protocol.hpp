@@ -43,6 +43,13 @@ extern int current_game_stage;
 extern std::array<bool, 4> player_ready;
 extern int loading_stage_phase;
 
+typedef struct PlayerFC {
+    int anim_fc;        
+    int fc;
+} PlayerFC;
+
+extern std::array<PlayerFC, 4> player_fcs;
+
 typedef struct Vector2int {
     uint16_t x;
     uint16_t y;
@@ -57,6 +64,7 @@ enum PlayerState {
     KICK,
     JUMP,
     BLOCK,
+    AIRBORNE,
     IDLE,
     ALL_PLAYER_STATES,
     UNREGISTERED

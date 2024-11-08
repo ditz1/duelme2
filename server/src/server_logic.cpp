@@ -113,18 +113,22 @@ void SendBackPlayerId(size_t client_id) {
         case 0:
             game_state.player_positions[client_id].x = 200;
             game_state.player_positions[client_id].y = 200;
+            game_state.player_hps[client_id] = 100;
             break;
         case 1:
             game_state.player_positions[client_id].x = 400;
             game_state.player_positions[client_id].y = 200;
+            game_state.player_hps[client_id] = 100;
             break;
         case 2:
             game_state.player_positions[client_id].x = 200;
             game_state.player_positions[client_id].y = 400;
+            game_state.player_hps[client_id] = 100;
             break;
         case 3:
             game_state.player_positions[client_id].x = 400;
             game_state.player_positions[client_id].y = 400;
+            game_state.player_hps[client_id] = 100;
             break;
         default:
             break;

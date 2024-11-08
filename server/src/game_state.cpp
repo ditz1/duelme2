@@ -1,6 +1,12 @@
-#include "../inc/game_state.hpp"
+#include <game_state.hpp>
 #include <chrono>
 #include <thread>
+
+int lowest_stage_y_level = 0;
+std::array<Rectangle, 4> player_hitboxes;
+std::array<Rectangle, 4> player_hurtboxes;
+std::array<bool, 4> processed_hit;
+std::array<int, 4> player_faces;
 
 void UpdateGameStateWithoutRequest() {
     // if somehow this is triggered, dont break the game
@@ -74,6 +80,13 @@ void ParseSerialStageData(std::array<uint8_t, 32>& message, ServerStage& stage){
             printf("x: %d y: %d width: %d height: %d\n", cell.x, cell.y, cell.width, cell.height);
         }
         printf("scale: %f player width: %d player height: %d\n", stage.scale, stage.player_width, stage.player_height);
+        // save max y level (lowest block) for player gravity
+        for (Rectangle cell : stage.cells){
+            if (cell.y - cell.height > lowest_stage_y_level){
+                lowest_stage_y_level = cell.y;
+            }
+        }
+
         loading_stage_phase = 2;
         ChangeGameState();
         std::cout << "recieved end stage data, starting game" << std::endl;
@@ -145,6 +158,108 @@ void ChangeGameState(){
     }
 }
 
+void ProcessPlayerFC() {
+    int fc_delay = 6;
+    for (int i = 0; i < 4; i++){
+        if (game_state.player_states[i] == PUNCH || game_state.player_states[i] == KICK){
+            player_fcs[i].fc++;
+            if (player_fcs[i].fc >= fc_delay){
+                player_fcs[i].fc = 0;
+                player_fcs[i].anim_fc++;
+            }
+        } else {
+            player_fcs[i].fc = 0;
+            player_fcs[i].anim_fc = 0;
+        }
+    }
+}
+
+Rectangle GeneratePlayerHitboxPunch(Rectangle rect, int face){
+    Rectangle hitbox;
+    uint16_t x;
+    uint16_t w;
+    uint16_t y = rect.y;
+    uint16_t h = rect.height;
+
+    if (face > 0){ // facing right
+        x = uint16_t((float)rect.x + ((float)(rect.width) / 2.0f)); 
+        w = uint16_t(((float)rect.width * 0.75f));
+    } else {
+        x = uint16_t((float)rect.x - ((float)(rect.width) / 4)); 
+        w = uint16_t((float)rect.width * 0.75f);
+    }
+
+    hitbox = {x, y, w, h};
+    return hitbox;
+}
+
+Rectangle GeneratePlayerHitboxKick(Rectangle rect, float scale, int face){
+    Rectangle hitbox;
+    uint16_t x;
+    uint16_t w;
+    uint16_t y = rect.y;
+    uint16_t h = rect.height;
+
+    if (face > 0){ // facing right
+        x = uint16_t((float)rect.x + ((float)(rect.width) / 2.0f)); 
+        w = uint16_t(((float)rect.width * 0.75f) + (scale * 2.0f));
+    } else {
+        x = uint16_t((float)rect.x - ((float)(rect.width) / 4) - (scale * 2.0f)); 
+        w = uint16_t((float)rect.width * 0.75f);
+    }
+
+    hitbox = {x, y, w, h};
+    return hitbox;
+}
+
+
+void UpdatePlayerHurtboxes(float scale, int player_width, int player_height){
+    for (size_t i = 0; i < 4; i++){
+        player_hurtboxes[i] = PlayerPosToRect(game_state.player_positions[i], scale, player_width, player_height);
+    }
+}
+
+void ProcessPlayerAttacks(float scale) {
+    for (size_t i = 0; i < 4; i++){
+        if (i > clients.size()) break;
+        if (game_state.player_states[i] == MOVE_RIGHT) player_faces[i] = 1;
+        if (game_state.player_states[i] == MOVE_LEFT) player_faces[i] = -1;
+
+        switch (PlayerState(game_state.player_states[i])){
+            case PUNCH:
+                player_hitboxes[i] = GeneratePlayerHitboxPunch(player_hurtboxes[i], player_faces[i]);
+                if (player_fcs[i].anim_fc > 2) {
+                    for (size_t j = 0; j < 4; j++){
+                        if (i == j) continue;
+                        if (RectRectCollision(player_hitboxes[i], player_hurtboxes[j]) && !processed_hit[i]){
+                            std::cout << "player " << i << " hit player " << j << " with punch" << std::endl;
+                            game_state.player_hps[j] -= 10;
+                            processed_hit[i] = true;
+                        }
+                    }
+                }
+                break;
+            case KICK:
+                player_hitboxes[i] = GeneratePlayerHitboxKick(player_hurtboxes[i], scale, player_faces[i]);
+                if (player_fcs[i].anim_fc > 5) {
+                    for (size_t j = 0; j < 4; j++){
+                        if (i == j) continue;
+                        if (RectRectCollision(player_hitboxes[i], player_hurtboxes[j]) && !processed_hit[i]){
+                            std::cout << "player " << i << " hit player " << j << " with kick" << std::endl;
+                            game_state.player_hps[j] -= 10;
+                            processed_hit[i] = true;
+                        }
+                    }
+                }
+                break;
+            default:
+                processed_hit[i] = false;
+                break;
+
+            }
+        }
+}
+
 // this function is meant to be unique to the client,
 // i.e. the client's request should only be changing
 // their own player state, it should never affect
@@ -172,19 +287,26 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     if (req.player_positions[sender_id].x != curr.player_positions[sender_id].x || req.player_positions[sender_id].y != curr.player_positions[sender_id].y){ 
         game_state.player_positions[sender_id] = req.player_positions[sender_id];
     }
+
+    // attack update
+    ProcessPlayerFC();
+    UpdatePlayerHurtboxes(stage.scale, stage.player_width, stage.player_height);
+    ProcessPlayerAttacks(stage.scale);
+
      // hp update
     if (req.player_hps[sender_id] != curr.player_hps[sender_id]){
         game_state.player_hps[sender_id] = req.player_hps[sender_id];
     }
-    if (stage.ProcessPlayerCollision(game_state.player_positions[sender_id])){
-        game_state.player_positions[sender_id] = curr.player_positions[sender_id];
-        std::cout << "collision detected" << std::endl;
+    if (!(stage.ProcessPlayerCollision(game_state.player_positions[sender_id])) && PlayerState(game_state.player_states[sender_id]) == IDLE) {
+        game_state.player_states[sender_id] = AIRBORNE;
     }
+
     switch(PlayerState(game_state.player_states[sender_id])){
         case MOVE_RIGHT: game_state.player_positions[sender_id].x += 7; break;
         case MOVE_LEFT: game_state.player_positions[sender_id].x -= 7; break;
         case MOVE_UP: game_state.player_positions[sender_id].y -= 7; break;
         case MOVE_DOWN: game_state.player_positions[sender_id].y += 7; break;
+        case AIRBORNE: game_state.player_positions[sender_id].y += 3; break;
         case IDLE:
             break;
         default:
@@ -193,7 +315,9 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     for (Vector2int pos : game_state.player_positions){
         if (stage.ProcessPlayerCollision(pos)){
             game_state.player_positions[sender_id] = curr.player_positions[sender_id];
-            std::cout << "collision detected" << std::endl;
+            if (PlayerState(game_state.player_states[sender_id]) == AIRBORNE){
+                game_state.player_states[sender_id] = IDLE;
+            }
         }    
     }
     
@@ -216,6 +340,10 @@ void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message){
 void InitGameState(GameState* game){
     if (game_running) return;
     std::cout << "init game" << std::endl;
+    for (PlayerFC& pfc : player_fcs){
+        pfc.anim_fc = 0;
+        pfc.fc = 0;
+    }
     game_running = true;
     for (uint8_t& player_state : game->player_states) {
         player_state = 0xBB;

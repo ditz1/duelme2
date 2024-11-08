@@ -5,9 +5,17 @@ void AnimatePlayer(Player& player) {
     //     std::cout << player.texs[player.current_anim].fc << " | " <<
     //     player.fc << " | " << player.anim_current_frame << " | " << player.buffer_offset << " | " << player.fc_delay << std::endl;
     // }
-    
-    DrawTexture(*(player.tex), player.Position().x, player.Position().y, RAYWHITE);
-    
+    switch(player.State()){
+        case PlayerState::PUNCH:
+            AnimatePlayerPunch(player);
+            break;
+        case PlayerState::KICK:
+            AnimatePlayerKick(player);
+            break;
+        default:
+            break;
+    }
+        
 }
 
 // NOTE: all of these anim functions could be a template 👀 
@@ -18,33 +26,51 @@ void AnimatePlayer(Player& player) {
 
 
 
-
-
-
-
 ///////////////////////////////////
-////// these are all unused ///////
+////// these are all unused /////// * mainly for testing
 ///////////////////////////////////
-
-
-
 
 
 
 void AnimatePlayerPunch(Player& player){
-    if (player.texs[player.current_anim].fc == 0){
-        player.AssignTexture(PlayerState::PUNCH);
+    float scale = player.draw_data.scale;
+    Rectangle hitbox;
+    if (player.FaceDir() > 0){ // facing right
+        float x = (float)player.Bounds().x + ((float)(player.Bounds().width) / 2); 
+        float y = (float)player.Bounds().y;
+        float w = ((float)player.Bounds().width * 0.75f);
+        float h = (float)player.Bounds().height;
+        hitbox = {x, y, w, h};
     } else {
-        DrawCircle(player.Position().x, player.Position().y, 20, PURPLE);
-        DrawTexture(*(player.tex), player.Position().x, player.Position().y, RAYWHITE);
+        float x = (float)player.Bounds().x - ((float)(player.Bounds().width) / 4); 
+        float y = (float)player.Bounds().y;
+        float w = ((float)player.Bounds().width * 0.75f);
+        float h = (float)player.Bounds().height;
+        hitbox = {x, y, w, h};
     }
+    DrawRectangleLinesEx(hitbox, 3, YELLOW);
+
 }
 void AnimatePlayerKick(Player& player){
-    if (player.texs[player.current_anim].fc == 0){
+    float scale = player.draw_data.scale;
+
+    Rectangle hitbox;
+    float x;
+    float w;
+    float y = (float)player.Bounds().y;
+    float h = (float)player.Bounds().height;
+
+    if (player.FaceDir() > 0){ // facing right
+        x = (float)player.Bounds().x + ((float)(player.Bounds().width) / 2); 
+        w = ((float)player.Bounds().width * 0.75f) + (scale * 2.0f);
     } else {
-        DrawCircle(player.Position().x, player.Position().y, 20, PURPLE);        
-        DrawTexture(*(player.tex), player.Position().x, player.Position().y, RAYWHITE);
+        x = (float)player.Bounds().x - ((float)(player.Bounds().width) / 4) - (scale * 2.0f); 
+        w = ((float)player.Bounds().width * 0.75f);
     }
+
+    hitbox = {x, y, w, h};
+
+    DrawRectangleLinesEx(hitbox, 3, YELLOW);
 }
 
 void AnimatePlayerJump(Player& player){

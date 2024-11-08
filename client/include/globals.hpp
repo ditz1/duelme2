@@ -45,6 +45,7 @@ enum PlayerState {
     KICK,
     JUMP,
     BLOCK,
+    AIRBORNE,
     IDLE,
     ALL_PLAYER_STATES,
     UNREGISTERED
@@ -60,6 +61,7 @@ static std::map<PlayerState, std::string> PlayerStateToStringMap = {
     {KICK, "KICK"},
     {JUMP, "JUMP"},
     {BLOCK, "BLOCK"},
+    {AIRBORNE, "AIRBORNE"},
     {ALL_PLAYER_STATES, "ALL_PLAYER_STATES"},
     {UNREGISTERED, "UNREGISTERED"}
 };

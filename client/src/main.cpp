@@ -31,6 +31,31 @@ std::string test2 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
 
+std::string test3 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \
+                      #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  G  G  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  #  #  #  #  #  #  #  #  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  #  #  #  #  R  R  R  R  R  R  R  R  R  #  #  #  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
+
+std::string test4 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \
+                      #  #  #  #  #  #  #  #  #  #  #  #  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
+
 void InLoadingScreen(){
     BeginDrawing();
         ClearBackground(DARKGRAY);
@@ -63,7 +88,7 @@ int main() {
 
     std::array<Player, 4> all_players = {Player(), Player(), Player(), Player()};
 
-    stage.LoadFromString(test2);
+    stage.LoadFromString(test4);
     stage.Generate();
 
     Connection conn;

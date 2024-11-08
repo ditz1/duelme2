@@ -32,3 +32,6 @@ public:
     int player_height;
 } ServerStage;
 
+Rectangle PlayerPosToRect(Vector2int player_position, float scale, int player_width, int player_height);
+bool RectRectCollision(Rectangle rect1, Rectangle rect2);
+

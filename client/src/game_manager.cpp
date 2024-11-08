@@ -36,6 +36,7 @@ void ParseAssignPlayerId(GameState* game, Connection* conn, Player* player){
     game->player_ids[data_from_server[1]] = data_from_server[1];
     game->player_positions[data_from_server[1]].x = 200;
     game->player_positions[data_from_server[1]].y = 200;
+    game->player_hps[data_from_server[1]] = 100;
     this_client_id = int(data_from_server[1]);
 }
 
@@ -320,6 +321,7 @@ void ParseEndState(GameState* game, Connection* conn, Player* player){
 void DrawGameState(std::array<Player, 4> players){
     for (int i = 0; i < 4; i++){
         players[i].Draw();
+        AnimatePlayer(players[i]);
     }
 }
 
@@ -330,7 +332,6 @@ void UpdatePlayerCopyAnimInfo(Player& copy) {
         copy.last_state = copy.State();
         copy.anim_current_frame = 0;
     }
-
 
     if (copy.State() == MOVE_LEFT && copy.FaceDir() == 1) {
         copy.SetFaceDir(-1);

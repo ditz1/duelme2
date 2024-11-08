@@ -126,7 +126,6 @@ void Player::ProcessPlayerAnimLogic() {
     } else if (_state == MOVE_RIGHT && _player_face_dir == -1) {
         _player_face_dir = 1;
     }
-
     if (_is_attacking && (anim_current_frame >= texs[current_anim].fc - 1)) {
         _is_attacking = false;
     }

@@ -41,6 +41,7 @@ void DrawDebugInfo(GameState game, Player& client_player, std::array<Player, 4> 
             DrawText(TextFormat("Current Anim FC: %d", client_player.anim_current_frame), x_start, y_start + y_spacing * 6, font_size, RAYWHITE);
             DrawText(TextFormat("Position: %d, %d", client_player.Position().x, client_player.Position().y), x_start, y_start + y_spacing * 7, font_size, RAYWHITE);
             DrawText(TextFormat("FaceDir: %d", client_player.FaceDir()), x_start, y_start + y_spacing * 8, font_size, RAYWHITE);
+            DrawText(TextFormat("HP: %d", game.player_hps[this_client_id]), x_start, y_start + y_spacing * 9, font_size, RAYWHITE);
 }
 
 void LogGameState(GameState game, Connection* conn) {
