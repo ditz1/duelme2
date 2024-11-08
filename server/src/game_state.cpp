@@ -2,10 +2,10 @@
 #include <chrono>
 #include <thread>
 
-int lowest_stage_y_level = 0;
 std::array<Rectangle, 4> player_hitboxes;
 std::array<Rectangle, 4> player_hurtboxes;
 std::array<bool, 4> processed_hit;
+std::array<bool, 4> player_airborne;
 std::array<int, 4> player_faces;
 
 void UpdateGameStateWithoutRequest() {
@@ -81,11 +81,7 @@ void ParseSerialStageData(std::array<uint8_t, 32>& message, ServerStage& stage){
         }
         printf("scale: %f player width: %d player height: %d\n", stage.scale, stage.player_width, stage.player_height);
         // save max y level (lowest block) for player gravity
-        for (Rectangle cell : stage.cells){
-            if (cell.y - cell.height > lowest_stage_y_level){
-                lowest_stage_y_level = cell.y;
-            }
-        }
+       
 
         loading_stage_phase = 2;
         ChangeGameState();
@@ -260,6 +256,9 @@ void ProcessPlayerAttacks(float scale) {
         }
 }
 
+void ProcessPlayerPhysics() {
+}
+
 // this function is meant to be unique to the client,
 // i.e. the client's request should only be changing
 // their own player state, it should never affect
@@ -290,6 +289,7 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
 
     // attack update
     ProcessPlayerFC();
+    ProcessPlayerPhysics();
     UpdatePlayerHurtboxes(stage.scale, stage.player_width, stage.player_height);
     ProcessPlayerAttacks(stage.scale);
 
@@ -297,28 +297,22 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     if (req.player_hps[sender_id] != curr.player_hps[sender_id]){
         game_state.player_hps[sender_id] = req.player_hps[sender_id];
     }
-    if (!(stage.ProcessPlayerCollision(game_state.player_positions[sender_id])) && PlayerState(game_state.player_states[sender_id]) == IDLE) {
-        game_state.player_states[sender_id] = AIRBORNE;
+    if (!(stage.ProcessPlayerCollision(game_state.player_positions[sender_id])) && game_state.player_states[IDLE])  {
+            game_state.player_states[sender_id] = AIRBORNE;
     }
 
     switch(PlayerState(game_state.player_states[sender_id])){
-        case MOVE_RIGHT: game_state.player_positions[sender_id].x += 7; break;
-        case MOVE_LEFT: game_state.player_positions[sender_id].x -= 7; break;
-        case MOVE_UP: game_state.player_positions[sender_id].y -= 7; break;
-        case MOVE_DOWN: game_state.player_positions[sender_id].y += 7; break;
-        case AIRBORNE: game_state.player_positions[sender_id].y += 3; break;
+        case MOVE_RIGHT: PlayerMoveRight(stage, sender_id); break;
+        case MOVE_LEFT: PlayerMoveLeft(stage, sender_id); break;
+        case MOVE_UP: PlayerMoveUp(stage, sender_id); break;
+        case MOVE_DOWN: PlayerMoveDown(stage, sender_id); break;
+        case AIRBORNE:
+            game_state.player_positions[sender_id].y += 5;
+            break;
         case IDLE:
             break;
         default:
             break;
-    }
-    for (Vector2int pos : game_state.player_positions){
-        if (stage.ProcessPlayerCollision(pos)){
-            game_state.player_positions[sender_id] = curr.player_positions[sender_id];
-            if (PlayerState(game_state.player_states[sender_id]) == AIRBORNE){
-                game_state.player_states[sender_id] = IDLE;
-            }
-        }    
     }
     
 }

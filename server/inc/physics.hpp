@@ -1,7 +1,6 @@
 #pragma once
 #include <s_protocol.hpp>
 #include <cstdint>
-#include <map>
 
 typedef struct Rectangle {
     uint16_t x;
@@ -18,19 +17,6 @@ typedef union U16ToU8 {
     } b;
 } U16ToU8;
 
-typedef class ServerStage {
-public:
-    void LoadDataIntoCells();
-    bool ProcessPlayerCollision(Vector2int player_position);
-    std::vector<Rectangle> cells;
-    std::vector<uint8_t> data;
-    uint8_t cell_size;
-    float scale;
-    int width;
-    int height;
-    int player_width;
-    int player_height;
-} ServerStage;
 
 Rectangle PlayerPosToRect(Vector2int player_position, float scale, int player_width, int player_height);
 bool RectRectCollision(Rectangle rect1, Rectangle rect2);
