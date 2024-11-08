@@ -315,9 +315,13 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
         default:
             break;
     }
-    if (!stage.ProcessPlayerCollision(game_state.player_positions[sender_id]) && game_state.player_states[sender_id] != MOVE_UP)  {
-        game_state.player_positions[sender_id].y += 5;
-    }
+    if (!stage.ProcessPlayerCollision(game_state.player_positions[sender_id]) 
+        && (game_state.player_states[sender_id] == AIRBORNE 
+        || game_state.player_states[sender_id] == MOVE_LEFT
+        || game_state.player_states[sender_id] == MOVE_RIGHT))
+        {  
+            game_state.player_positions[sender_id].y += 7;
+        }
 }
 
 void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message){

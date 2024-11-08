@@ -1,29 +1,9 @@
 #include <s_player.hpp>
-// 0 = no collision, 1 = left, 2 = right, 3 = bottom, 4 = top
+// 0 = no collision, 1 = left, 2 = right, 3 = top, 4 = bottom
 
 static int gravity = 7;
 static int velocity = 7;
 
-// // top collision
-//     if (std::get<3>(collision)) {
-//         std::cout << "top collision" << std::endl;
-//         return;
-//     }
-//     // bottom collision
-//     if (std::get<2>(collision)) {
-//         std::cout << "bottom collision" << std::endl;
-//         return;
-//     }
-//     // right collision
-//     if (std::get<0>(collision)) {
-//         std::cout << "right collision" << std::endl;
-//         return;
-//     }
-//     // left collision
-//     if (std::get<1>(collision)) {
-//         std::cout << "left collision" << std::endl;
-//         return;
-//     }
 
 
 void PlayerMoveRight(ServerStage& stage, int id) {
