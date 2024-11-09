@@ -21,7 +21,6 @@ void StartSession(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
 
         for(;;) {
            // sleep for framerate and not to explode
-           
            beast::flat_buffer buffer;
            ws->read(buffer);
            

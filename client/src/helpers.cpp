@@ -29,6 +29,27 @@ void DrawDebugInfo(GameState game, Player& client_player, std::array<Player, 4> 
             }
             DrawText(TextFormat("# failed pings: %d", num_failed_pings), x_start_other, y_start_other + y_spacing * 7, font_size - 4, RAYWHITE);
 
+            DrawText(TextFormat("all_players %d, %d", all_players[this_client_id].Position().x, all_players[this_client_id].Position().y), x_start_other - y_spacing * 2, y_start_other + y_spacing * 8, font_size - 4, RAYWHITE);
+            DrawText(TextFormat("client_player %d, %d", client_player.Position().x, client_player.Position().y), x_start_other - y_spacing * 2, y_start_other + y_spacing * 9, font_size - 4, RAYWHITE);
+            DrawText(TextFormat("gamestate %d, %d", game.player_positions[this_client_id].x, game.player_positions[this_client_id].y), x_start_other - y_spacing * 2, y_start_other + y_spacing * 10, font_size - 4, RAYWHITE);
+            Color col1 = GREEN;
+            Color col2 = GREEN;
+            Color col3 = GREEN;
+            if (all_players[this_client_id].Position().x != client_player.Position().x || all_players[this_client_id].Position().y != client_player.Position().y) {
+                col1 = RED;
+            }
+            if (game.player_positions[this_client_id].x != client_player.Position().x || game.player_positions[this_client_id].y != client_player.Position().y) {
+                col2 = RED;
+            }
+            if (game.player_positions[this_client_id].x != all_players[this_client_id].Position().x || game.player_positions[this_client_id].y != all_players[this_client_id].Position().y) {
+                col3 = RED;
+            }
+            DrawRectangle(x_start_other - y_spacing * 2, y_start_other + y_spacing * 11, 20, 20, col1);
+            DrawRectangle(x_start_other - y_spacing * 2 + 25, y_start_other + y_spacing * 11, 20, 20, col2);
+            DrawRectangle(x_start_other - y_spacing * 2 + 50, y_start_other + y_spacing * 11, 20, 20, col3);
+
+
+
             Rectangle bg2 = {(float)x_start - 10, (float)y_start - 10, 195.0f, 200.0f};
             //DrawRectangleRounded(bg2, 0.1f, 10, grey1);
             // left side

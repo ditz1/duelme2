@@ -321,7 +321,7 @@ void ParseEndState(GameState* game, Connection* conn, Player* player){
 void DrawGameState(std::array<Player, 4> players){
     for (int i = 0; i < 4; i++){
         players[i].Draw();
-        AnimatePlayer(players[i]);
+        //AnimatePlayer(players[i]);
     }
 }
 
@@ -365,6 +365,7 @@ void UpdatePlayerCopyAnimInfo(Player& copy) {
 
 void UpdateClientPlayerCopies(std::array<Player, 4>& players, GameState* game){
     for (int i = 0; i < 4; i++){
+        if (i == this_client_id) continue;
         players[i].SetState(PlayerState(game->player_states[i]));
         players[i].SetHp(game->player_hps[i]);
         players[i].SetPosition(game->player_positions[i]);

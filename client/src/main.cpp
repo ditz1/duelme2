@@ -54,6 +54,13 @@ std::string test4 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \
                       #  R  R  R  R  R  #  #  #  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
 
 void InLoadingScreen(){
@@ -78,7 +85,7 @@ void CheckPlayersScale(Player& client, std::array<Player, 4>& players, Stage& st
 int main() {
     
     InitWindow(800, 450, "client");
-    SetTargetFPS(60);
+    SetTargetFPS(120);
     
     GameState game_state;
 
@@ -196,14 +203,15 @@ int main() {
             ClientSendBytes(&conn, (void*)buf.begin(), 32);
         }
 
+
         
-        for (Player& p : all_players){ 
-            p.Update(); 
-        }
 
         client_player.PollInput();
         RequestStateUpdate(&game_state, &conn, &client_player);   
-        
+        all_players[this_client_id].SetPosition(client_player.Position());
+        for (Player& p : all_players){ 
+            p.Update(); 
+        }
         AdjustCameraPosition(all_players, camera);
         /////// draw /////////
         BeginDrawing();
@@ -215,11 +223,11 @@ int main() {
                     DrawText(TextFormat("lobby state: %d", lobby_state), 400, 225, 20, BLUE);
                     break;
                 case 1:
-                    BeginMode2D(camera);
+                    //BeginMode2D(camera);
                         stage.Draw();
                         stage.DrawLines();
                         DrawGameState(all_players);
-                    EndMode2D();
+                    //EndMode2D();
 
                     break;
                 case 2:
