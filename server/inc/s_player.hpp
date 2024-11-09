@@ -4,8 +4,9 @@
 #include <s_stage.hpp>
 
 
-void PlayerMoveLeft(ServerStage& stage, int id);
-void PlayerMoveRight(ServerStage& stage, int id);
-void PlayerMoveUp(ServerStage& stage, int id);
-void PlayerMoveDown(ServerStage& stage, int id);
+void PlayerMoveLeft(CollisionIndex dirs, Vector2int& pos);
+void PlayerMoveRight(CollisionIndex dirs, Vector2int& pos);
+void PlayerMoveUp(CollisionIndex dirs, Vector2int& pos);
+void PlayerMoveDown(CollisionIndex dirs, Vector2int& pos);
+void PlayerIdle(CollisionIndex dirs, Vector2int& pos);
 void PlayerJump();

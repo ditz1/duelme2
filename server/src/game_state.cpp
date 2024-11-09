@@ -2,6 +2,10 @@
 #include <chrono>
 #include <thread>
 
+std::array<CollisionIndex, 4> player_coll_dirs = {CollisionIndex{false, false, false, false, false, false, false, false},
+                                                  CollisionIndex{false, false, false, false, false, false, false, false},
+                                                  CollisionIndex{false, false, false, false, false, false, false, false},
+                                                  CollisionIndex{false, false, false, false, false, false, false, false}};
 std::array<Rectangle, 4> player_hitboxes;
 std::array<Rectangle, 4> player_hurtboxes;
 std::array<bool, 4> processed_hit;
@@ -257,6 +261,11 @@ void ProcessPlayerAttacks(float scale) {
 }
 
 void ProcessPlayerPhysics() {
+    for (int i = 0; i < 4; i++){
+        if (game_state.player_states[i] == AIRBORNE){
+            game_state.player_positions[i].y += 2;
+        }
+    }
 }
 
 // this function is meant to be unique to the client,
@@ -297,31 +306,81 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     if (req.player_hps[sender_id] != curr.player_hps[sender_id]){
         game_state.player_hps[sender_id] = req.player_hps[sender_id];
     }
+    
+    // move + collision detection
+    Vector2int pos = game_state.player_positions[sender_id];
+    Vector2int old_pos = game_state.player_positions[sender_id];
 
-    if (!stage.ProcessPlayerCollision(game_state.player_positions[sender_id]) && game_state.player_states[sender_id] == IDLE)  {
+    // check if position is colliding with anything
+    int spacing = stage.min_y_level / 2;
+    player_coll_dirs[sender_id] = stage.ProcessPlayerCollisionDirection(game_state.player_positions[sender_id]);
+    bool right_coll = player_coll_dirs[sender_id][0] && player_coll_dirs[sender_id][1];
+    bool left_coll = player_coll_dirs[sender_id][2] && player_coll_dirs[sender_id][3];
+    bool top_coll = player_coll_dirs[sender_id][4] && player_coll_dirs[sender_id][5];
+    bool bottom_coll = player_coll_dirs[sender_id][6] && player_coll_dirs[sender_id][7];
+    std::string s;
+    if (left_coll) s += " left ";
+    if (right_coll) s += " right ";
+    if (top_coll) s += " top ";
+    if (bottom_coll) s += " bottom ";
+    if (s.size() > 1)
+        std::cout << "player " << sender_id << " collision: " << s << std::endl;
+    if (!bottom_coll && (game_state.player_states[sender_id] == IDLE)){
         game_state.player_states[sender_id] = AIRBORNE;
     }
-    
-    
+    if (bottom_coll && (game_state.player_states[sender_id] == AIRBORNE)){
+        game_state.player_states[sender_id] = IDLE;
+    }
+    // apply movement
     switch(PlayerState(game_state.player_states[sender_id])){
-        case MOVE_RIGHT: PlayerMoveRight(stage, sender_id); break;
-        case MOVE_LEFT: PlayerMoveLeft(stage, sender_id); break;
-        case MOVE_UP: PlayerMoveUp(stage, sender_id); break;
-        case MOVE_DOWN: PlayerMoveDown(stage, sender_id); break;
+        case MOVE_RIGHT: PlayerMoveRight(player_coll_dirs[sender_id], pos); break;
+        case MOVE_LEFT: PlayerMoveLeft(player_coll_dirs[sender_id], pos); break;
+        case MOVE_UP: PlayerMoveUp(player_coll_dirs[sender_id], pos); break;
+        case MOVE_DOWN: PlayerMoveDown(player_coll_dirs[sender_id], pos); break;
         case AIRBORNE:
+            pos.y += 1;
             break;
         case IDLE:
             break;
         default:
             break;
     }
-    if (!stage.ProcessPlayerCollision(game_state.player_positions[sender_id]) 
-        && (game_state.player_states[sender_id] == AIRBORNE 
-        || game_state.player_states[sender_id] == MOVE_LEFT
-        || game_state.player_states[sender_id] == MOVE_RIGHT))
-        {  
-            game_state.player_positions[sender_id].y += 7;
+
+    // 2nd check to see if calculated position is colliding with anything
+    player_coll_dirs[sender_id] = stage.ProcessPlayerCollisionDirection(game_state.player_positions[sender_id]);
+    right_coll = player_coll_dirs[sender_id][0] && player_coll_dirs[sender_id][1];
+    left_coll = player_coll_dirs[sender_id][2] && player_coll_dirs[sender_id][3];
+    top_coll = player_coll_dirs[sender_id][4] && player_coll_dirs[sender_id][5];
+    bottom_coll = player_coll_dirs[sender_id][6] && player_coll_dirs[sender_id][7];
+    
+    // reassign position if colliding
+    if (left_coll) {
+        pos.x = old_pos.x + 5;
+    }
+    if (right_coll) {
+        pos.x = old_pos.x - 5;
+    }
+    if (top_coll) {
+        pos.y = old_pos.y + 5;
+    }
+    if (bottom_coll) {
+        pos.y = old_pos.y - 5;
+    }
+
+    // check if player is out of bounds
+    std::cout << stage.min_y_level + spacing << " " << stage.max_y_level - spacing << std::endl;
+    if (pos.y < stage.min_y_level + spacing) pos.y = stage.min_y_level + spacing;
+    if (pos.y > stage.max_y_level - ((float)spacing * 1.8f)){
+        pos.y = stage.max_y_level - ((float)spacing * 1.8f);
+        if (game_state.player_states[sender_id] == AIRBORNE){
+            game_state.player_states[sender_id] = IDLE;
         }
+    } 
+    if (pos.x < stage.min_x_level + spacing) pos.x = stage.min_x_level + spacing;
+    if (pos.x > stage.max_x_level - spacing) pos.x = stage.max_x_level - spacing;
+    
+    game_state.player_positions[sender_id] = pos;
+    
 }
 
 void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message){

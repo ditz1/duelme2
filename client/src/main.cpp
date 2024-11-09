@@ -51,7 +51,7 @@ std::string test4 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \
                       #  #  #  #  #  #  #  #  #  #  #  #  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  #  #  #  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
@@ -98,7 +98,7 @@ int main() {
     camera.target = { 0, 0 };
     camera.offset = { (float)GetScreenWidth() / 2, (float)GetScreenHeight() / 2 };
     camera.rotation = 0.0f;
-    camera.zoom = 1.0f;
+    camera.zoom = 0.85f;
 
     
     if (conn.ws <= 0) {

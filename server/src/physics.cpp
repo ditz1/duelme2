@@ -18,29 +18,81 @@ bool RectRectCollision(Rectangle rect1, Rectangle rect2) {
     return false;
 }
 
-int RectRectCollisionDirection(Rectangle rect1, Rectangle rect2) {
-    if (!((rect1.x < (rect2.x + rect2.width) && (rect1.x + rect1.width) > rect2.x) &&
-          (rect1.y < (rect2.y + rect2.height) && (rect1.y + rect1.height) > rect2.y))) {
-        return 0;
+CollisionIndex RectRectCollisionDirection(Rectangle rect1, Rectangle rect2) {
+    CollisionIndex  direction = {false, false, false, false, false, false, false, false};
+    bool& right_t  = direction[0];
+    bool& right_b   = direction[1];
+    bool& left_t   = direction[2];
+    bool& left_b   = direction[3];
+    bool& top_l    = direction[4];
+    bool& top_r    = direction[5];
+    bool& bottom_l = direction[6];
+    bool& bottom_r = direction[7];
+
+    bool is_colliding = (rect1.x < rect2.x + rect2.width &&
+                        rect1.x + rect1.width > rect2.x &&
+                        rect1.y < rect2.y + rect2.height &&
+                        rect1.y + rect1.height > rect2.y);
+
+    if (!is_colliding) {
+        return direction;
     }
+
+    float overlap_x = std::min(rect1.x + rect1.width, rect2.x + rect2.width) - 
+                     std::max(rect1.x, rect2.x);
+    float overlap_y = std::min(rect1.y + rect1.height, rect2.y + rect2.height) - 
+                     std::max(rect1.y, rect2.y);
+
+    bool left_bottom_colliding = ((rect1.x < rect2.x + rect2.width && 
+                                 rect1.x > rect2.x && 
+                                 rect1.y + rect1.height > rect2.y) || 
+                                 (rect1.x - 2 < rect2.x + rect2.width && 
+                                 rect1.x + 2 > rect2.x && 
+                                 rect1.y + rect1.height > rect2.y));
+    bool right_bottom_colliding = ((rect1.x + rect1.width < rect2.x + rect2.width && 
+                                  rect1.x + rect1.width > rect2.x && 
+                                  rect1.y + rect1.height > rect2.y) || 
+                                 (rect1.x - 2 < rect2.x + rect2.width && 
+                                 rect1.x + 2 > rect2.x && 
+                                 rect1.y + rect1.height > rect2.y));
+    bool left_top_colliding = (rect1.x < rect2.x + rect2.width && 
+                              rect1.x > rect2.x && 
+                              rect1.y < rect2.y + rect2.height);
+    bool right_top_colliding = (rect1.x + rect1.width < rect2.x + rect2.width && 
+                               rect1.x + rect1.width > rect2.x && 
+                               rect1.y < rect2.y + rect2.height);
     
-    float center1X = rect1.x + rect1.width/2;
-    float center1Y = rect1.y + rect1.height/2;
-    float center2X = rect2.x + rect2.width/2;
-    float center2Y = rect2.y + rect2.height/2;
-    
-    float dx = center1X - center2X;
-    float dy = center1Y - center2Y;
-    
-    float absDx = abs(dx);
-    float absDy = abs(dy);
-    
-    if (absDx > absDy) {
-        if (dx > 0) return 2;  // right collision
-        return 1;              // left collision
+    bool top_right_colliding = (rect1.x + rect1.width > rect2.x && 
+                               rect1.x + rect1.width < rect2.x + rect2.width && 
+                               rect1.y < rect2.y + rect2.height);
+    bool top_left_colliding = (rect1.x > rect2.x && 
+                              rect1.x < rect2.x + rect2.width && 
+                              rect1.y < rect2.y + rect2.height);
+    bool bottom_right_colliding = (rect1.x + rect1.width > rect2.x && 
+                                  rect1.x + rect1.width < rect2.x + rect2.width && 
+                                  rect1.y + rect1.height > rect2.y);
+    bool bottom_left_colliding = (rect1.x > rect2.x && 
+                                 rect1.x < rect2.x + rect2.width && 
+                                 rect1.y + rect1.height > rect2.y);
+
+    if (overlap_x < overlap_y) {
+        if (rect1.x + rect1.width/2 < rect2.x + rect2.width/2) {
+            if (top_right_colliding) right_t = true;
+            if (bottom_right_colliding) right_b = true;
+        } else {
+            if (top_left_colliding) left_t = true;
+            if (bottom_left_colliding) left_b = true;
+        }
     } else {
-        if (dy > 0) return 4;  // bottom collision
-        return 3;              // top collision
+        if (rect1.y + rect1.height/2 < rect2.y + rect2.height/2) {
+            if (left_bottom_colliding) bottom_l = true;
+            if (right_bottom_colliding) bottom_r = true;
+        } else {
+            if (left_top_colliding) top_l = true;
+            if (right_top_colliding) top_r = true;
+        }
     }
+
+    return direction;
 }
 

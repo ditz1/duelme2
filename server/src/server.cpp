@@ -2,6 +2,7 @@
 #include <game_state.hpp>
 #include <server_logic.hpp>
 #include <physics.hpp>
+#include <chrono>
 
 
 //------------------------------------------------------------------------------
@@ -19,6 +20,8 @@ void StartSession(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
         }
 
         for(;;) {
+           // sleep for framerate and not to explode
+           
            beast::flat_buffer buffer;
            ws->read(buffer);
            
@@ -70,7 +73,6 @@ int main()
         // the acceptor receives incoming connections
         tcp::acceptor acceptor{ioc, {address, port}};
         std::cout << "listening on " << address << ":" << port << std::endl;
-        
         for (;;) {
             // receive the new connection
             boost::asio::any_io_executor ex = ioc.get_executor();

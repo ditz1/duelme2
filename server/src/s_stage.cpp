@@ -1,6 +1,12 @@
 #include <s_stage.hpp>
 
 void ServerStage::LoadDataIntoCells() {
+    max_y_level = 1000000;
+    max_x_level = 1000000;
+    min_y_level = 0;
+    min_x_level = 0;
+    int max_rect_width = 0;
+    int max_rect_height = 0;
     int j = 0;
     for (size_t i = 0; i < data.size(); i+=8){
         if (data[i] == 0xFF && data[i+1] == 0xFF && data[i+2] == 0xFF && data[i+3] == 0xFF){
@@ -25,8 +31,26 @@ void ServerStage::LoadDataIntoCells() {
         rect.y = y.u;
         rect.width = width.u;
         rect.height = height.u;
+        if (rect.width > max_rect_width) max_rect_width = rect.width;
+        if (rect.height > max_rect_height) max_rect_height = rect.height;
         cells.push_back(rect);
     }
+    std::vector<int> x1;
+    std::vector<int> x2;
+    std::vector<int> y1;
+    std::vector<int> y2;
+    for (Rectangle cell : cells){
+        x1.push_back(cell.x);
+        x2.push_back(cell.x + cell.width);
+        y1.push_back(cell.y);
+        y2.push_back(cell.y + cell.height);
+    }
+    max_x_level = *std::max_element(x1.begin(), x1.end());
+    min_x_level = *std::min_element(x2.begin(), x2.end());
+    max_y_level = *std::max_element(y1.begin(), y1.end());
+    min_y_level = *std::min_element(y2.begin(), y2.end());
+
+    std::cout << "max x: " << max_x_level << " max y: " << max_y_level << " min x: " << min_x_level << " min y: " << min_y_level << std::endl;
 
     printf("\n");
 
@@ -63,7 +87,7 @@ bool ServerStage::ProcessPlayerCollision(Vector2int player_position) {
     return false;
 }
 
-std::tuple<bool,bool,bool,bool> ServerStage::ProcessPlayerCollisionDirection(Vector2int player_position) {
+CollisionIndex ServerStage::ProcessPlayerCollisionDirection(Vector2int player_position) {
     // from Player::Update
     // brute force for now
     Rectangle player_rect;
@@ -71,15 +95,11 @@ std::tuple<bool,bool,bool,bool> ServerStage::ProcessPlayerCollisionDirection(Vec
     player_rect.y = uint16_t((float)player_position.y - ((float)player_height * scale / 6.0f) - (20.0f * scale / 6.0f));
     player_rect.width = uint16_t((float)player_width * scale / 3.0f);
     player_rect.height = uint16_t((float)player_height * scale / 2.0f);
-    std::tuple<bool,bool,bool,bool> direction = {false, false, false, false};
-
+    CollisionIndex direction = {false, false, false, false, false, false, false, false};
     for (Rectangle cell : cells){
-        switch(RectRectCollisionDirection(player_rect, cell)){
-            case 1: std::get<0>(direction) = true; break;
-            case 2: std::get<1>(direction) = true; break;
-            case 3: std::get<2>(direction) = true; break;
-            case 4: std::get<3>(direction) = true; break;
-            default: break;
+        CollisionIndex cell_coll_dir = RectRectCollisionDirection(player_rect, cell);
+        for (int i = 0; i < 8; i++){                    
+            direction[i] |= cell_coll_dir[i];
         }
     }
     return direction;

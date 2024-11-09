@@ -7,8 +7,6 @@ bool developer_mode = false;
 std::vector<uint8_t> data_from_server;
 std::array<bool, 4> player_ready = {false, false, false, false};
 
-
-
 std::string PlayerStateToString(PlayerState state) {
     int state_int = static_cast<int>(state);
     if (state_int >= 0 && state_int < ALL_PLAYER_STATES) {

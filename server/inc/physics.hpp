@@ -10,6 +10,9 @@ typedef struct Rectangle {
     uint16_t height;
 } Rectangle;
 
+// 0 right, 1 left, 2 l_top, 3 r_top, 4 l_bottom, 5 r_bottom
+typedef std::array<bool, 8> CollisionIndex;
+
 typedef union U16ToU8 {
     uint16_t u;
     struct {
@@ -21,5 +24,5 @@ typedef union U16ToU8 {
 
 Rectangle PlayerPosToRect(Vector2int player_position, float scale, int player_width, int player_height);
 bool RectRectCollision(Rectangle rect1, Rectangle rect2);
-int RectRectCollisionDirection(Rectangle rect1, Rectangle rect2); // 0 = no collision, 1 = right, 2 = left, 3 = top, 4 = bottom
+CollisionIndex RectRectCollisionDirection(Rectangle rect1, Rectangle rect2); //1 = right, 2 = left, 3 = top, 4 = bottom
 

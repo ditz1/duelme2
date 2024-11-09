@@ -74,6 +74,7 @@ void Player::AssignTexture(PlayerState state){
     _is_animating = true;
 
     switch (state) {
+        case AIRBORNE:
         case IDLE:
             img = &texs[0].img;
             tex = &texs[0].tex;
@@ -221,6 +222,10 @@ void Player::PollInput() {
     if (IsKeyUp(KEY_D) && IsKeyUp(KEY_A) && IsKeyUp(KEY_W) && IsKeyUp(KEY_S) 
         && IsKeyUp(KEY_H) && IsKeyUp(KEY_J) && IsKeyUp(KEY_K) && IsKeyUp(KEY_L)
         && !_is_attacking){
+        if (_state == PlayerState::AIRBORNE){
+            _requested_state = uint8_t(AIRBORNE);
+            return;
+        }
         _requested_state = uint8_t(IDLE);
         return;
     }
