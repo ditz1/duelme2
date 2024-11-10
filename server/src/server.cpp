@@ -3,6 +3,7 @@
 #include <server_logic.hpp>
 #include <physics.hpp>
 #include <chrono>
+#include <algorithm>
 
 
 //------------------------------------------------------------------------------

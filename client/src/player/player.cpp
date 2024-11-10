@@ -154,7 +154,7 @@ void Player::ProcessPlayerAnimLogic() {
 
 void Player::Update() {
     _bounds.x = V2intToV2(_position).x - (tex->width * (draw_data.scale / 6.0f));
-    _bounds.y = V2intToV2(_position).y - (tex->height * (draw_data.scale / 6.0f)) - (20 * (draw_data.scale / 6.0f));
+    _bounds.y = V2intToV2(_position).y - (tex->height * (draw_data.scale / 6.0f)) - ((5.0f * draw_data.scale) * (draw_data.scale / 6.0f));
     _bounds.width = tex->width * (draw_data.scale / 3.0f);
     _bounds.height = tex->height * (draw_data.scale / 2.0f);
 }

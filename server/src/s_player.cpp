@@ -10,7 +10,7 @@ void PlayerMoveRight(CollisionIndex dirs, Vector2int& pos) {
     if (airborne) {
         pos.y += gravity;
     } else {
-        pos.y -= 2;
+        pos.y -= gravity;
     }
 }
 
@@ -20,7 +20,7 @@ void PlayerMoveLeft(CollisionIndex dirs, Vector2int& pos) {
     if (airborne) {
         pos.y += gravity;
     } else {
-        pos.y -= 2;
+        pos.y -= gravity;
     }
 }
 

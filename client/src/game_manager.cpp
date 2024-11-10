@@ -300,14 +300,14 @@ void LoadGameState(GameState* game, Player& client, std::array<Player, 4>& playe
 
 void AdjustPlayerDimensions(Player& client, std::array<Player, 4>& all_players){
     int curr_width = client.tex->width * (client.draw_data.scale / 3.0f);
-    while (curr_width >= stage.cell_size) {
+    while (curr_width >= ((float)stage.cell_size * 1.25f)) {
         client.draw_data.scale -= 0.1f;
         curr_width = client.tex->width * (client.draw_data.scale / 3.0f);
     }
 
     for (auto& player : all_players){
         int curr_width = player.tex->width * (player.draw_data.scale / 3.0f);
-        while (curr_width >= stage.cell_size) {
+        while (curr_width >= ((float)stage.cell_size * 1.25f)) {
             player.draw_data.scale -= 0.1f;
             curr_width = player.tex->width * (player.draw_data.scale / 3.0f);
         }
@@ -321,7 +321,7 @@ void ParseEndState(GameState* game, Connection* conn, Player* player){
 void DrawGameState(std::array<Player, 4> players){
     for (int i = 0; i < 4; i++){
         players[i].Draw();
-        //AnimatePlayer(players[i]);
+        AnimatePlayer(players[i]);
     }
 }
 

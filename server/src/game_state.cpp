@@ -93,10 +93,6 @@ void ParseSerialStageData(std::array<uint8_t, 32>& message, ServerStage& stage){
         return;
     }
 
-    //std::cout << "parsing serial stage data" << std::endl;
-    //for (uint8_t c : message){
-    //    printf("%x ", c);
-    //}
     for (int i = 2; i < 32; i++){
         stage.data.push_back(message[i]);
     }
@@ -333,7 +329,7 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     }
 
     // check if position is colliding with anything
-    int spacing = stage.min_y_level / 2;
+    int spacing = (stage.min_y_level / 2);
     player_coll_dirs[sender_id] = stage.ProcessPlayerCollisionDirection(pos);
     bool right_coll = player_coll_dirs[sender_id][0] && player_coll_dirs[sender_id][1];
     bool left_coll = player_coll_dirs[sender_id][2] && player_coll_dirs[sender_id][3];
@@ -387,13 +383,13 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     if (left_coll)   pos.x += 5;
     if (right_coll)  pos.x -= 5;
     if (top_coll)    pos.y += 5;
-    if (bottom_coll) pos.y -= 5;
+    if (bottom_coll) pos.y -= gravity;
 
     // check if player is out of bounds
     //std::cout << stage.min_y_level + spacing << " " << stage.max_y_level - spacing << std::endl;
     if (pos.y < stage.min_y_level + spacing) pos.y = stage.min_y_level + spacing;
-    if (pos.y > stage.max_y_level - ((float)spacing * 1.8f)){
-        pos.y = stage.max_y_level - ((float)spacing * 1.8f);
+    if (pos.y > stage.max_y_level - ((float)spacing * 2.2f)){
+        pos.y = stage.max_y_level - ((float)spacing * 2.2f);
         if (game_state.player_states[sender_id] == AIRBORNE){
             game_state.player_states[sender_id] = IDLE;
         }

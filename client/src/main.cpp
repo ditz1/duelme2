@@ -105,7 +105,7 @@ int main() {
     camera.target = { 0, 0 };
     camera.offset = { (float)GetScreenWidth() / 2, (float)GetScreenHeight() / 2 };
     camera.rotation = 0.0f;
-    camera.zoom = 0.85f;
+    camera.zoom = 0.95f;
 
     
     if (conn.ws <= 0) {
@@ -223,11 +223,11 @@ int main() {
                     DrawText(TextFormat("lobby state: %d", lobby_state), 400, 225, 20, BLUE);
                     break;
                 case 1:
-                    //BeginMode2D(camera);
+                    BeginMode2D(camera);
                         stage.Draw();
                         stage.DrawLines();
                         DrawGameState(all_players);
-                    //EndMode2D();
+                    EndMode2D();
 
                     break;
                 case 2:
