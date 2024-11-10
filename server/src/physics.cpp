@@ -1,6 +1,9 @@
 #include <physics.hpp>
 
 
+int gravity = 4;
+int velocity = 5;
+
 Rectangle PlayerPosToRect(Vector2int player_position, float scale, int player_width, int player_height) {
     Rectangle player_rect;
     player_rect.x = uint16_t((float)player_position.x - ((player_width * scale) / 6.0f));
@@ -45,16 +48,10 @@ CollisionIndex RectRectCollisionDirection(Rectangle rect1, Rectangle rect2) {
 
     bool left_bottom_colliding = ((rect1.x < rect2.x + rect2.width && 
                                  rect1.x > rect2.x && 
-                                 rect1.y + rect1.height > rect2.y) || 
-                                 (rect1.x - 2 < rect2.x + rect2.width && 
-                                 rect1.x + 2 > rect2.x && 
                                  rect1.y + rect1.height > rect2.y));
     bool right_bottom_colliding = ((rect1.x + rect1.width < rect2.x + rect2.width && 
                                   rect1.x + rect1.width > rect2.x && 
-                                  rect1.y + rect1.height > rect2.y) || 
-                                 (rect1.x - 2 < rect2.x + rect2.width && 
-                                 rect1.x + 2 > rect2.x && 
-                                 rect1.y + rect1.height > rect2.y));
+                                  rect1.y + rect1.height > rect2.y));
     bool left_top_colliding = (rect1.x < rect2.x + rect2.width && 
                               rect1.x > rect2.x && 
                               rect1.y < rect2.y + rect2.height);

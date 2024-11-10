@@ -268,6 +268,7 @@ void ProcessPlayerPhysics() {
     // }
 }
 
+
 // this function is meant to be unique to the client,
 // i.e. the client's request should only be changing
 // their own player state, it should never affect
@@ -292,17 +293,23 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
         game_state.player_states[sender_id] = req.player_states[sender_id];
     }
     // position update
-    if (req.player_positions[sender_id].x != curr.player_positions[sender_id].x || req.player_positions[sender_id].y != curr.player_positions[sender_id].y){ 
+    ///// do not change this ///// was causing desync
+    if ((req.player_positions[sender_id].x == curr.player_positions[sender_id].x) && (req.player_positions[sender_id].y == curr.player_positions[sender_id].y)){ 
         game_state.player_positions[sender_id] = req.player_positions[sender_id];
     }
-
-    // attack update
-    ProcessPlayerPhysics();
-    if (req.player_states[sender_id] == PUNCH || req.player_states[sender_id] == KICK){
-        ProcessPlayerFC();
-        UpdatePlayerHurtboxes(stage.scale, stage.player_width, stage.player_height);
-        ProcessPlayerAttacks(stage.scale);
+    // if position is updated here, it will cause desync
+    if (((req.player_positions[sender_id].x != curr.player_positions[sender_id].x) || (req.player_positions[sender_id].y != curr.player_positions[sender_id].y)) && req.player_states[sender_id] != AIRBORNE){
+        std::cout << "desync" << std::endl;
     }
+    ///////////////////////
+
+
+    // attack update (do not put this out of scope)
+    ProcessPlayerPhysics();
+    ProcessPlayerFC();
+    UpdatePlayerHurtboxes(stage.scale, stage.player_width, stage.player_height);
+    ProcessPlayerAttacks(stage.scale);
+    
 
      // hp update
     if (req.player_hps[sender_id] != curr.player_hps[sender_id]){
@@ -320,17 +327,20 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     bool left_coll = player_coll_dirs[sender_id][2] && player_coll_dirs[sender_id][3];
     bool top_coll = player_coll_dirs[sender_id][4] && player_coll_dirs[sender_id][5];
     bool bottom_coll = player_coll_dirs[sender_id][6] && player_coll_dirs[sender_id][7];
-    std::string s;
-    if (left_coll) s += " left ";
-    if (right_coll) s += " right ";
-    if (top_coll) s += " top ";
-    if (bottom_coll) s += " bottom ";
-    if (s.size() > 1)
-        std::cout << "player " << sender_id << " collision: " << s << std::endl;
+    // std::string s;
+    // if (left_coll) s += " left ";
+    // if (right_coll) s += " right ";
+    // if (top_coll) s += " top ";
+    // if (bottom_coll) s += " bottom ";
+    // if (s.size() > 1)
+    //     std::cout << "player " << sender_id << " collision: " << s << std::endl;
     if (!bottom_coll && (game_state.player_states[sender_id] == IDLE)){
         game_state.player_states[sender_id] = AIRBORNE;
-        std::cout << "player " << sender_id << " is airborne" << std::endl;
     }
+    //     std::cout << "player " << sender_id << " is airborne" << std::endl;
+    //     std::cout << "pos.x: " << pos.x << "pos.y: " << pos.y << std::endl;
+    //     std::cout << "old_pos.x: " << old_pos.x << "old_pos.y: " << old_pos.y << std::endl;
+    // }
     if (bottom_coll && (game_state.player_states[sender_id] == AIRBORNE)){
         game_state.player_states[sender_id] = IDLE;
     }
@@ -356,33 +366,11 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
         std::cout << "this should not happen" << std::endl;
     }
 
-    // 2nd check to see if calculated position is colliding with anything
-    player_coll_dirs[sender_id] = stage.ProcessPlayerCollisionDirection(pos);
-    right_coll = player_coll_dirs[sender_id][0] && player_coll_dirs[sender_id][1];
-    left_coll = player_coll_dirs[sender_id][2] && player_coll_dirs[sender_id][3];
-    top_coll = player_coll_dirs[sender_id][4] && player_coll_dirs[sender_id][5];
-    bottom_coll = player_coll_dirs[sender_id][6] && player_coll_dirs[sender_id][7];
-    
-
-
     // reassign position if colliding
-    if (left_coll) {
-        pos.x = old_pos.x + 5;
-        std::cout << "left collision" << std::endl;
-    }
-    if (right_coll) {
-        pos.x = old_pos.x - 5;
-        std::cout << "right collision" << std::endl;
-
-    }
-    if (top_coll) {
-        pos.y = old_pos.y + 5;
-        std::cout << "top collision" << std::endl;
-    }
-    if (bottom_coll) {
-        pos.y = old_pos.y - 5;
-        std::cout << "bottom collision" << std::endl;
-    }
+    if (left_coll)   pos.x = old_pos.x + 2;
+    if (right_coll)  pos.x = old_pos.x - 2;
+    if (top_coll)    pos.y = old_pos.y + 2;
+    if (bottom_coll) pos.y = old_pos.y - 2;
 
     // check if player is out of bounds
     //std::cout << stage.min_y_level + spacing << " " << stage.max_y_level - spacing << std::endl;

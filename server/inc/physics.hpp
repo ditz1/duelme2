@@ -3,6 +3,10 @@
 #include <math.h>
 #include <cstdint>
 
+
+extern int gravity;
+extern int velocity;
+
 typedef struct Rectangle {
     uint16_t x;
     uint16_t y;

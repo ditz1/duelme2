@@ -18,10 +18,10 @@ void DrawDebugInfo(GameState game, Player& client_player, std::array<Player, 4> 
             DrawFPS(x_start_other, y_start_other - y_spacing);            
             DrawText(TextFormat("Stage: %d", current_game_stage), x_start_other, y_start_other, font_size, RAYWHITE);
             DrawText(TextFormat("Players [ ]"), x_start_other, y_start_other + y_spacing, font_size, RAYWHITE);
-            DrawText(TextFormat("P0: %d | %s", all_players[0].anim_current_frame, PlayerStateToString(all_players[0].State()).c_str()), x_start_other, y_start_other + y_spacing * 2, font_size, RAYWHITE);
-            DrawText(TextFormat("P1: %d | %s", all_players[1].anim_current_frame, PlayerStateToString(all_players[1].State()).c_str()), x_start_other, y_start_other + y_spacing * 3, font_size, RAYWHITE);
-            DrawText(TextFormat("P2: %d | %s", all_players[2].anim_current_frame, PlayerStateToString(all_players[2].State()).c_str()), x_start_other, y_start_other + y_spacing * 4, font_size, RAYWHITE);
-            DrawText(TextFormat("P3: %d | %s", all_players[3].anim_current_frame, PlayerStateToString(all_players[3].State()).c_str()), x_start_other, y_start_other + y_spacing * 5, font_size, RAYWHITE);
+            DrawText(TextFormat("%d, %d | P0: %d | %s", all_players[0].Position().x, all_players[0].Position().y, all_players[0].anim_current_frame, PlayerStateToString(all_players[0].State()).c_str()), x_start_other - y_spacing * 2, y_start_other + y_spacing * 2, font_size, RAYWHITE);
+            DrawText(TextFormat("%d, %d | P1: %d | %s",all_players[1].Position().x, all_players[1].Position().y, all_players[1].anim_current_frame, PlayerStateToString(all_players[1].State()).c_str()), x_start_other - y_spacing * 2, y_start_other + y_spacing * 3, font_size, RAYWHITE);
+            DrawText(TextFormat("%d, %d | P2: %d | %s",all_players[2].Position().x, all_players[2].Position().y, all_players[2].anim_current_frame, PlayerStateToString(all_players[2].State()).c_str()), x_start_other - y_spacing * 2, y_start_other + y_spacing * 4, font_size, RAYWHITE);
+            DrawText(TextFormat("%d, %d | P3: %d | %s",all_players[3].Position().x, all_players[3].Position().y, all_players[3].anim_current_frame, PlayerStateToString(all_players[3].State()).c_str()), x_start_other - y_spacing * 2, y_start_other + y_spacing * 5, font_size, RAYWHITE);
             
             frame_gap = std::abs(all_players[0].anim_current_frame - all_players[1].anim_current_frame);
             if (all_players[0].State() == all_players[1].State()) {
