@@ -320,57 +320,74 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     Vector2int pos = game_state.player_positions[sender_id];
     Vector2int old_pos = game_state.player_positions[sender_id];
 
-    // check if position is colliding with anything
-    int spacing = stage.min_y_level / 2;
-    player_coll_dirs[sender_id] = stage.ProcessPlayerCollisionDirection(game_state.player_positions[sender_id]);
-    bool right_coll = player_coll_dirs[sender_id][0] && player_coll_dirs[sender_id][1];
-    bool left_coll = player_coll_dirs[sender_id][2] && player_coll_dirs[sender_id][3];
-    bool top_coll = player_coll_dirs[sender_id][4] && player_coll_dirs[sender_id][5];
-    bool bottom_coll = player_coll_dirs[sender_id][6] && player_coll_dirs[sender_id][7];
-    // std::string s;
-    // if (left_coll) s += " left ";
-    // if (right_coll) s += " right ";
-    // if (top_coll) s += " top ";
-    // if (bottom_coll) s += " bottom ";
-    // if (s.size() > 1)
-    //     std::cout << "player " << sender_id << " collision: " << s << std::endl;
-    if (!bottom_coll && (game_state.player_states[sender_id] == IDLE)){
-        game_state.player_states[sender_id] = AIRBORNE;
-    }
-    //     std::cout << "player " << sender_id << " is airborne" << std::endl;
-    //     std::cout << "pos.x: " << pos.x << "pos.y: " << pos.y << std::endl;
-    //     std::cout << "old_pos.x: " << old_pos.x << "old_pos.y: " << old_pos.y << std::endl;
-    // }
-    if (bottom_coll && (game_state.player_states[sender_id] == AIRBORNE)){
-        game_state.player_states[sender_id] = IDLE;
-    }
-    // apply movement
+    
+
     switch(PlayerState(game_state.player_states[sender_id])){
         case MOVE_RIGHT: PlayerMoveRight(player_coll_dirs[sender_id], pos); break;
         case MOVE_LEFT: PlayerMoveLeft(player_coll_dirs[sender_id], pos); break;
         case MOVE_UP: PlayerMoveUp(player_coll_dirs[sender_id], pos); break;
         case MOVE_DOWN: PlayerMoveDown(player_coll_dirs[sender_id], pos); break;
-        case AIRBORNE:
-            if (!top_coll && !bottom_coll && !left_coll && !right_coll){
-                pos.y += 2;
-            }
-            break;
-        case IDLE:
-            break;
-        default:
-            break;
+        case AIRBORNE: pos.y += gravity; break;
+        case IDLE: break;
+        default: break;
     }
 
+    // check if position is colliding with anything
+    int spacing = stage.min_y_level / 2;
+    player_coll_dirs[sender_id] = stage.ProcessPlayerCollisionDirection(pos);
+    bool right_coll = player_coll_dirs[sender_id][0] && player_coll_dirs[sender_id][1];
+    bool left_coll = player_coll_dirs[sender_id][2] && player_coll_dirs[sender_id][3];
+    bool top_coll = player_coll_dirs[sender_id][4] && player_coll_dirs[sender_id][5];
+    bool bottom_coll = player_coll_dirs[sender_id][6] && player_coll_dirs[sender_id][7];
+    std::string s;
+    if (left_coll) s += " left ";
+    if (right_coll) s += " right ";
+    if (top_coll) s += " top ";
+    if (bottom_coll) s += " bottom ";
+    if (s.size() > 1)
+        std::cout << "player " << sender_id << " collision: " << s << std::endl;
+    
+    if (!bottom_coll && (game_state.player_states[sender_id] == IDLE)){
+        game_state.player_states[sender_id] = AIRBORNE;
+    }
+    if (bottom_coll && (game_state.player_states[sender_id] == AIRBORNE)){
+        game_state.player_states[sender_id] = IDLE;
+    }
+
+    
+    // apply movement
+    switch(PlayerState(game_state.player_states[sender_id])){
+        case MOVE_RIGHT: 
+        case MOVE_LEFT:
+        case AIRBORNE: 
+            if (bottom_coll){
+                pos.y -= gravity;
+            }
+            break;
+        case MOVE_UP: ; break;
+        case MOVE_DOWN: ; break;
+            break;
+        case IDLE: break;
+        default: break;
+    }
+
+    
+    player_coll_dirs[sender_id] = stage.ProcessPlayerCollisionDirection(pos);
+    right_coll = player_coll_dirs[sender_id][0] && player_coll_dirs[sender_id][1];
+    left_coll = player_coll_dirs[sender_id][2] && player_coll_dirs[sender_id][3];
+    top_coll = player_coll_dirs[sender_id][4] && player_coll_dirs[sender_id][5];
+    bottom_coll = player_coll_dirs[sender_id][6] && player_coll_dirs[sender_id][7];
+   
 
     if ((old_pos.y > pos.y) && game_state.player_states[sender_id] == AIRBORNE){
         std::cout << "this should not happen" << std::endl;
     }
 
     // reassign position if colliding
-    if (left_coll)   pos.x = old_pos.x + 2;
-    if (right_coll)  pos.x = old_pos.x - 2;
-    if (top_coll)    pos.y = old_pos.y + 2;
-    if (bottom_coll) pos.y = old_pos.y - 2;
+    if (left_coll)   pos.x += 5;
+    if (right_coll)  pos.x -= 5;
+    if (top_coll)    pos.y += 5;
+    if (bottom_coll) pos.y -= 5;
 
     // check if player is out of bounds
     //std::cout << stage.min_y_level + spacing << " " << stage.max_y_level - spacing << std::endl;

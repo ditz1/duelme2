@@ -6,15 +6,21 @@
 
 void PlayerMoveRight(CollisionIndex dirs, Vector2int& pos) {
     pos.x += velocity;
-    if (!dirs[6] && !dirs[7]) {
+    bool airborne = !dirs[6] && !dirs[7];
+    if (airborne) {
         pos.y += gravity;
+    } else {
+        pos.y -= 2;
     }
 }
 
 void PlayerMoveLeft(CollisionIndex dirs, Vector2int& pos) {
     pos.x -= velocity;
-    if (!dirs[6] && !dirs[7]) {
+    bool airborne = !dirs[6] && !dirs[7];
+    if (airborne) {
         pos.y += gravity;
+    } else {
+        pos.y -= 2;
     }
 }
 

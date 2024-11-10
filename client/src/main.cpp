@@ -95,7 +95,7 @@ int main() {
 
     std::array<Player, 4> all_players = {Player(), Player(), Player(), Player()};
 
-    stage.LoadFromString(test4);
+    stage.LoadFromString(test3);
     stage.Generate();
 
     Connection conn;
