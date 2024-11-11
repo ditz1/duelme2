@@ -16,6 +16,7 @@ Player::Player() {
     _textures_loaded = false;
     last_state = PlayerState::IDLE;
     _is_attacking = false;
+    item = EMPTY;
 }
 
 Player::~Player() {

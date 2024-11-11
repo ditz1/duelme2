@@ -3,8 +3,13 @@ project(your_project_name)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(BOOST_ROOT "/home/ditz/boost")
-set(BOOST_LIBRARYDIR "/home/ditz/boost/stage/lib")
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(BOOST_ROOT "/Users/daniel/boost")
+    set(BOOST_LIBRARYDIR "/Users/daniel/boost/stage/lib")
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(BOOST_ROOT "/home/daniel/boost")
+    set(BOOST_LIBRARYDIR "/home/daniel/boost/stage/lib")
+endif()
 
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(Threads)

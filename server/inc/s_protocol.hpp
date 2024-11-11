@@ -55,6 +55,12 @@ typedef struct Vector2int {
     uint16_t y;
 } Vector2int;
 
+enum Item {
+    EMPTY,
+    SHOTGUN,
+    PISTOL
+}
+
 enum PlayerState {
     MOVE_RIGHT,
     MOVE_LEFT,

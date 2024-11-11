@@ -37,6 +37,12 @@ typedef struct Connection {
     bool connected;
 } Connection;
 
+enum Item {
+    EMPTY,
+    SHOTGUN,
+    PISTOL
+}
+
 enum PlayerState {
     MOVE_RIGHT,
     MOVE_LEFT,

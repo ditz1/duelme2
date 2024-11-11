@@ -88,7 +88,7 @@ void CheckPlayersScale(Player& client, std::array<Player, 4>& players, Stage& st
 int main() {
     
     InitWindow(800, 450, "client");
-    SetTargetFPS(120);
+    SetTargetFPS(60);
     
     GameState game_state;
 
@@ -100,10 +100,11 @@ int main() {
 
     stage.LoadFromString(test3);
     stage.Generate();
+    std::vector<Rectangle, 4> items;
 
 
     Connection conn;
-    OpenWebSocket(&conn, "ws://192.168.1.42:9000/ws");
+    OpenWebSocket(&conn, "ws://127.0.0.1:9000/ws");
 
     Camera2D camera = { 0 };
     camera.target = { 0, 0 };
@@ -187,7 +188,7 @@ int main() {
                     case 0:
                         break;
                     case 1:
-                        SendStageData(&conn, client_player, all_players, stage);
+                        SendStageData(&conn, client_player, all_players, stage, items);
                         LoadGameState(&game_state, client_player, all_players);
                         break;
                 }

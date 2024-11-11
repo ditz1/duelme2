@@ -190,7 +190,7 @@ void CheckData(std::vector<uint8_t>& data, std::vector<Rectangle>& stage_cells, 
     printf("\n");
 }
 
-std::vector<uint8_t> SerializeStageData(std::vector<Rectangle>& stage_cells, std::array<Player, 4>& players){
+std::vector<uint8_t> SerializeStageData(std::vector<Rectangle>& stage_cells, std::array<Player, 4>& players, std::vector<Rectangle>& items){
     std::vector<uint8_t> data;
     for (Rectangle rect : stage_cells){
         std::cout << "x: " << rect.x << " y: " << rect.y << " width: " << rect.width << " height: " << rect.height << std::endl;
@@ -222,7 +222,27 @@ std::vector<uint8_t> SerializeStageData(std::vector<Rectangle>& stage_cells, std
     std::tuple<uint8_t, uint8_t> height_bytes = Float16ToBytes(players[0].tex->height);
     data.push_back(std::get<1>(height_bytes));
     data.push_back(std::get<0>(height_bytes));
+
+    data.push_back(0xFF);
+    data.push_back(0xFF);
+    data.push_back(0xFF);
+    data.push_back(0xFF);
+
     
+    for (Rectangle rect : items){
+        std::tuple<uint8_t, uint8_t> x_bytes = Float16ToBytes(rect.x);
+        std::tuple<uint8_t, uint8_t> y_bytes = Float16ToBytes(rect.y);
+        std::tuple<uint8_t, uint8_t> width_bytes = Float16ToBytes(rect.width);
+        std::tuple<uint8_t, uint8_t> height_bytes = Float16ToBytes(rect.height);
+        data.push_back(std::get<0>(x_bytes));
+        data.push_back(std::get<1>(x_bytes));
+        data.push_back(std::get<0>(y_bytes));
+        data.push_back(std::get<1>(y_bytes));
+        data.push_back(std::get<0>(width_bytes));
+        data.push_back(std::get<1>(width_bytes));
+        data.push_back(std::get<0>(height_bytes));
+        data.push_back(std::get<1>(height_bytes));
+    } 
 
     return data;
 }
@@ -256,7 +276,7 @@ std::vector<std::array<uint8_t, 32>> CreateStageMessage(std::vector<uint8_t> ser
     return messages;
 }
 
-void SendStageData(Connection* conn, Player& client, std::array<Player, 4>& players, Stage& stage){
+void SendStageData(Connection* conn, Player& client, std::array<Player, 4>& players, Stage& stage, std::vector<Rectangle>& items){
     if (stage_sent) {
         in_loading_screen = true;
         StartSendStageData(conn, players, stage);

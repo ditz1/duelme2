@@ -15,7 +15,7 @@ void LoadGameState(GameState* game, Player& client, std::array<Player, 4>& playe
 void StartSendStageData(Connection* conn, std::array<Player, 4>& players, Stage& stage);
 void ListenStageData(Connection* conn, Player& client, std::array<Player, 4>& players, Stage& stage);
 void EndSendStageData(Connection* conn, std::array<Player, 4>& players, Stage& stage);
-void SendStageData(Connection* conn, Player& client, std::array<Player, 4>& players, Stage& stage);
+void SendStageData(Connection* conn, Player& client, std::array<Player, 4>& players, Stage& stage, std::vector<Rectangle>& items);
 std::vector<uint8_t> SerializeStageData(std::vector<Rectangle>& stage_cells, std::array<Player, 4>& players);
 std::vector<std::array<uint8_t, 32>> CreateStageMessage(std::vector<uint8_t> serialized_data);
 void ParseEndState(GameState* game, Connection* conn, Player* player);
