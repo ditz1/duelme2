@@ -21,6 +21,7 @@ extern int num_failed_pings;
 extern bool in_loading_screen;
 extern bool stage_sent;
 extern bool stage_message_created;
+extern float player_size;
 
 
 typedef struct Vector2int {

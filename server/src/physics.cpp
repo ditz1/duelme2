@@ -1,8 +1,8 @@
 #include <physics.hpp>
 
 
-int gravity = 4;
-int velocity = 5;
+int gravity = 5;
+int velocity = 7;
 
 Rectangle PlayerPosToRect(Vector2int player_position, float scale, int player_width, int player_height) {
     Rectangle player_rect;

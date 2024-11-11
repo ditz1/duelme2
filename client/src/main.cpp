@@ -11,6 +11,9 @@ int num_failed_pings = 0;
 bool stage_sent = true;
 bool in_loading_screen = false;
 bool stage_message_created = false;
+bool debug_mode = false;
+float player_size = 1.45;
+int max_camera_y = 0;
 
 Stage stage;
 
@@ -31,21 +34,21 @@ std::string test2 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
 
-std::string test3 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \
-                      #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  G  G  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  #  #  #  #  #  #  #  #  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  #  #  #  #  R  R  R  R  R  R  R  R  R  #  #  #  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
+std::string test3 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \
+                      #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  G  G  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  #  #  #  #  #  #  #  #  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  #  #  #  #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  #  #  #  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
 
 std::string test4 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \
                       #  #  #  #  #  #  #  #  #  #  #  #  # \n \
@@ -98,6 +101,7 @@ int main() {
     stage.LoadFromString(test3);
     stage.Generate();
 
+
     Connection conn;
     OpenWebSocket(&conn, "ws://192.168.1.42:9000/ws");
 
@@ -106,6 +110,10 @@ int main() {
     camera.offset = { (float)GetScreenWidth() / 2, (float)GetScreenHeight() / 2 };
     camera.rotation = 0.0f;
     camera.zoom = 0.95f;
+
+    max_camera_y = stage.cell_size * stage.rows;
+    Vector2 max_cam_pos = GetScreenToWorld2D({0, (float)max_camera_y + 50.0f}, camera);
+    max_camera_y = max_cam_pos.y;
 
     
     if (conn.ws <= 0) {
@@ -203,6 +211,10 @@ int main() {
             ClientSendBytes(&conn, (void*)buf.begin(), 32);
         }
 
+        if (IsKeyPressed(KEY_ENTER)){
+            debug_mode = !debug_mode;
+        }
+
 
         
 
@@ -212,7 +224,7 @@ int main() {
         for (Player& p : all_players){ 
             p.Update(); 
         }
-        AdjustCameraPosition(all_players, camera);
+        AdjustCameraPosition(all_players, camera, max_camera_y);
         /////// draw /////////
         BeginDrawing();
             ClearBackground(DARKGRAY);
@@ -225,16 +237,18 @@ int main() {
                 case 1:
                     BeginMode2D(camera);
                         stage.Draw();
-                        stage.DrawLines();
+                        //stage.DrawLines();
                         DrawGameState(all_players);
                     EndMode2D();
-
+                    DrawGameUI(game_state, client_player, all_players);
                     break;
                 case 2:
                     DrawText("Game Over", 400, 225, 20, RED);
                     break;
             }
-            DrawDebugInfo(game_state, client_player, all_players);
+            
+        
+        if (debug_mode) DrawDebugInfo(game_state, client_player, all_players);
             
         EndDrawing();
 

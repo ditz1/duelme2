@@ -300,14 +300,14 @@ void LoadGameState(GameState* game, Player& client, std::array<Player, 4>& playe
 
 void AdjustPlayerDimensions(Player& client, std::array<Player, 4>& all_players){
     int curr_width = client.tex->width * (client.draw_data.scale / 3.0f);
-    while (curr_width >= ((float)stage.cell_size * 1.25f)) {
+    while (curr_width >= ((float)stage.cell_size * player_size)) {
         client.draw_data.scale -= 0.1f;
         curr_width = client.tex->width * (client.draw_data.scale / 3.0f);
     }
 
     for (auto& player : all_players){
         int curr_width = player.tex->width * (player.draw_data.scale / 3.0f);
-        while (curr_width >= ((float)stage.cell_size * 1.25f)) {
+        while (curr_width >= ((float)stage.cell_size * player_size)) {
             player.draw_data.scale -= 0.1f;
             curr_width = player.tex->width * (player.draw_data.scale / 3.0f);
         }

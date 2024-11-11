@@ -1,6 +1,32 @@
 #include <helpers.hpp>
 #include <player.hpp>
 
+void DrawGameUI(GameState game, Player& client_player, std::array<Player, 4> all_players) {
+    int font_size = 16;
+    int y_spacing = 25;
+    int x_start = 30;
+    int y_start = 30;
+    int y_start_other = 30;
+    int x_start_other = GetScreenWidth() - 120;
+    
+    // Draw player HP
+    int hp_bottom_spacing = 50;
+    int hp_y_start = GetScreenHeight() - hp_bottom_spacing;
+    int hp_bar_spacing = 200;
+    for (int i = 0; i < 4; i++) {
+        if (i >= num_players_connected) break;
+        DrawText(TextFormat("P%d HP: %d", i, game.player_hps[i]), x_start + hp_bar_spacing * i, hp_y_start, font_size, RAYWHITE);
+        Rectangle hp_bg      = {(float)x_start + (hp_bar_spacing * i) - 3, (float)hp_y_start + 20 - 3, 150 + 6, (float)20 + 6};
+        Rectangle hp_bar_red = {(float)x_start + (hp_bar_spacing * i), (float)hp_y_start + 20, 150, (float)20};
+        Rectangle hp_bar     = {(float)x_start + (hp_bar_spacing * i), (float)hp_y_start + 20, 1.5f * game.player_hps[i], (float)20};
+
+        DrawRectangleRounded(hp_bg, 0.4f, 10, BLACK);
+        DrawRectangleRounded(hp_bar_red, 0.4f, 10, RED);
+        DrawRectangleRounded(hp_bar, 0.4f, 10, GREEN);
+    }
+}
+
+
 void DrawDebugInfo(GameState game, Player& client_player, std::array<Player, 4> all_players) {
             int font_size = 16;
             int y_spacing = 25;
