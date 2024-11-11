@@ -316,6 +316,8 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     Vector2int pos = game_state.player_positions[sender_id];
     Vector2int old_pos = game_state.player_positions[sender_id];
 
+    //bool can_airborne = stage.ProcessPlayerCollision(pos);
+
     
 
     switch(PlayerState(game_state.player_states[sender_id])){
@@ -357,6 +359,7 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
         case MOVE_LEFT:
         case AIRBORNE: 
             if (bottom_coll){
+
                 pos.y -= gravity;
             }
             break;
