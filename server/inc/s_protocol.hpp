@@ -59,7 +59,7 @@ enum Item {
     EMPTY,
     SHOTGUN,
     PISTOL
-}
+};
 
 enum PlayerState {
     MOVE_RIGHT,
@@ -71,6 +71,7 @@ enum PlayerState {
     JUMP,
     BLOCK,
     AIRBORNE,
+    SHOOT,
     IDLE,
     ALL_PLAYER_STATES,
     UNREGISTERED

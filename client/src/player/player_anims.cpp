@@ -9,6 +9,9 @@ void AnimatePlayer(Player& player) {
         case PlayerState::PUNCH:
             AnimatePlayerPunch(player);
             break;
+        case PlayerState::SHOOT:
+            AnimatePlayerShoot(player);
+            break;
         case PlayerState::KICK:
             AnimatePlayerKick(player);
             break;
@@ -66,6 +69,30 @@ void AnimatePlayerKick(Player& player){
     } else {
         x = (float)player.Bounds().x - ((float)(player.Bounds().width) / 4) - (scale * 2.0f); 
         w = ((float)player.Bounds().width * 0.75f);
+    }
+
+    hitbox = {x, y, w, h};
+
+    DrawRectangleLinesEx(hitbox, 3, YELLOW);
+}
+
+void AnimatePlayerShoot(Player& player){
+    float scale = player.draw_data.scale;
+
+    Rectangle hitbox;
+    float x;
+    float w;
+    float y = (float)player.Bounds().y;
+    float h = (float)player.Bounds().height;
+
+    int shot_dist = 50;
+
+    if (player.FaceDir() > 0){ // facing right
+        x = (float)player.Bounds().x + ((float)(player.Bounds().width) / 2); 
+        w = ((float)player.Bounds().width * 0.75f) + (scale * 2.0f) + shot_dist;
+    } else {
+        x = (float)player.Bounds().x - ((float)(player.Bounds().width) / 4) - (scale * 2.0f) - shot_dist; 
+        w = ((float)player.Bounds().width * 0.75f) + shot_dist;
     }
 
     hitbox = {x, y, w, h};

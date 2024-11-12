@@ -5,6 +5,7 @@
 void AnimatePlayer(Player& player);
 void AnimatePlayerPunch(Player& player);
 void AnimatePlayerKick(Player& player);
+void AnimatePlayerShoot(Player& player);
 void AnimatePlayerJump(Player& player);
 void AnimatePlayerBlock(Player& player);
 void AnimatePlayerMoveRight(Player& player);

@@ -295,7 +295,7 @@ void SendStageData(Connection* conn, Player& client, std::array<Player, 4>& play
     for (Player player : players){
         player_rects.push_back(player.Bounds());
     }
-    std::vector<uint8_t> serial_data = SerializeStageData(stage_rects, players);
+    std::vector<uint8_t> serial_data = SerializeStageData(stage_rects, players, items);
     std::vector<std::array<uint8_t, 32>> messages = CreateStageMessage(serial_data);
 
     for (std::array<uint8_t, 32>& message : messages){

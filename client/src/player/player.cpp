@@ -77,6 +77,7 @@ void Player::AssignTexture(PlayerState state){
     switch (state) {
         case AIRBORNE:
         case IDLE:
+        case SHOOT:
             img = &texs[0].img;
             tex = &texs[0].tex;
             current_anim = 0;
@@ -181,6 +182,12 @@ void Player::PollAttackInput() {
     }
     if (IsKeyPressed(KEY_L) && !_is_attacking){
         _requested_state = uint8_t(BLOCK);
+        _is_attacking = true;
+        anim_current_frame = 0;
+        return;
+    }
+    if (IsKeyPressed(KEY_M) && !_is_attacking){
+        _requested_state = uint8_t(SHOOT);
         _is_attacking = true;
         anim_current_frame = 0;
         return;

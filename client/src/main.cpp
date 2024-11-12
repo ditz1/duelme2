@@ -100,11 +100,11 @@ int main() {
 
     stage.LoadFromString(test3);
     stage.Generate();
-    std::vector<Rectangle, 4> items;
+    std::vector<Rectangle> items;
 
 
     Connection conn;
-    OpenWebSocket(&conn, "ws://127.0.0.1:9000/ws");
+    OpenWebSocket(&conn, "ws://192.168.1.42:9000/ws");
 
     Camera2D camera = { 0 };
     camera.target = { 0, 0 };
@@ -172,7 +172,7 @@ int main() {
 
         if (in_loading_screen) {
             InLoadingScreen();
-            SendStageData(&conn, client_player, all_players, stage);
+            SendStageData(&conn, client_player, all_players, stage, items);
             ListenStageData(&conn, client_player, all_players, stage);
             continue;
         }

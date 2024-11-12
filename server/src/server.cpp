@@ -64,7 +64,7 @@ int main()
     InitGameState(&game_state);
     try
     {
-        auto const address = net::ip::make_address("127.0.0.1");
+        auto const address = net::ip::make_address("192.168.1.42");
         auto const port = static_cast<unsigned short>(std::atoi("9000"));
 
         // the io_context is required

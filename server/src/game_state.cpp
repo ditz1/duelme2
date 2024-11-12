@@ -157,7 +157,7 @@ void ChangeGameState(){
 void ProcessPlayerFC() {
     int fc_delay = 6;
     for (int i = 0; i < 4; i++){
-        if (game_state.player_states[i] == PUNCH || game_state.player_states[i] == KICK){
+        if (game_state.player_states[i] == PUNCH || game_state.player_states[i] == KICK || game_state.player_states[i] == SHOOT){
             player_fcs[i].fc++;
             if (player_fcs[i].fc >= fc_delay){
                 player_fcs[i].fc = 0;
@@ -200,6 +200,19 @@ void ProcessPlayerAttacks(float scale) {
             case KICK:
                 player_hitboxes[i] = GeneratePlayerHitboxKick(player_hurtboxes[i], scale, player_faces[i]);
                 if (player_fcs[i].anim_fc > 5) {
+                    for (size_t j = 0; j < 4; j++){
+                        if (i == j) continue;
+                        if (RectRectCollision(player_hitboxes[i], player_hurtboxes[j]) && !processed_hit[i]){
+                            std::cout << "player " << i << " hit player " << j << " with kick" << std::endl;
+                            game_state.player_hps[j] -= 10;
+                            processed_hit[i] = true;
+                        }
+                    }
+                }
+                break;
+            case SHOOT:
+                player_hitboxes[i] = GeneratePlayerHitboxShoot(player_hurtboxes[i], scale, player_faces[i]);
+                if (player_fcs[i].anim_fc > 1) {
                     for (size_t j = 0; j < 4; j++){
                         if (i == j) continue;
                         if (RectRectCollision(player_hitboxes[i], player_hurtboxes[j]) && !processed_hit[i]){
