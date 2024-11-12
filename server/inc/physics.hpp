@@ -3,9 +3,9 @@
 #include <math.h>
 #include <cstdint>
 
-
 extern int gravity;
-extern int velocity;
+extern int accel_const;
+extern float dt;
 
 typedef struct Rectangle {
     uint16_t x;
@@ -13,6 +13,17 @@ typedef struct Rectangle {
     uint16_t width;
     uint16_t height;
 } Rectangle;
+
+typedef struct PlayerBody {
+    float pos_x;
+    float pos_y;
+    float last_pos_x;
+    float last_pos_y;
+    float vel_x;
+    float vel_y;
+    float acc_x;
+    float acc_y;
+} PlayerBody;
 
 // 0 right, 1 left, 2 l_top, 3 r_top, 4 l_bottom, 5 r_bottom
 typedef std::array<bool, 8> CollisionIndex;

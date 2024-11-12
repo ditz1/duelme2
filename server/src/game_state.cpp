@@ -11,6 +11,7 @@ std::array<Rectangle, 4> player_hurtboxes;
 std::array<bool, 4> processed_hit;
 std::array<bool, 4> player_airborne;
 std::array<int, 4> player_faces;
+std::array<PlayerBody, 4> player_bodies;
 
 void UpdateGameStateWithoutRequest() {
     // if somehow this is triggered, dont break the game
@@ -286,24 +287,58 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     if (req.player_hps[sender_id] != curr.player_hps[sender_id]){
         game_state.player_hps[sender_id] = req.player_hps[sender_id];
     }
+    // bool right_coll = player_coll_dirs[sender_id][0] && player_coll_dirs[sender_id][1];
+    // bool left_coll = player_coll_dirs[sender_id][2] && player_coll_dirs[sender_id][3];
+    // bool top_coll = player_coll_dirs[sender_id][4] && player_coll_dirs[sender_id][5];
+    // bool bottom_coll = player_coll_dirs[sender_id][6] && player_coll_dirs[sender_id][7];
+
+    // if (left_coll){
+    //     player_bodies[sender_id].vel_x = 0;
+    //     player_bodies[sender_id].acc_x = 0;
+    //     player_bodies[sender_id].pos_x = pos.x;
+    //     player_bodies[sender_id].last_pos_x = pos.x;
+    // }   
+    // if (right_coll) { 
+    //     player_bodies[sender_id].vel_x = 0;
+    //     player_bodies[sender_id].acc_x = 0;
+    //     player_bodies[sender_id].pos_x = pos.x; 
+    //     player_bodies[sender_id].last_pos_x = pos.x;
+    // }
+    // if (top_coll){    
+    //     player_bodies[sender_id].vel_y = 0;
+    //     player_bodies[sender_id].acc_y = 0;
+    //     player_bodies[sender_id].pos_y = pos.y;
+    //     player_bodies[sender_id].last_pos_y = pos.y;
+    // }
+    // if (bottom_coll) {
+    //     player_bodies[sender_id].vel_y = 0;
+    //     player_bodies[sender_id].acc_y = 0;
+    //     player_bodies[sender_id].pos_y = pos.y;
+    //     player_bodies[sender_id].last_pos_y = pos.y;
+    // }
     
     // move + collision detection
     Vector2int pos = game_state.player_positions[sender_id];
     Vector2int old_pos = game_state.player_positions[sender_id];
 
-    //bool can_airborne = stage.ProcessPlayerCollision(pos);
-
-    
-
     switch(PlayerState(game_state.player_states[sender_id])){
-        case MOVE_RIGHT: PlayerMoveRight(player_coll_dirs[sender_id], pos); break;
-        case MOVE_LEFT: PlayerMoveLeft(player_coll_dirs[sender_id], pos); break;
-        case MOVE_UP: PlayerMoveUp(player_coll_dirs[sender_id], pos); break;
-        case MOVE_DOWN: PlayerMoveDown(player_coll_dirs[sender_id], pos); break;
-        case AIRBORNE: pos.y += gravity; break;
-        case IDLE: break;
+        case MOVE_RIGHT: PlayerMoveRight(player_coll_dirs[sender_id], player_bodies[sender_id]); break;
+        case MOVE_LEFT: PlayerMoveLeft(player_coll_dirs[sender_id], player_bodies[sender_id]); break;
+        case MOVE_UP: PlayerMoveUp(player_coll_dirs[sender_id], player_bodies[sender_id]); break;
+        case MOVE_DOWN: PlayerMoveDown(player_coll_dirs[sender_id], player_bodies[sender_id]); break;
+        case PUNCH:
+        case KICK:
+        case SHOOT:
+        case AIRBORNE: PlayerApplyGravity(player_coll_dirs[sender_id], player_bodies[sender_id]); break;
+        case IDLE: 
+            PlayerIdle(player_bodies[sender_id]);
+            break;
         default: break;
     }
+
+    PlayerApplyPhysics(pos, player_bodies[sender_id]);
+
+    
 
     // check if position is colliding with anything
     int spacing = (stage.min_y_level / 2);
@@ -328,19 +363,15 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     }
 
     
-    // apply movement
+    // apply movement if colliding
     switch(PlayerState(game_state.player_states[sender_id])){
         case MOVE_RIGHT: 
         case MOVE_LEFT:
         case AIRBORNE: 
-            if (bottom_coll){
-
-                pos.y -= gravity;
-            }
-            break;
-        case MOVE_UP: ; break;
-        case MOVE_DOWN: ; break;
-            break;
+            if (bottom_coll) pos.y -= gravity;
+                break;
+        case MOVE_UP: 
+        case MOVE_DOWN: 
         case IDLE: break;
         default: break;
     }
@@ -358,22 +389,53 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     }
 
     // reassign position if colliding
-    if (left_coll)   pos.x += 5;
-    if (right_coll)  pos.x -= 5;
-    if (top_coll)    pos.y += 5;
-    if (bottom_coll) pos.y -= gravity;
+    if (left_coll){
+        pos.x += 1;
+        player_bodies[sender_id].vel_x = 0;
+        player_bodies[sender_id].acc_x = 0;
+        player_bodies[sender_id].pos_x = pos.x;
+        player_bodies[sender_id].last_pos_x = pos.x;
+    }   
+    if (right_coll) { 
+        pos.x -= 1;
+        player_bodies[sender_id].vel_x = 0;
+        player_bodies[sender_id].acc_x = 0;
+        player_bodies[sender_id].pos_x = pos.x; 
+        player_bodies[sender_id].last_pos_x = pos.x;
+    }
+    if (top_coll){    
+        pos.y += 1;
+        player_bodies[sender_id].vel_y = 0;
+        player_bodies[sender_id].acc_y = 0;
+        player_bodies[sender_id].pos_y = pos.y;
+        player_bodies[sender_id].last_pos_y = pos.y;
+    }
+    if (bottom_coll) {
+        pos.y -= 1;
+        player_bodies[sender_id].vel_y = 0;
+        player_bodies[sender_id].acc_y = 0;
+        player_bodies[sender_id].pos_y = pos.y;
+        player_bodies[sender_id].last_pos_y = pos.y;
+    }
 
-    // check if player is out of bounds
-    //std::cout << stage.min_y_level + spacing << " " << stage.max_y_level - spacing << std::endl;
-    if (pos.y < stage.min_y_level + spacing) pos.y = stage.min_y_level + spacing;
+    if (pos.y < stage.min_y_level + spacing){ 
+        pos.y = stage.min_y_level + spacing;
+    }
+
     if (pos.y > stage.max_y_level - ((float)spacing * 2.2f)){
         pos.y = stage.max_y_level - ((float)spacing * 2.2f);
         if (game_state.player_states[sender_id] == AIRBORNE){
             game_state.player_states[sender_id] = IDLE;
         }
-    } 
-    if (pos.x < stage.min_x_level + spacing) pos.x = stage.min_x_level + spacing;
-    if (pos.x > stage.max_x_level - spacing) pos.x = stage.max_x_level - spacing;
+    }
+
+    if (pos.x < stage.min_x_level + spacing){ 
+        pos.x = stage.min_x_level + spacing;
+    }
+
+    if (pos.x > stage.max_x_level - spacing) {
+        pos.x = stage.max_x_level - spacing;
+    }
     
     game_state.player_positions[sender_id] = pos;
     
