@@ -5,27 +5,27 @@ float max_x_velocity = 2.0f;
 float max_y_velocity = 2.0f; 
 float max_x_acceleration = 0.5f;
 float max_y_acceleration = 0.5f;
-int max_distance = 20;
+float max_distance = 5.0f;
 
 void PlayerApplyPhysics(Vector2int& pos, PlayerBody& body) {
-    float last_pos_x = body.pos_x;
-    float last_pos_y = body.pos_y;
-    
-    body.pos_x = 2.0f * body.pos_x - body.last_pos_x + body.acc_x * dt * dt;
-    body.pos_y = 2.0f * body.pos_y - body.last_pos_y + body.acc_y * dt * dt;
+    const float p_last_pos_x = body.pos_x;
+    const float p_last_pos_y = body.pos_y;
 
+    float new_pos_x = 2.0f * body.pos_x - body.last_pos_x + body.acc_x * dt * dt;
+    float new_pos_y = 2.0f * body.pos_y - body.last_pos_y + body.acc_y * dt * dt;
     
-    body.last_pos_x = last_pos_x;
-    body.last_pos_y = last_pos_y;
-    
-    body.vel_x = (body.pos_x - body.last_pos_x) / dt;
-    body.vel_y = (body.pos_y - body.last_pos_y) / dt;
-    
+    float x_diff = new_pos_x - body.pos_x;
+    float y_diff = new_pos_y - body.pos_y;
 
-    // if (body.vel_x > max_x_velocity) body.vel_x = max_x_velocity;
-    // if (body.vel_x < -max_x_velocity) body.vel_x = -max_x_velocity;
-    // if (body.vel_y > max_y_velocity) body.vel_y = max_y_velocity;
-    // if (body.vel_y < -max_y_velocity) body.vel_y = -max_y_velocity;
+    if (x_diff > max_distance) x_diff = max_distance;
+    if (x_diff < -max_distance) x_diff = -max_distance;
+    if (y_diff > max_distance) y_diff = max_distance;
+    if (y_diff < -max_distance) y_diff = -max_distance;
+
+    body.pos_x += x_diff;
+    body.pos_y += y_diff;
+    body.last_pos_x = p_last_pos_x;
+    body.last_pos_y = p_last_pos_y;
     
     body.acc_x = 0;
     body.acc_y = 0;
@@ -54,21 +54,24 @@ void PlayerMoveLeft(CollisionIndex dirs, PlayerBody& body) {
     body.acc_x -= accel_const;
 }
 
-void PlayerIdle(PlayerBody& body) {
+void PlayerIdle(CollisionIndex dirs, PlayerBody& body) {
     body.acc_x = 0;
     body.acc_y = 0;
     body.vel_x = 0;
     body.vel_y = 0;
-    body.last_pos_x = body.pos_x;
-    body.last_pos_y = body.pos_y;
+    //body.last_pos_x = body.pos_x;
+    //body.last_pos_y = body.pos_y;    
 
 }
 
-void PlayerMoveUp(CollisionIndex dirs, PlayerBody& body) {
+void PlayerMoveUp(CollisionIndex dirs, PlayerBody& body, PlayerFC fc) {
     if (dirs[4] && dirs[5]) {
         return;
     }
-    body.vel_y = -accel_const;
+    if (fc.anim_fc < 1) {
+        body.last_pos_y -= 3;
+        body.pos_y -= 4;
+    }
 }
 
 

@@ -63,6 +63,7 @@ public:
 private:
     void PollAttackInput();
     void ResetState();
+    bool _is_jumping;
     bool _textures_loaded;
     uint8_t _id;
     Vector2int _position;

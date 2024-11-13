@@ -203,6 +203,7 @@ int main() {
         }
 
 
+
         if (IsKeyPressed(KEY_L)){            
             LogGameState(game_state, &conn);
         }
@@ -212,14 +213,17 @@ int main() {
             ClientSendBytes(&conn, (void*)buf.begin(), 32);
         }
 
+
         if (IsKeyPressed(KEY_ENTER)){
             debug_mode = !debug_mode;
         }
 
-
-        
-
         client_player.PollInput();
+
+        if (IsKeyPressed(KEY_W)){
+           client_player.SetRequestedState(MOVE_UP);
+        }
+
         RequestStateUpdate(&game_state, &conn, &client_player);   
         all_players[this_client_id].SetPosition(client_player.Position());
         for (Player& p : all_players){ 
