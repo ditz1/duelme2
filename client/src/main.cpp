@@ -212,6 +212,7 @@ int main() {
                         LoadGameState(&game_state, client_player, all_players);
                         break;
                 }
+                UpdateItems(all_players, items);
                 break;
             case 1:
                 UpdateClientPlayerCopies(all_players, &game_state);
@@ -266,6 +267,7 @@ int main() {
                 case 1:
                     BeginMode2D(camera);
                         stage.Draw();
+                        item.Draw();
                         //stage.DrawLines();
                         DrawGameState(all_players, items);
                     EndMode2D();
