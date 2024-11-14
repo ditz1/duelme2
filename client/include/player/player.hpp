@@ -58,7 +58,7 @@ public:
     Image* img;
     std::array<AnimData, 7> texs;
     int face_dir;
-    Item item;
+    ItemType item;
 
 private:
     void PollAttackInput();

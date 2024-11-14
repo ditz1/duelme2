@@ -37,7 +37,7 @@ typedef struct Connection {
     bool connected;
 } Connection;
 
-enum Item {
+enum ItemType {
     EMPTY,
     SHOTGUN,
     PISTOL

@@ -3,7 +3,7 @@
 if [ $# -eq 0 ] || [ "$1" = "web" ]; then
     mkdir -p client/build
     cd client/build 
-    emcmake cmake -DCMAKE_TOOLCHAIN_FILE="$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" ..
+    emcmake cmake -DUSE_LOCAL=OFF -DCMAKE_TOOLCHAIN_FILE="$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" ..
     emmake make
     mkdir ../../server/build
     cd ../../server/build

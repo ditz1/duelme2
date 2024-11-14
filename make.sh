@@ -5,7 +5,7 @@ if [ $# -eq 0 ]; then
     sudo cp index.* /var/www/html
     cd ../../server/build/
     make
-    ./program 192.168.1.4
+    ./program 192.168.1.42
 elif [ "$1" = "local" ]; then
     cd client/build
     make

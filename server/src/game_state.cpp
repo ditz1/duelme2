@@ -311,12 +311,12 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
 
     switch(PlayerState(game_state.player_states[sender_id])){
         case MOVE_RIGHT:
-            PlayerApplyGravity(player_coll_dirs[sender_id], player_bodies[sender_id]); 
             PlayerMoveRight(player_coll_dirs[sender_id], player_bodies[sender_id]); 
+            PlayerApplyGravity(player_coll_dirs[sender_id], player_bodies[sender_id]); 
             break;
         case MOVE_LEFT: 
-            PlayerApplyGravity(player_coll_dirs[sender_id], player_bodies[sender_id]);
             PlayerMoveLeft(player_coll_dirs[sender_id], player_bodies[sender_id]); 
+            PlayerApplyGravity(player_coll_dirs[sender_id], player_bodies[sender_id]);
             break;
         case MOVE_UP:
             p_can_jump[sender_id] = false;
@@ -372,6 +372,7 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     if (bottom_coll && (game_state.player_states[sender_id] == AIRBORNE)){
         game_state.player_states[sender_id] = IDLE;
     }
+    if (bottom_coll) p_can_jump[sender_id] = true;
 
     if (game_state.player_states[sender_id] == MOVE_UP && player_fcs[sender_id].anim_fc > 2){
         game_state.player_states[sender_id] = AIRBORNE;
@@ -385,10 +386,13 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
         case MOVE_RIGHT: 
         case MOVE_LEFT:
         case AIRBORNE: 
-            if (bottom_coll) pos.y -= gravity;
+            if (bottom_coll) {
+                pos.y -= gravity;
+                p_can_jump[sender_id] = true;
+            }
             break;
-        case MOVE_UP: 
-        case MOVE_DOWN: 
+        case MOVE_UP: break;
+        case MOVE_DOWN: break;
         case IDLE: break;
         default: break;
     }

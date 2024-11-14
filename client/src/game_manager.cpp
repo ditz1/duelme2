@@ -299,12 +299,8 @@ void SendStageData(Connection* conn, Player& client, std::array<Player, 4>& play
     std::vector<std::array<uint8_t, 32>> messages = CreateStageMessage(serial_data);
 
     for (std::array<uint8_t, 32>& message : messages){
-        //for (uint8_t c : message){
-        //    printf("%x ", c);
-        //}
         printf("\n");
         ClientSendBytes(conn, (void*)&message, 32);
-        //std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     std::cout << "sent " << messages.size() << " messages" << std::endl;
     EndSendStageData(conn, players, stage);
@@ -338,10 +334,13 @@ void ParseEndState(GameState* game, Connection* conn, Player* player){
     std::cout << "ERROR: End state not yet implemented" << std::endl;
 }
 
-void DrawGameState(std::array<Player, 4> players){
+void DrawGameState(std::array<Player, 4> players, std::vector<Item> items){
     for (int i = 0; i < 4; i++){
         players[i].Draw();
         AnimatePlayer(players[i]);
+    }
+    for (Item item : items){
+        item.Draw();
     }
 }
 
@@ -390,6 +389,13 @@ void UpdateClientPlayerCopies(std::array<Player, 4>& players, GameState* game){
         players[i].SetHp(game->player_hps[i]);
         players[i].SetPosition(game->player_positions[i]);
         UpdatePlayerCopyAnimInfo(players[i]);
+    }
+}
+
+void UpdateItems(std::array<Player, 4>& players, std::vector<Item>& items){
+    for (Item& item : items){
+        item.face_dir = players[item.player_assigned].FaceDir();
+        item.Update(players[item.player_assigned].Position(), players[item.player_assigned].draw_data);
     }
 }
 

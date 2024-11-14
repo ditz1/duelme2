@@ -1,6 +1,7 @@
 #include <globals.hpp>
 #include <networking.hpp>
 #include <player.hpp>
+#include <item.hpp>
 #include <game_manager.hpp>
 #include <helpers.hpp>
 #include <stage_manager.hpp>
@@ -107,7 +108,7 @@ int main() {
 
     stage.LoadFromString(test3);
     stage.Generate();
-    std::vector<Rectangle> items;
+    std::vector<Rectangle> items_rec;
 
     std::string url = "ws://" + server_ip + ":" + port + "/ws";
     Connection conn;
@@ -118,6 +119,16 @@ int main() {
     camera.offset = { (float)GetScreenWidth() / 2, (float)GetScreenHeight() / 2 };
     camera.rotation = 0.0f;
     camera.zoom = 0.95f;
+
+    std::vector<Item> items;
+    Item item;
+    item.type = SHOTGUN;
+    item.player_assigned = 0;
+    std::string shotgun_path = "assets/weapons/";
+    item.LoadTexture()
+
+
+    items.push_back(item);
 
     max_camera_y = stage.cell_size * stage.rows;
     Vector2 max_cam_pos = GetScreenToWorld2D({0, (float)max_camera_y + 50.0f}, camera);
@@ -179,7 +190,7 @@ int main() {
 
         if (in_loading_screen) {
             InLoadingScreen();
-            SendStageData(&conn, client_player, all_players, stage, items);
+            SendStageData(&conn, client_player, all_players, stage, items_rec);
             ListenStageData(&conn, client_player, all_players, stage);
             continue;
         }
@@ -195,13 +206,14 @@ int main() {
                     case 0:
                         break;
                     case 1:
-                        SendStageData(&conn, client_player, all_players, stage, items);
+                        SendStageData(&conn, client_player, all_players, stage, items_rec);
                         LoadGameState(&game_state, client_player, all_players);
                         break;
                 }
                 break;
             case 1:
                 UpdateClientPlayerCopies(all_players, &game_state);
+                UpdateItems(all_players, items);
                 ParseGameState(&game_state, &conn, &client_player);
                 break;
             case 2:
@@ -250,7 +262,7 @@ int main() {
                     BeginMode2D(camera);
                         stage.Draw();
                         //stage.DrawLines();
-                        DrawGameState(all_players);
+                        DrawGameState(all_players, items);
                     EndMode2D();
                     DrawGameUI(game_state, client_player, all_players);
                     break;
