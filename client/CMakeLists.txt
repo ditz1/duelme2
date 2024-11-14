@@ -36,6 +36,9 @@ set(CMAKE_BINARY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build")
 
 add_executable(index ${SOURCES})
+if(USE_LOCAL)
+    target_compile_definitions(index PRIVATE LOCAL)
+endif()
 
 if(EMSCRIPTEN)
     if (APPLE)

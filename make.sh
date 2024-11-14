@@ -5,7 +5,7 @@ if [ $# -eq 0 ]; then
     sudo cp index.* /var/www/html
     cd ../../server/build/
     make
-    ./program
+    ./program 192.168.1.4
 elif [ "$1" = "local" ]; then
     cd client/build
     make
@@ -13,5 +13,5 @@ elif [ "$1" = "local" ]; then
     python3 -m http.server 8080 &
     cd ../../server/build/
     make
-    ./program
+    ./program 127.0.0.1
 fi

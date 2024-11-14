@@ -86,6 +86,13 @@ void CheckPlayersScale(Player& client, std::array<Player, 4>& players, Stage& st
 }
 
 int main() {
+    std::string server_ip = "";
+    std::string port = "9000";
+#ifdef LOCAL
+    server_ip = "127.0.0.1";
+#else
+    server_ip = "192.168.1.42";
+#endif
     
     InitWindow(800, 450, "client");
     SetTargetFPS(60);
@@ -102,9 +109,9 @@ int main() {
     stage.Generate();
     std::vector<Rectangle> items;
 
-
+    std::string url = "ws://" + server_ip + ":" + port + "/ws";
     Connection conn;
-    OpenWebSocket(&conn, "ws://192.168.1.42:9000/ws");
+    OpenWebSocket(&conn, url.c_str());
 
     Camera2D camera = { 0 };
     camera.target = { 0, 0 };

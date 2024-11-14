@@ -7,11 +7,29 @@ void AdjustCameraPosition(std::array<Player, 4>& players, Camera2D& camera, int 
             AdjustTwoPlayerCamera(players, camera);
             break;
         default:  
+            AdjustOnePlayerCamera(players, camera);
             break;
     }
     if (camera.target.y > max_y_level) {
         camera.target.y = max_y_level;
     }
+}
+void AdjustOnePlayerCamera(std::array<Player,4> &players, Camera2D &camera) {
+    Vector2 p1_pos = V2intToV2(players[0].Position());
+    Vector2 center = {0, 0};    
+    
+    center.x = (p1_pos.x);
+    center.y = (p1_pos.y);
+    
+    float smoothing = 0.1f;
+    if (std::abs(center.x - camera.target.x) > 100){
+        smoothing = 0.5f;
+    }
+
+    camera.target.x = camera.target.x + (center.x - camera.target.x) * smoothing;
+    camera.target.y = camera.target.y + (center.y - camera.target.y) * smoothing;
+    camera.target.x = std::max(0.0f, camera.target.x);
+    camera.target.y = std::max(0.0f, camera.target.y);
 }
 
 void AdjustTwoPlayerCamera(std::array<Player,4> &players, Camera2D &camera) {

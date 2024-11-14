@@ -59,13 +59,19 @@ void StartSession(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
 }
 //------------------------------------------------------------------------------
 
-int main()
+int main(int argc, char* argv[])
 {
     InitGameState(&game_state);
     try
     {
-        auto const address = net::ip::make_address("192.168.1.42");
-        auto const port = static_cast<unsigned short>(std::atoi("9000"));
+        // check command line arguments
+
+        if (argc != 2) {
+            std::cerr << "Usage: " << argv[0] << " <address>\n";
+            return 1;
+        }
+        auto const address = net::ip::make_address(argv[1]);
+        auto const port = static_cast<unsigned short>(9000);
 
         // the io_context is required
         net::io_context ioc{1};

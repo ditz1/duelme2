@@ -68,9 +68,10 @@ void PlayerMoveUp(CollisionIndex dirs, PlayerBody& body, PlayerFC fc) {
     if (dirs[4] && dirs[5]) {
         return;
     }
+
     if (fc.anim_fc < 1) {
-        body.last_pos_y -= 3;
-        body.pos_y -= 4;
+        body.last_pos_y -= 0.75f;
+        body.pos_y -= 1.5f;
     }
 }
 
