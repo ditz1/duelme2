@@ -341,6 +341,7 @@ void DrawGameState(std::array<Player, 4> players, std::vector<Item> items){
     }
     for (Item item : items){
         item.Draw();
+        std::cout << "drawing item" << std::endl;
     }
 }
 

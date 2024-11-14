@@ -5,10 +5,9 @@
 typedef class Item {
 public:
     Item();
-    ~Item();
     void Draw();
     void Update(Vector2int player_pos, DrawData draw_data);
-    void LoadTexture(std::string item);
+    void LoadTextures(std::string item);
     DrawData draw_data;
     AnimData anim_data;
     Vector2 position;

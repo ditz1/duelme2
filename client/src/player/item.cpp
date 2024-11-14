@@ -9,9 +9,13 @@ void Item::Draw() {
     DrawTexturePro(anim_data.tex, draw_data.source, draw_data.dest, position, 0.0f, WHITE);
 }
 
-void Item::LoadTexture(std::string item) {
-    anim_data.img = LoadImage(item.c_str());
-    anim_data.tex = LoadTextureFromImage(anim_data.img);
+void Item::LoadTextures(std::string item) {
+    try {
+        anim_data.img = LoadImageAnim(item.c_str(), &anim_data.fc);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
+    }
+    anim_data.tex = LoadTexture(item.c_str());
 }
 void Item::Update(Vector2int player_pos, DrawData draw_data) {
     this->draw_data.dest.x = V2intToV2(player_pos).x;

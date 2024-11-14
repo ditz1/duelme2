@@ -120,15 +120,7 @@ int main() {
     camera.rotation = 0.0f;
     camera.zoom = 0.95f;
 
-    std::vector<Item> items;
-    Item item;
-    item.type = SHOTGUN;
-    item.player_assigned = 0;
-    std::string shotgun_path = "assets/weapons/";
-    item.LoadTexture()
-
-
-    items.push_back(item);
+   
 
     max_camera_y = stage.cell_size * stage.rows;
     Vector2 max_cam_pos = GetScreenToWorld2D({0, (float)max_camera_y + 50.0f}, camera);
@@ -160,6 +152,16 @@ int main() {
     }
     
     this_client_id = client_player.Id();
+
+    std::vector<Item> items;
+    Item item;
+    item.type = SHOTGUN;
+    item.player_assigned = 0;
+    std::string shotgun_path = "assets/weapons/shotgun.png";
+    item.LoadTextures(shotgun_path);
+
+
+    items.push_back(item);
 
     // while (client_player.Bounds().width >= stage.cell_size) {
     //     client_player.draw_data.scale -= 0.1f;
@@ -255,6 +257,9 @@ int main() {
 
             switch(current_game_stage){
                 case 0:
+                    for (Item item : items){
+                        item.Draw();
+                    }
                     DrawLobbyState(&game_state);
                     DrawText(TextFormat("lobby state: %d", lobby_state), 400, 225, 20, BLUE);
                     break;
