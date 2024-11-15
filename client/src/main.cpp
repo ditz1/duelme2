@@ -15,6 +15,9 @@ bool stage_message_created = false;
 bool debug_mode = false;
 float player_size = 1.45;
 int max_camera_y = 0;
+int check_adjust = 0;
+bool player_size_set = false;
+
 
 Stage stage;
 
@@ -76,6 +79,7 @@ void InLoadingScreen(){
 }
 
 void CheckPlayersScale(Player& client, std::array<Player, 4>& players, Stage& stage){
+    if (player_size_set && current_game_stage == 1) return;
     if (stage.cell_size <= client.Bounds().width) {
         AdjustPlayerDimensions(client, players);
     }
@@ -84,6 +88,19 @@ void CheckPlayersScale(Player& client, std::array<Player, 4>& players, Stage& st
             AdjustPlayerDimensions(client, players);
         }
     }
+    int lowest_width = 10000;
+    int lowest_height = 10000;
+    for (auto& player : players){
+        if (player.draw_data.dest.width < lowest_width) {
+            lowest_width = player.draw_data.dest.width;
+            lowest_height = player.draw_data.dest.height;
+        }
+    }
+    for (auto& player : players){
+        player.draw_data.dest.width = lowest_width;
+        player.draw_data.dest.height = lowest_height;
+    }
+    player_size_set = true;
 }
 
 int main() {
@@ -168,9 +185,6 @@ int main() {
     items.push_back(item);
     items.push_back(item2);
 
-    // while (client_player.Bounds().width >= stage.cell_size) {
-    //     client_player.draw_data.scale -= 0.1f;
-    // }
 
     // eventually will need something for managing the texture assignment
     int lobby_state = 0;
@@ -220,6 +234,10 @@ int main() {
                 UpdateItems(all_players, items);
                 break;
             case 1:
+                if (check_adjust < 3) {
+                    AdjustPlayerDimensions(client_player, all_players);
+                    check_adjust++;
+                }
                 UpdateClientPlayerCopies(all_players, &game_state);
                 UpdateItems(all_players, items);
                 ParseGameState(&game_state, &conn, &client_player);

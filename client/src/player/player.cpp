@@ -135,12 +135,22 @@ void Player::ProcessPlayerAnimLogic() {
 
      // this is 4 because single byte per channel (RGBA)
     buffer_offset = img->width * img->height * 4 * anim_current_frame;
+    
+    if ((anim_current_frame >= texs[current_anim].fc - 4) && _state == MOVE_DOWN) {
+        is_dead = true;
+        return;
+    }
+    
+
+
+    AssignTexture(_state);
 
     fc++; // total fc
     if (fc >= fc_delay) {
         // move to next frame
         anim_current_frame++;
         if (anim_current_frame >= texs[current_anim].fc) anim_current_frame = 0; // if final frame is reached we return to first frame
+
         // get memory offset position for next frame data in image.data
         // this is 4 because single byte per channel (RGBA)
         buffer_offset = img->width*img->height*4*anim_current_frame;
@@ -201,6 +211,10 @@ void Player::PollInput() {
     // MOVEMENT // 
     ProcessPlayerAnimLogic();
 
+    if (_hp <= 0) {
+        _requested_state = uint8_t(MOVE_DOWN);
+        return;
+    }
 
     if (IsKeyPressed(KEY_W) && !_is_attacking){
         _requested_state = uint8_t(MOVE_UP);
@@ -214,10 +228,12 @@ void Player::PollInput() {
     if (IsKeyDown(KEY_A) && !_is_attacking){
         _requested_state = uint8_t(MOVE_LEFT);
     } 
-    if (IsKeyDown(KEY_S) && !_is_attacking){
-        _requested_state = uint8_t(MOVE_DOWN);
-        return;
-    }
+
+    
+    // if (IsKeyDown(KEY_S) && !_is_attacking){
+    //     _requested_state = uint8_t(MOVE_DOWN);
+    //     return;
+    // }
 
     PollAttackInput();
 
@@ -274,8 +290,6 @@ PlayerState Player::RequestedState() {
 
 
 void Player::Draw() {
-    
-
     Vector2 pos = V2intToV2(_position);
     DrawCircleV(V2intToV2(_position), 20, _color);
     pos.x -= ((tex->width / 2) * draw_data.scale);

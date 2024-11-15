@@ -283,6 +283,23 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     if ((req.player_positions[sender_id].x == curr.player_positions[sender_id].x) && (req.player_positions[sender_id].y == curr.player_positions[sender_id].y)){ 
         game_state.player_positions[sender_id] = req.player_positions[sender_id];
     }
+
+    if (((int)req.player_hps[sender_id] == 0) || ((int)req.player_hps[sender_id] > 240)){
+        game_state.player_hps[sender_id] = 0;
+        curr.player_hps[sender_id] = 0;
+    }
+
+    if (((int)curr.player_hps[sender_id] == 0) || ((int)curr.player_hps[sender_id] > 240)){
+        game_state.player_hps[sender_id] = 0;
+    }
+
+    if (game_state.player_hps[sender_id] == 0 || game_state.player_hps[sender_id] > 240){
+        game_state.player_states[sender_id] = MOVE_DOWN;
+    }
+
+
+
+    
     // if position is updated here, it will cause desync
     if (((req.player_positions[sender_id].x != curr.player_positions[sender_id].x) || (req.player_positions[sender_id].y != curr.player_positions[sender_id].y)) && req.player_states[sender_id] != AIRBORNE){
         std::cout << "desync" << std::endl;

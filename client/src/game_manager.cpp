@@ -19,6 +19,7 @@ void InitGameState(GameState* game){
 
 void RequestStateUpdate(GameState* game, Connection* conn, Player* player) {
     if (current_game_stage < 1) return;
+    //if (player->is_dead) return;
     if ((int(player->RequestedState()) <= int(PlayerState::IDLE))) { 
         
         if (player->RequestedState() == PlayerState::IDLE 
@@ -328,6 +329,8 @@ void AdjustPlayerDimensions(Player& client, std::array<Player, 4>& all_players){
             curr_width = player.tex->width * (player.draw_data.scale / 3.0f);
         }
     }
+
+    
 }
 
 void ParseEndState(GameState* game, Connection* conn, Player* player){
@@ -363,6 +366,12 @@ void UpdatePlayerCopyAnimInfo(Player& copy) {
     if (copy.IsAttacking() && (copy.anim_current_frame >= copy.texs[copy.current_anim].fc - 1)) {
         copy.SetAttacking(false);
     }
+    if (copy.State() == MOVE_DOWN && (copy.anim_current_frame >= copy.texs[copy.current_anim].fc - 4)) {
+        copy.is_dead = true;
+        return;
+    }
+    
+    
         
     // this is 4 because single byte per channel (RGBA)
     copy.buffer_offset = copy.img->width * copy.img->height * 4 * copy.anim_current_frame;

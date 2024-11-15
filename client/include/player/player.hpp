@@ -59,6 +59,7 @@ public:
     std::array<AnimData, 7> texs;
     int face_dir;
     ItemType item;
+    bool is_dead;
 
 private:
     void PollAttackInput();
