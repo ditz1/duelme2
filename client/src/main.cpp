@@ -160,8 +160,13 @@ int main() {
     std::string shotgun_path = "assets/weapons/shotgun.png";
     item.LoadTextures(shotgun_path);
 
+    Item item2;
+    item2.type = SHOTGUN;
+    item2.player_assigned = 1;
+    item2.LoadTextures(shotgun_path);
 
     items.push_back(item);
+    items.push_back(item2);
 
     // while (client_player.Bounds().width >= stage.cell_size) {
     //     client_player.draw_data.scale -= 0.1f;
@@ -176,7 +181,7 @@ int main() {
         // so do this for now but this is still bad
         
         // born to do id forced to do Id
-        all_players[client_player.Id()] = client_player;
+        all_players[this_client_id] = client_player;
         all_players[client_player.Id()].anim_current_frame = client_player.anim_current_frame;
         all_players[client_player.Id()].SetState(client_player.State());
         all_players[client_player.Id()].SetIsAnimating(client_player.IsAnimating());
@@ -251,6 +256,7 @@ int main() {
         for (Player& p : all_players){ 
             p.Update(); 
         }
+        all_players[this_client_id].SetFaceDir(client_player.FaceDir());
         AdjustCameraPosition(all_players, camera, max_camera_y);
         /////// draw /////////
         BeginDrawing();
@@ -258,17 +264,12 @@ int main() {
 
             switch(current_game_stage){
                 case 0:
-                    for (Item item : items){
-                        item.Draw();
-                    }
                     DrawLobbyState(&game_state);
                     DrawText(TextFormat("lobby state: %d", lobby_state), 400, 225, 20, BLUE);
                     break;
                 case 1:
                     BeginMode2D(camera);
                         stage.Draw();
-                        item.Draw();
-                        //stage.DrawLines();
                         DrawGameState(all_players, items);
                     EndMode2D();
                     DrawGameUI(game_state, client_player, all_players);

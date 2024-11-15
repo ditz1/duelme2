@@ -223,26 +223,26 @@ std::vector<uint8_t> SerializeStageData(std::vector<Rectangle>& stage_cells, std
     data.push_back(std::get<1>(height_bytes));
     data.push_back(std::get<0>(height_bytes));
 
-    data.push_back(0xFF);
-    data.push_back(0xFF);
-    data.push_back(0xFF);
-    data.push_back(0xFF);
+    // data.push_back(0xFF);
+    // data.push_back(0xFF);
+    // data.push_back(0xFF);
+    // data.push_back(0xFF);
 
     
-    for (Rectangle rect : items){
-        std::tuple<uint8_t, uint8_t> x_bytes = Float16ToBytes(rect.x);
-        std::tuple<uint8_t, uint8_t> y_bytes = Float16ToBytes(rect.y);
-        std::tuple<uint8_t, uint8_t> width_bytes = Float16ToBytes(rect.width);
-        std::tuple<uint8_t, uint8_t> height_bytes = Float16ToBytes(rect.height);
-        data.push_back(std::get<0>(x_bytes));
-        data.push_back(std::get<1>(x_bytes));
-        data.push_back(std::get<0>(y_bytes));
-        data.push_back(std::get<1>(y_bytes));
-        data.push_back(std::get<0>(width_bytes));
-        data.push_back(std::get<1>(width_bytes));
-        data.push_back(std::get<0>(height_bytes));
-        data.push_back(std::get<1>(height_bytes));
-    } 
+    // for (Rectangle rect : items){
+    //     std::tuple<uint8_t, uint8_t> x_bytes = Float16ToBytes(rect.x);
+    //     std::tuple<uint8_t, uint8_t> y_bytes = Float16ToBytes(rect.y);
+    //     std::tuple<uint8_t, uint8_t> width_bytes = Float16ToBytes(rect.width);
+    //     std::tuple<uint8_t, uint8_t> height_bytes = Float16ToBytes(rect.height);
+    //     data.push_back(std::get<0>(x_bytes));
+    //     data.push_back(std::get<1>(x_bytes));
+    //     data.push_back(std::get<0>(y_bytes));
+    //     data.push_back(std::get<1>(y_bytes));
+    //     data.push_back(std::get<0>(width_bytes));
+    //     data.push_back(std::get<1>(width_bytes));
+    //     data.push_back(std::get<0>(height_bytes));
+    //     data.push_back(std::get<1>(height_bytes));
+    // } 
 
     return data;
 }
@@ -341,7 +341,6 @@ void DrawGameState(std::array<Player, 4> players, std::vector<Item> items){
     }
     for (Item item : items){
         item.Draw();
-        std::cout << item.position.x << " " << item.position.y << std::endl;
     }
 }
 

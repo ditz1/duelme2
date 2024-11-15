@@ -210,11 +210,9 @@ void Player::PollInput() {
     } 
     if (IsKeyDown(KEY_D) && !_is_attacking){
         _requested_state = uint8_t(MOVE_RIGHT);
-        return;
     }   
     if (IsKeyDown(KEY_A) && !_is_attacking){
         _requested_state = uint8_t(MOVE_LEFT);
-        return;
     } 
     if (IsKeyDown(KEY_S) && !_is_attacking){
         _requested_state = uint8_t(MOVE_DOWN);
