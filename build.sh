@@ -1,5 +1,3 @@
-#!/bin/bash
-
 if [ $# -eq 0 ] || [ "$1" = "web" ]; then
     mkdir -p client/build
     cd client/build 
