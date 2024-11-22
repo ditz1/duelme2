@@ -173,26 +173,35 @@ int main(int argc, char* argv[]) {
     CollisionGrid grid;
     grid.stage = stage;
     GenerateCollisionGrid(grid, cell_size, std::get<1>(stage_size), std::get<0>(stage_size));
-    std::vector<Rectangle> players;
+    std::vector<Player> players;
     std::vector<Vector2> p_vels;
-    for (int i = 0; i < 5; i++) {
-        Rectangle player = {float((unsigned int)GetRandomValue(10, 30)), float((unsigned int)GetRandomValue(10, 30)), (float)cell_size, (float)cell_size};
+    for (int i = 0; i < 2; i++) {
+        Player player;
+        player.id = i;
+        Rectangle lower = {float((unsigned int)GetRandomValue(300, 400)), float((unsigned int)GetRandomValue(100, 300)), (float)cell_size, (float)cell_size};
+        Rectangle upper = {lower.x, lower.y - cell_size, (float)cell_size, (float)cell_size};
+        player.rect1 = lower;
+        player.rect2 = upper;
         p_vels.push_back({float((unsigned int)GetRandomValue(10, 30)), float((unsigned int)GetRandomValue(10, 30))});
         players.push_back(player);
     }    
     std::cout << grid.max_x << " " << grid.max_y << std::endl;
 
     while (!WindowShouldClose()) {
+        grid.colls.clear();
         for (int i = 0; i < players.size(); i++) {
-            if (players[i].x <= 0 || players[i].x >= grid.max_x) {
+            if (players[i].rect1.x <= 0 || players[i].rect1.x >= grid.max_x) {
                 p_vels[i].x *= -1;
             }
-            if (players[i].y <= 0 || players[i].y >= grid.max_y) {
+            if (players[i].rect2.y <= 0 || players[i].rect1.y >= grid.max_y) {
                 p_vels[i].y *= -1;
             }
-            players[i].x += p_vels[i].x * 0.16f;
-            players[i].y += p_vels[i].y * 0.16f;
+            players[i].rect1.x += p_vels[i].x * 0.16f;
+            players[i].rect1.y += p_vels[i].y * 0.16f;
+            players[i].rect2.x += p_vels[i].x * 0.16f;
+            players[i].rect2.y += p_vels[i].y * 0.16f;
         }
+
         UpdateCollisionGrid(grid, players);
         std::vector<GridCoords> search = GetCollisionSearch(grid);
         BeginDrawing();
@@ -200,14 +209,18 @@ int main(int argc, char* argv[]) {
             DrawStage(stage, cell_size);
             DrawStageLines(stage, cell_size);
             DrawText("Stage Testing", 10, 10, 20, DARKGRAY);
+            DrawText(TextFormat("Colls Detected: %d", grid.colls.size()), 10, 30, 20, DARKGRAY); 
+            DrawText(TextFormat("Occupied Cells: %d", grid.occupied_cells.size()), 10, 50, 20, DARKGRAY);
             Color color = RED;
             color.a = 150;
             for (GridCoords r : search) {
                 DrawRectangle(r.x * cell_size, r.y * cell_size, cell_size, cell_size, color);
             }
             DrawCollisionGrid(grid);
-            for (Rectangle player : players) {
-                DrawRectangle(player.x, player.y, player.width, player.height, PURPLE);
+            for (Player player : players) {
+                DrawRectangle(player.rect1.x, player.rect1.y, player.rect1.width, player.rect1.height, PURPLE);
+                DrawRectangle(player.rect2.x, player.rect2.y, player.rect2.width, player.rect2.height, PURPLE);
+
             }
             
         EndDrawing();

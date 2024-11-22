@@ -52,18 +52,27 @@ void DrawCollisionGrid(CollisionGrid& grid){
 }
 
 
-void UpdateCollisionGrid(CollisionGrid &grid, std::vector<Rectangle> &players){
+void UpdateCollisionGrid(CollisionGrid &grid, std::vector<Player> &players){
     grid.occupied_cells.clear();
     for (auto& i : players){
-        int x = floor((i.x + ((float)grid.cell_size / 2.0f)) / grid.cell_size);
-        int y = floor((i.y + ((float)grid.cell_size / 2.0f)) / grid.cell_size);
-        if (x < 0) x = 0;
-        if (y < 0) y = 0;
-        if (i.x >= grid.max_x) x = grid.cols;
-        if (i.y >= grid.max_y) y = grid.rows;
+        int x1 = floor((i.rect1.x + ((float)grid.cell_size / 2.0f)) / grid.cell_size);
+        int y1 = floor((i.rect1.y + ((float)grid.cell_size / 2.0f)) / grid.cell_size);
+        if (x1 < 0) x1 = 0;
+        if (y1 < 0) y1 = 0;
+        if (i.rect1.x >= grid.max_x) x1 = grid.cols;
+        if (i.rect1.y >= grid.max_y) y1 = grid.rows;
         // x, y is top left cell adjacent of player
-        grid.cells[x][y].is_occupied = true;
-        grid.occupied_cells.push_back({x, y});
+        grid.cells[x1][y1].is_occupied = true;
+        grid.occupied_cells.push_back({x1, y1, i.id});
+
+        int x2 = floor((i.rect2.x + ((float)grid.cell_size / 2.0f)) / grid.cell_size);
+        int y2 = floor((i.rect2.y + ((float)grid.cell_size / 2.0f)) / grid.cell_size);
+        if (x2 < 0) x2 = 0;
+        if (y2 < 0) y2 = 0;
+        if (i.rect2.x >= grid.max_x) x2 = grid.cols;
+        if (i.rect2.y >= grid.max_y) y2 = grid.rows;
+        grid.cells[x2][y2].is_occupied = true;
+        grid.occupied_cells.push_back({x2, y2, i.id});
     }
 }
 
@@ -72,16 +81,27 @@ std::vector<GridCoords> GetCollisionSearch(CollisionGrid& grid) {
     std::set<std::pair<int, int>> uniqueCells; // To prevent duplicates
     int numX = grid.max_x / grid.cell_size;
     int numY = grid.max_y / grid.cell_size;
-    
+
     for (auto& i : grid.occupied_cells) {
         for (int j = -1; j <= 1; j++) {
             for (int k = -1; k <= 1; k++) {
                 int newX = i.x + j;
                 int newY = i.y + k;
                 if (newX >= 0 && newX < grid.rows && newY >= 0 && newY < grid.cols) {
+                    // Check for player collisions
+                    for (auto& other : grid.occupied_cells) {
+                        if (other.pid != i.pid && // Different players
+                            other.x == newX && other.y == newY) { // Same or adjacent cell
+                            if (grid.cells[newX][newY].is_occupied) {
+                                grid.colls.push_back({i.pid, other.pid});
+                                std::cout << "collision" << std::endl;
+                            }
+                        }
+                    }
+                    
                     // Only add if not already in set
                     if (uniqueCells.insert({newX, newY}).second) {
-                        search.push_back({newX, newY});
+                        search.push_back({newX, newY, i.pid});
                     }
                 }
             }
