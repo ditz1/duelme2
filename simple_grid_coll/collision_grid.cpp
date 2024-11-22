@@ -94,7 +94,6 @@ std::vector<GridCoords> GetCollisionSearch(CollisionGrid& grid) {
                             other.x == newX && other.y == newY) { // Same or adjacent cell
                             if (grid.cells[newX][newY].is_occupied) {
                                 grid.colls.push_back({i.pid, other.pid});
-                                std::cout << "collision" << std::endl;
                             }
                         }
                     }
@@ -108,5 +107,29 @@ std::vector<GridCoords> GetCollisionSearch(CollisionGrid& grid) {
         }
     }
     return search;
+}
+
+void HandleCollisions(CollisionGrid& grid, std::vector<Player>& players, std::vector<Vector2>& vels) {
+    for (auto& i : grid.colls) {
+        int p1 = i.first;
+        int p2 = i.second;
+        // AABB , combine both both player rectangles
+        Rectangle r1 = {players[p1].rect1.x, players[p1].rect2.y, (float)grid.cell_size, (float)grid.cell_size * 2.0f};
+        Rectangle r2 = {players[p2].rect1.x, players[p2].rect2.y, (float)grid.cell_size, (float)grid.cell_size * 2.0f};
+        if (CheckCollisionRecs(r1, r2)) {
+            // Handle collision
+            // For now just reverse velocities
+            std::cout << "coll" << std::endl;
+            vels[p1].x *= -1;
+            vels[p1].y *= -1;
+            vels[p2].x *= -1;
+            vels[p2].y *= -1;
+            // this wont really work, need to normalize velocity vectors
+            // and have it move away from each other
+          
+            
+            break;
+        }
+    }
 }
 

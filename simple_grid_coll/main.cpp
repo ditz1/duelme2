@@ -136,6 +136,8 @@ std::tuple<int,int> LoadStageFile(std::string file_path, std::vector<StageCell> 
 }
 
 
+
+
 int main(int argc, char* argv[]) {
     int width = 1280;
     int height = 720;
@@ -178,7 +180,7 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < 2; i++) {
         Player player;
         player.id = i;
-        Rectangle lower = {float((unsigned int)GetRandomValue(300, 400)), float((unsigned int)GetRandomValue(100, 300)), (float)cell_size, (float)cell_size};
+        Rectangle lower = {float((unsigned int)GetRandomValue(300, 800)), float((unsigned int)GetRandomValue(200, 600)), (float)cell_size, (float)cell_size};
         Rectangle upper = {lower.x, lower.y - cell_size, (float)cell_size, (float)cell_size};
         player.rect1 = lower;
         player.rect2 = upper;
@@ -196,14 +198,30 @@ int main(int argc, char* argv[]) {
             if (players[i].rect2.y <= 0 || players[i].rect1.y >= grid.max_y) {
                 p_vels[i].y *= -1;
             }
+        }
+
+        UpdateCollisionGrid(grid, players);
+        std::vector<GridCoords> search = GetCollisionSearch(grid);
+        HandleCollisions(grid, players, p_vels);
+
+        for (int i = 0; i < players.size(); i++) {
             players[i].rect1.x += p_vels[i].x * 0.16f;
             players[i].rect1.y += p_vels[i].y * 0.16f;
             players[i].rect2.x += p_vels[i].x * 0.16f;
             players[i].rect2.y += p_vels[i].y * 0.16f;
         }
+        // unit vecs
+        Vector2 p1_unit_vec = {
+                  p_vels[0].x / sqrtf(powf(p_vels[0].x, 2) + powf(p_vels[0].y, 2)), 
+                  p_vels[0].y / sqrtf(powf(p_vels[0].x, 2) + powf(p_vels[0].y, 2))
+                  };
+        Vector2 p2_unit_vec = {
+                  p_vels[1].x / sqrtf(powf(p_vels[1].x, 2) + powf(p_vels[1].y, 2)), 
+                  p_vels[1].y / sqrtf(powf(p_vels[1].x, 2) + powf(p_vels[1].y, 2))
+                  };
+        Vector2 p1_dir = {p1_unit_vec.x * 0.16f, p1_unit_vec.y * 0.16f};
+        Vector2 p2_dir = {p2_unit_vec.x * 0.16f, p2_unit_vec.y * 0.16f};
 
-        UpdateCollisionGrid(grid, players);
-        std::vector<GridCoords> search = GetCollisionSearch(grid);
         BeginDrawing();
         ClearBackground(RAYWHITE);
             DrawStage(stage, cell_size);
@@ -222,6 +240,10 @@ int main(int argc, char* argv[]) {
                 DrawRectangle(player.rect2.x, player.rect2.y, player.rect2.width, player.rect2.height, PURPLE);
 
             }
+            // draw player direction vectors
+            
+            DrawLineEx({players[0].rect1.x + cell_size / 2, players[0].rect1.y + cell_size / 2}, {players[0].rect1.x + cell_size / 2 + p1_dir.x * 400, players[0].rect1.y + cell_size / 2 + p1_dir.y * 400}, 2.5f, RED);
+            DrawLineEx({players[1].rect1.x + cell_size / 2, players[1].rect1.y + cell_size / 2}, {players[1].rect1.x + cell_size / 2 + p2_dir.x * 400, players[1].rect1.y + cell_size / 2 + p2_dir.y * 400}, 2.5f, RED);
             
         EndDrawing();
     }

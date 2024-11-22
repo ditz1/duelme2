@@ -37,3 +37,4 @@ void ClearCollisionGrid(CollisionGrid &collision_grid);
 void UpdateCollisionGrid(CollisionGrid &collision_grid, std::vector<Player> &players);
 std::vector<GridCoords> GetCollisionSearch(CollisionGrid &collision_grid);
 void DrawCollisionGrid(CollisionGrid &collision_grid);
+void HandleCollisions(CollisionGrid &collision_grid, std::vector<Player> &players, std::vector<Vector2>& vels);
