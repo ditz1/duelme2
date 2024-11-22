@@ -189,61 +189,122 @@ int main(int argc, char* argv[]) {
     }
 
     SpatialGrid grid;
-    grid.Init(stage_width, stage_height, cell_size);
+    grid.Init(stage_height, stage_width, cell_size);
     std::cout << "Grid initialized with " << stage_width << "x" << stage_height 
           << " cells, total: " << (stage_width * stage_height) << std::endl;
     
+    // In main.cpp, update the main loop:
     while (!WindowShouldClose()) {  
         grid.Clear();
 
-        // Use pos consistently for both insert and collision checking
         for (Player &p : players) {
-            float grid_x = p.pos.x / (float)cell_size;
-            float grid_y = p.pos.y / (float)cell_size;
+            float grid_x = p.pos.x / cell_size;
+            float grid_y = p.pos.y / cell_size;
             grid.Insert(grid_x, grid_y, &p);
         }
-
+    
+        // First update all positions
         for (Player &p : players) {
-            float grid_x = p.pos.x / (float)cell_size;
-            float grid_y = p.pos.y / (float)cell_size;
-            int i = floor(grid_x);
-            int j = floor(grid_y);
-            uint64_t hash = grid.HashCell(i, j);
-
-            const auto& cells_at_pos = grid.GetCellsAt(hash);
-
-            for (const Cell& cell : cells_at_pos) {
-                if (cell.player != &p) {
-                    // Check actual collision using rectangles
-                    if (CheckCollisionRecs(p.rect, cell.player->rect)) {
-                        printf("Collision between players at hash %ld\n", hash);
-                        p.vel.x *= -1;
-                        p.vel.y *= -1;
+            // Store previous position for collision resolution
+            Vector2 prev_pos = p.pos;
+            
+            // Update position
+            p.pos.x += p.vel.x * dt;
+            p.pos.y += p.vel.y * dt;
+            p.rect.x = p.pos.x;
+            p.rect.y = p.pos.y;
+    
+            // Keep within stage bounds
+            if(p.pos.x < 0) {
+                p.pos.x = 0;
+                p.vel.x *= -1;
+            } else if(p.pos.x + p.rect.width > stage_width * cell_size) {
+                p.pos.x = stage_width * cell_size - p.rect.width;
+                p.vel.x *= -1;
+            }
+            
+            if(p.pos.y < 0) {
+                p.pos.y = 0;
+                p.vel.y *= -1;
+            } else if(p.pos.y + p.rect.height > stage_height * cell_size) {
+                p.pos.y = stage_height * cell_size - p.rect.height;
+                p.vel.y *= -1;
+            }
+        }
+    
+        // Insert all players into the grid
+        
+    
+        // Check and resolve collisions
+        for (Player &p : players) {
+            float grid_x = p.pos.x / cell_size;
+            float grid_y = p.pos.y / cell_size;
+            
+            std::vector<Vector2> cells_to_check = grid.GetOverlappingAndAdjacentCells(
+                grid_x, grid_y, 
+                p.rect.width / cell_size,   // width in cells (1.0)
+                p.rect.height / cell_size   // height in cells (2.0)
+            );
+            
+            bool collision_occurred = false;
+            
+            for(const Vector2& cell_pos : cells_to_check) {
+                uint64_t hash = grid.HashCell(cell_pos.x, cell_pos.y);
+                const auto& cells_at_pos = grid.GetCellsAt(hash);
+                
+                for(const Cell& cell : cells_at_pos) {
+                    if(cell.player != &p) {  // Don't check collision with self
+                        if(CheckCollisionRecs(p.rect, cell.player->rect)) {
+                            // Calculate intersection depth
+                            Rectangle intersection = GetCollisionRec(p.rect, cell.player->rect);
+                            
+                            // Determine collision normal based on intersection
+                            float dx = 0, dy = 0;
+                            
+                            if(intersection.width < intersection.height) {
+                                // Horizontal collision
+                                dx = (p.pos.x < cell.player->pos.x) ? -1.0f : 1.0f;
+                            } else {
+                                // Vertical collision
+                                dy = (p.pos.y < cell.player->pos.y) ? -1.0f : 1.0f;
+                            }
+                            
+                            // Separate the rectangles
+                            if(dx != 0) {
+                                p.pos.x += dx * intersection.width;
+                                p.vel.x *= -1;
+                            }
+                            if(dy != 0) {
+                                p.pos.y += dy * intersection.height;
+                                p.vel.y *= -1;
+                            }
+                            
+                            // Update rectangle position after separation
+                            p.rect.x = p.pos.x;
+                            p.rect.y = p.pos.y;
+                            
+                            collision_occurred = true;
+                            break;
+                        }
                     }
                 }
+                if(collision_occurred) break;
             }
-
-            p.Update();
         }
-
+    
         BeginDrawing();
             ClearBackground(RAYWHITE);
             DrawStage(stage, cell_size);
             DrawStageLines(stage, cell_size);
-            DrawText("Stage Testing", 10, 10, 20, DARKGRAY);
-            DrawFPS(10, 40);
-            for (int i = 0; i < grid.Rows(); i++) {
-                for (int j = 0; j < grid.Cols(); j++) {
-                    DrawRectangleLines(j * cell_size, i * cell_size, cell_size, cell_size, GRAY);
-                }
-            }
+            grid.DrawDebug();
             for (Player &p : players) {
                 p.Draw();
             }
-
+            DrawText("Stage Testing", 10, 10, 20, DARKGRAY);
+            DrawFPS(10, 40);
         EndDrawing();
     }
-
+    
     CloseWindow();
     return 0;
 }
