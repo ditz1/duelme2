@@ -24,12 +24,15 @@ typedef struct CollisionGrid {
     std::vector<StageCell> stage;
     std::vector<std::vector<Cell>> cells;
     std::vector<GridCoords> occupied_cells;
+    std::vector<GridCoords> stage_cells;
     std::vector<std::pair<int, int>> colls;
+    std::vector<std::pair<int, StageCell>> colls_stage;
     int max_x;
     int max_y;
     int rows;
     int cols;
     int cell_size;
+    int num_stage_cells;
 } CollisionGrid;
 
 void GenerateCollisionGrid(CollisionGrid &collision_grid, int cell_size, int rows, int cols);

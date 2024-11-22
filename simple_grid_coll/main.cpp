@@ -116,7 +116,8 @@ std::tuple<int,int> LoadStageFile(std::string file_path, std::vector<StageCell> 
         } else if (stage_chars[i] == 'G') {
             cell.color = GRAY;
         } else if (stage_chars[i] == 'B') {
-            cell.color = GRAY;
+            cell.collidable = true;
+            cell.color = BLUE;
         } else {
             cell.color = GREEN;
         }
@@ -177,7 +178,7 @@ int main(int argc, char* argv[]) {
     GenerateCollisionGrid(grid, cell_size, std::get<1>(stage_size), std::get<0>(stage_size));
     std::vector<Player> players;
     std::vector<Vector2> p_vels;
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 1; i++) {
         Player player;
         player.id = i;
         Rectangle lower = {float((unsigned int)GetRandomValue(300, 800)), float((unsigned int)GetRandomValue(200, 600)), (float)cell_size, (float)cell_size};
@@ -227,8 +228,6 @@ int main(int argc, char* argv[]) {
             DrawStage(stage, cell_size);
             DrawStageLines(stage, cell_size);
             DrawText("Stage Testing", 10, 10, 20, DARKGRAY);
-            DrawText(TextFormat("Colls Detected: %d", grid.colls.size()), 10, 30, 20, DARKGRAY); 
-            DrawText(TextFormat("Occupied Cells: %d", grid.occupied_cells.size()), 10, 50, 20, DARKGRAY);
             Color color = RED;
             color.a = 150;
             for (GridCoords r : search) {
@@ -238,12 +237,13 @@ int main(int argc, char* argv[]) {
             for (Player player : players) {
                 DrawRectangle(player.rect1.x, player.rect1.y, player.rect1.width, player.rect1.height, PURPLE);
                 DrawRectangle(player.rect2.x, player.rect2.y, player.rect2.width, player.rect2.height, PURPLE);
-
             }
             // draw player direction vectors
             
             DrawLineEx({players[0].rect1.x + cell_size / 2, players[0].rect1.y + cell_size / 2}, {players[0].rect1.x + cell_size / 2 + p1_dir.x * 400, players[0].rect1.y + cell_size / 2 + p1_dir.y * 400}, 2.5f, RED);
-            DrawLineEx({players[1].rect1.x + cell_size / 2, players[1].rect1.y + cell_size / 2}, {players[1].rect1.x + cell_size / 2 + p2_dir.x * 400, players[1].rect1.y + cell_size / 2 + p2_dir.y * 400}, 2.5f, RED);
+            DrawLineEx({players[0].rect2.x + cell_size / 2, players[0].rect2.y + cell_size / 2}, {players[0].rect2.x + cell_size / 2 + p1_dir.x * 400, players[0].rect2.y + cell_size / 2 + p1_dir.y * 400}, 2.5f, RED);
+            DrawText(TextFormat("Colls Detected: %d", grid.colls.size()), 10, 30, 20, DARKGRAY); 
+            DrawText(TextFormat("Occupied Cells: %d", grid.occupied_cells.size()), 10, 50, 20, DARKGRAY);
             
         EndDrawing();
     }

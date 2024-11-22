@@ -2,43 +2,55 @@
 #include <iostream>
 #include <set>
 
-void GenerateCollisionGrid(CollisionGrid &collision_grid, int cell_size, int rows, int cols){
+void GenerateCollisionGrid(CollisionGrid &grid, int cell_size, int rows, int cols){
     std::cout << "generating" << std::endl;
     std::cout << "rows: " << rows << std::endl;
     std::cout << "cols: " << cols << std::endl;
     std::cout << "cell_size: " << cell_size << std::endl;
 
-    collision_grid.cell_size = cell_size;
-    collision_grid.rows = rows;    
-    collision_grid.cols = cols;
+    grid.cell_size = cell_size;
+    grid.rows = rows;    
+    grid.cols = cols;
 
-    collision_grid.cells.resize(rows);
+    grid.cells.resize(rows);
     for (int i = 0; i < rows; i++) {
-        collision_grid.cells[i].resize(cols);
+        grid.cells[i].resize(cols);
     }
 
     for (int i = 0; i < cols; i++) {
         for (int j = 0; j < rows; j++) {
-            collision_grid.cells[i][j].idx.x = j;
-            collision_grid.cells[i][j].idx.y = i;
-            collision_grid.cells[i][j].is_occupied = false;
+            grid.cells[i][j].idx.x = j;
+            grid.cells[i][j].idx.y = i;
+            grid.cells[i][j].is_occupied = false;
         }
     }
-    std::cout << collision_grid.cells.size() << std::endl;
-    for (auto& i : collision_grid.stage){
+    std::cout << grid.cells.size() << std::endl;
+    for (auto& i : grid.stage){
         std::cout << i.grid_pos.x << " , " << i.grid_pos.y << std::endl;
     }
 
     for (int i = 0; i < cols; i++) {
         for (int j = 0; j < rows; j++) {
-            if (collision_grid.max_x < j * cell_size) {
-                collision_grid.max_x = j * cell_size;
+            if (grid.max_x < j * cell_size) {
+                grid.max_x = j * cell_size;
             }
-            if (collision_grid.max_y < i * cell_size) {
-                collision_grid.max_y = i * cell_size;
+            if (grid.max_y < i * cell_size) {
+                grid.max_y = i * cell_size;
             }
         }
     }
+
+    for (auto& i : grid.stage){
+        int x = i.grid_pos.x;
+        int y = i.grid_pos.y;
+        if (i.collidable){
+            grid.cells[x][y].is_occupied = true;
+            grid.stage_cells.push_back({x, y, -1});
+        }
+    }   
+    //grid.num_stage_cells = grid.stage_cells.size();
+    //grid.occupied_cells.reserve(grid.num_stage_cells);
+    //std::copy(grid.stage_cells.begin(), grid.stage_cells.end(), std::back_inserter(grid.occupied_cells));
 }
 
 
@@ -54,6 +66,7 @@ void DrawCollisionGrid(CollisionGrid& grid){
 
 void UpdateCollisionGrid(CollisionGrid &grid, std::vector<Player> &players){
     grid.occupied_cells.clear();
+
     for (auto& i : players){
         int x1 = floor((i.rect1.x + ((float)grid.cell_size / 2.0f)) / grid.cell_size);
         int y1 = floor((i.rect1.y + ((float)grid.cell_size / 2.0f)) / grid.cell_size);
@@ -77,11 +90,12 @@ void UpdateCollisionGrid(CollisionGrid &grid, std::vector<Player> &players){
 }
 
 std::vector<GridCoords> GetCollisionSearch(CollisionGrid& grid) {
+    grid.colls.clear();
     std::vector<GridCoords> search;
     std::set<std::pair<int, int>> uniqueCells; // To prevent duplicates
     int numX = grid.max_x / grid.cell_size;
     int numY = grid.max_y / grid.cell_size;
-
+    
     for (auto& i : grid.occupied_cells) {
         for (int j = -1; j <= 1; j++) {
             for (int k = -1; k <= 1; k++) {
@@ -97,7 +111,21 @@ std::vector<GridCoords> GetCollisionSearch(CollisionGrid& grid) {
                             }
                         }
                     }
-                    
+
+                    for (auto& other : grid.stage_cells) {
+                        if (other.x == newX && other.y == newY) {
+                            if (other.pid < 0) {
+                                StageCell sc;
+                                sc.grid_pos = {(float)newX, (float)newY};
+                                sc.rect.x = newX * grid.cell_size;
+                                sc.rect.y = newY * grid.cell_size;
+                                sc.rect.width = grid.cell_size;
+                                sc.rect.height = grid.cell_size;
+                                grid.colls_stage.push_back({i.pid, sc});
+                            }
+                        }
+                    }
+
                     // Only add if not already in set
                     if (uniqueCells.insert({newX, newY}).second) {
                         search.push_back({newX, newY, i.pid});
@@ -106,10 +134,21 @@ std::vector<GridCoords> GetCollisionSearch(CollisionGrid& grid) {
             }
         }
     }
+
     return search;
 }
 
 void HandleCollisions(CollisionGrid& grid, std::vector<Player>& players, std::vector<Vector2>& vels) {
+    for (auto& i : grid.colls_stage) {
+        int p1 = i.first;
+        StageCell sc = i.second;
+        Rectangle r1 = {players[p1].rect1.x, players[p1].rect2.y, (float)grid.cell_size, (float)grid.cell_size * 2.0f};
+        if (CheckCollisionRecs(r1, sc.rect)) {
+            vels[p1].x *= -1;
+            vels[p1].y *= -1;
+            return;
+        }
+    }
     for (auto& i : grid.colls) {
         int p1 = i.first;
         int p2 = i.second;
