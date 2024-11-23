@@ -9,3 +9,4 @@ anim_testing/.DS_*
 stage_testing/.DS_*
 stage_testing/game*
 stage_testing/.vscode
+simple_grid_coll/*.dSYM

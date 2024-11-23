@@ -138,15 +138,40 @@ std::vector<GridCoords> GetCollisionSearch(CollisionGrid& grid) {
     return search;
 }
 
+int GetCollisionDirection(Rectangle r1, Rectangle r2) {
+    float dx = r1.x - r2.x;
+    float dy = r1.y - r2.y;
+    float w = 0.5f * (r1.width + r2.width);
+    float h = 0.5f * (r1.height + r2.height);
+    float wy = w * dy;
+    float hx = h * dx;
+
+    if (wy > hx) {
+        return (wy + hx > 0) ? 0 : 1;
+    } else {
+        return (wy + hx > 0) ? 2 : 3;
+    }
+}
+
 void HandleCollisions(CollisionGrid& grid, std::vector<Player>& players, std::vector<Vector2>& vels) {
     for (auto& i : grid.colls_stage) {
         int p1 = i.first;
         StageCell sc = i.second;
         Rectangle r1 = {players[p1].rect1.x, players[p1].rect2.y, (float)grid.cell_size, (float)grid.cell_size * 2.0f};
-        if (CheckCollisionRecs(r1, sc.rect)) {
-            vels[p1].x *= -1;
-            vels[p1].y *= -1;
-            return;
+        int dir = GetCollisionDirection(r1, sc.rect);
+        switch (dir) {
+            case 0:
+                vels[p1].x *= -1;
+                break;
+            case 1:
+                vels[p1].y *= -1;
+                break;
+            case 2:
+                vels[p1].x *= -1;
+                break;
+            case 3:
+                vels[p1].y *= -1;
+                break;
         }
     }
     for (auto& i : grid.colls) {
