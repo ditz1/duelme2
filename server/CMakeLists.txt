@@ -3,22 +3,32 @@ project(your_project_name)
 
 set(CMAKE_CXX_STANDARD 17)
 
+if (NOT BOOST_ROOT)
+    message(WARNING "BOOST_ROOT is not set. Please provide it via -DBOOST_ROOT or as an environment variable.")
+else()
+    set(BOOST_ROOT ${BOOST_ROOT})
+    message(STATUS "Using BOOST_ROOT: ${BOOST_ROOT}")
+endif()
+
 if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(BOOST_ROOT "/Users/daniel/boost")
-    set(BOOST_LIBRARYDIR "/Users/daniel/boost/stage/lib")
+    set(BOOST_LIBRARYDIR "${BOOST_ROOT}/stage/lib")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(BOOST_ROOT "/home/ditz/boost")
-    set(BOOST_LIBRARYDIR "/home/ditz/boost/stage/lib")
+    set(BOOST_LIBRARYDIR "${BOOST_ROOT}/stage/lib")
 endif()
 
 find_package(Boost REQUIRED COMPONENTS system)
+if (Boost_FOUND)
+    message(STATUS "Boost found: ${Boost_VERSION}")
+else()
+    message(FATAL_ERROR "Boost not found. Make sure BOOST_ROOT is set correctly.")
+endif()
+
 find_package(Threads)
 
 include_directories(inc ${Boost_INCLUDE_DIRS})
 include_directories(inc/)
 
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.c" "src/*.cc")
-
 file(GLOB_RECURSE HEADERS "inc/*.h" "inc/*.hpp" "inc/*.hh")
 
 add_executable(program ${SOURCES} ${HEADERS})
