@@ -62,7 +62,6 @@ void ParseGameState(GameState* game, Connection* conn, Player* player) {
     if (data_from_server.size() < 1) return;
 
     num_failed_pings <= 0 ? num_failed_pings = 0 : num_failed_pings--;
-    
 
     switch (data_from_server[0]){
         case msg_connect:
@@ -76,7 +75,6 @@ void ParseGameState(GameState* game, Connection* conn, Player* player) {
             ParseAssignPlayerId(game, conn, player);
             break;
         case msg_update:
-            //std::cout << "Update" << std::endl;
             UpdateGameState(game, conn);
             break;
     }

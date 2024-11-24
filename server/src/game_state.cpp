@@ -13,6 +13,7 @@ std::array<bool, 4> player_airborne;
 std::array<int, 4> player_faces;
 std::array<PlayerBody, 4> player_bodies;
 std::array<bool, 4> p_can_jump = {true, true, true, true};
+bool should_reset_game = false;
 
 void UpdateGameStateWithoutRequest() {
     // if somehow this is triggered, dont break the game
@@ -306,6 +307,13 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
         
     }
     ///////////////////////
+
+    // previous to checking attacks check game state / player hps
+    // for (int i = 0; i < num_connections){
+    //     if (game_state.player_hps[i] == 0){
+    //         game_state.player_states[i] = MOVE_DOWN;
+    //     }
+    // }
 
 
     // attack update (do not put this out of scope)
