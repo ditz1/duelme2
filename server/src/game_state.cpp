@@ -13,7 +13,7 @@ std::array<bool, 4> player_airborne;
 std::array<int, 4> player_faces;
 std::array<PlayerBody, 4> player_bodies;
 std::array<bool, 4> p_can_jump = {true, true, true, true};
-bool should_reset_game = false;
+std::array<bool, 4> p_restart = {false, false, false, false};
 
 void UpdateGameStateWithoutRequest() {
     // if somehow this is triggered, dont break the game
@@ -61,6 +61,14 @@ void UpdateGameState(std::array<uint8_t, 32>& message, ServerStage& stage) {
     response[30] = msg_from_server;
     response[31] = msg_end;
     BroadcastMessage(response);
+    int can_restart = 0;
+    for (int i = 0; i < 4; i++){
+        if (p_restart[i]) can_restart++;
+    }
+    if (can_restart > 2){
+        std::cout << "reset" << std::endl;
+        ChangeGameState(true);
+    }    
 }
 
 void LoadStageData(std::array<uint8_t, 32>& message){
@@ -76,7 +84,6 @@ void LoadStageData(std::array<uint8_t, 32>& message){
 
 void BroadcastStageData() {
     std::cout << "broadcasting stage data " << loading_stage_phase << std::endl;
-
 }
 
 void ParseSerialStageData(std::array<uint8_t, 32>& message, ServerStage& stage){
@@ -125,34 +132,46 @@ void UpdateLobbyState(std::array<uint8_t, 32>& message) {
     BroadcastMessage(response);
 }
 
-void ChangeGameState(){
+void ChangeGameState(bool restart){
     size_t players_ready = 0;
     for (int i = 0; i < 4; i++){
         if (player_ready[i]) players_ready++;
     }
+    if (restart) {
+        std::cout << "restarting game" << std::endl;
+        std::array<uint8_t, 32> response;
+        response[0] = msg_update;
+        response[1] = msg_reset_game;
+        response[2] = msg_signature;
+        response[3] = msg_from_server;
+        response[4] = msg_end;
+        BroadcastMessage(response);
+        p_restart = {false, false, false, false};
+        return;
+    }
     if (clients.size() == players_ready){
-        if (loading_stage_phase == 0) {
-            std::array<uint8_t, 32> response;
-            response[0] = msg_lobby;
-            response[1] = msg_load_stage_grid;
-            response[2] = 0;
-            response[3] = msg_from_server;
-            response[4] = msg_end;
-            BroadcastMessage(response);
-            loading_stage_phase++;
-            return;
-        }
-        if (loading_stage_phase > 1) {
-            std::cout << "changing game state" << std::endl;
-            std::array<uint8_t, 32> response;
-            response[0] = msg_stage_data;
-            response[1] = msg_end_stage_data;
-            response[2] = msg_switch_to_game;
-            response[3] = msg_signature;
-            response[4] = msg_from_server;
-            response[5] = msg_end;
-            BroadcastMessage(response);
-            InitGameState(&game_state);
+        std::array<uint8_t, 32> response;
+        switch(loading_stage_phase) {
+            case 0:
+                response[0] = msg_lobby;
+                response[1] = msg_load_stage_grid;
+                response[2] = 0;
+                response[3] = msg_from_server;
+                response[4] = msg_end;
+                BroadcastMessage(response);
+                loading_stage_phase++;
+                break;
+            case 2:
+                std::cout << "changing game state" << std::endl;
+                response[0] = msg_stage_data;
+                response[1] = msg_end_stage_data;
+                response[2] = msg_switch_to_game;
+                response[3] = msg_signature;
+                response[4] = msg_from_server;
+                response[5] = msg_end;
+                BroadcastMessage(response);
+                InitGameState(&game_state);
+                break;
         }
     }
 }
@@ -298,6 +317,15 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
         game_state.player_states[sender_id] = MOVE_DOWN;
     }
 
+    for (int i = 0; i < 4; i++){
+        if (game_state.player_hps[i] == 0 || game_state.player_hps[i] > 240 || game_state.player_states[i] == MOVE_DOWN){
+            p_restart[i] = true;
+        }
+        if (i > (clients.size() - 1)){
+            p_restart[i] = true;
+        }
+    }
+
 
 
     
@@ -308,12 +336,6 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     }
     ///////////////////////
 
-    // previous to checking attacks check game state / player hps
-    // for (int i = 0; i < num_connections){
-    //     if (game_state.player_hps[i] == 0){
-    //         game_state.player_states[i] = MOVE_DOWN;
-    //     }
-    // }
 
 
     // attack update (do not put this out of scope)
@@ -371,16 +393,16 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     bool left_coll = player_coll_dirs[sender_id][2] && player_coll_dirs[sender_id][3];
     bool top_coll = player_coll_dirs[sender_id][4] && player_coll_dirs[sender_id][5];
     bool bottom_coll = player_coll_dirs[sender_id][6] && player_coll_dirs[sender_id][7];
-    std::string s;
-    if (left_coll) s += " left ";
-    if (right_coll) s += " right ";
-    if (top_coll) s += " top ";
-    if (bottom_coll) s += " bottom ";
-    if (s.size() > 1)
-        std::cout << "player " << sender_id << " collision: " << s << std::endl;
+   
+    //std::string s;
+    //if (left_coll) s += " left ";
+    //if (right_coll) s += " right ";
+    //if (top_coll) s += " top ";
+    //if (bottom_coll) s += " bottom ";
+    //if (s.size() > 1)
+    //    std::cout << "player " << sender_id << " collision: " << s << std::endl;
 
     if (coll && ((game_state.player_states[sender_id] != MOVE_RIGHT) && (game_state.player_states[sender_id] != MOVE_LEFT) && (game_state.player_states[sender_id] != MOVE_UP))){
-        std::cout << "reset" << std::endl;
         if (right_coll) pos.x -= 7;
         if (left_coll) pos.x += 7;
         if (top_coll) pos.y += 1;

@@ -13,6 +13,7 @@ extern Stage stage;
 void InitGameState(GameState* game);
 void ParseGameState(GameState* game, Connection* conn, Player* player);
 int ParseLobbyState(GameState* game, std::array<Player, 4>& players);
+void ResetGameState(GameState* game);
 void LoadGameState(GameState* game, Player& client, std::array<Player, 4>& players);
 void StartSendStageData(Connection* conn, std::array<Player, 4>& players, Stage& stage);
 void ListenStageData(Connection* conn, Player& client, std::array<Player, 4>& players, Stage& stage);

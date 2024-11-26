@@ -16,4 +16,4 @@
 #define msg_load_stage_grid 0x4b
 #define msg_stage_data 0x5b
 #define msg_end_stage_data 0x6b
-
+#define msg_reset_game 0x7b

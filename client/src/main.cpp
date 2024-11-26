@@ -196,6 +196,7 @@ int main() {
         
         // born to do id forced to do Id
         all_players[this_client_id] = client_player;
+        all_players[this_client_id].SetId(this_client_id);
         all_players[client_player.Id()].anim_current_frame = client_player.anim_current_frame;
         all_players[client_player.Id()].SetState(client_player.State());
         all_players[client_player.Id()].SetIsAnimating(client_player.IsAnimating());
@@ -230,6 +231,9 @@ int main() {
                         SendStageData(&conn, client_player, all_players, stage, items_rec);
                         LoadGameState(&game_state, client_player, all_players);
                         break;
+                }
+                for (auto& player : all_players){
+                    player.LoadTextures();
                 }
                 UpdateItems(all_players, items);
                 break;

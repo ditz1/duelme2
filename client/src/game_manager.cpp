@@ -41,6 +41,14 @@ void ParseAssignPlayerId(GameState* game, Connection* conn, Player* player){
     this_client_id = int(data_from_server[1]);
 }
 
+void ResetGameState(GameState* game){
+    for (int i = 0; i < num_players_connected; i++){
+        game->player_states[i] = PlayerState::IDLE;
+        game->player_positions[i] = Vector2int{static_cast<uint16_t>(200 + ((i * 200))), 200};
+        game->player_hps[i] = 100;
+    }
+}
+
 void UpdateGameState(GameState* game, Connection* conn){
     if (data_from_server.size() < 32) return;
     std::array<uint8_t, 32> last_received_bytes;
@@ -48,6 +56,10 @@ void UpdateGameState(GameState* game, Connection* conn){
         last_received_bytes[i] = data_from_server[i];
     }
     data_from_server.clear();
+    if (last_received_bytes[1] == msg_reset_game){
+        ResetGameState(game);
+        return;
+    }
     GameState new_game_state;
     new_game_state.FromBytes(last_received_bytes);
     for (int i = 0; i < 4; i++){
@@ -124,7 +136,6 @@ int ParseLobbyState(GameState* game, std::array<Player, 4>& all_players){
             return 1;        
         } else if (last_received_bytes[2] == msg_switch_to_game){
             current_game_stage = 1;
-            return 0;
         }
     }
     int players_connected = last_received_bytes[1];
@@ -222,26 +233,6 @@ std::vector<uint8_t> SerializeStageData(std::vector<Rectangle>& stage_cells, std
     data.push_back(std::get<1>(height_bytes));
     data.push_back(std::get<0>(height_bytes));
 
-    // data.push_back(0xFF);
-    // data.push_back(0xFF);
-    // data.push_back(0xFF);
-    // data.push_back(0xFF);
-
-    
-    // for (Rectangle rect : items){
-    //     std::tuple<uint8_t, uint8_t> x_bytes = Float16ToBytes(rect.x);
-    //     std::tuple<uint8_t, uint8_t> y_bytes = Float16ToBytes(rect.y);
-    //     std::tuple<uint8_t, uint8_t> width_bytes = Float16ToBytes(rect.width);
-    //     std::tuple<uint8_t, uint8_t> height_bytes = Float16ToBytes(rect.height);
-    //     data.push_back(std::get<0>(x_bytes));
-    //     data.push_back(std::get<1>(x_bytes));
-    //     data.push_back(std::get<0>(y_bytes));
-    //     data.push_back(std::get<1>(y_bytes));
-    //     data.push_back(std::get<0>(width_bytes));
-    //     data.push_back(std::get<1>(width_bytes));
-    //     data.push_back(std::get<0>(height_bytes));
-    //     data.push_back(std::get<1>(height_bytes));
-    // } 
 
     return data;
 }

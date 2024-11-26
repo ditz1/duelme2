@@ -9,7 +9,7 @@ extern std::array<PlayerBody, 4> player_bodies;
 void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::array<uint8_t, 32>& last_recieved_bytes, GameState& game_state, ServerStage& stage);
 void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message);
 void UpdateGameState(std::array<uint8_t, 32>& message, ServerStage& stage);
-void ChangeGameState();
+void ChangeGameState(bool restart = false);
 void UpdateGameStateWithoutRequest();
 void UpdateLobbyState(std::array<uint8_t, 32>& message);
 void BroadcastStageData();
