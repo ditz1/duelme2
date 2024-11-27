@@ -14,6 +14,7 @@ std::array<int, 4> player_faces;
 std::array<PlayerBody, 4> player_bodies;
 std::array<bool, 4> p_can_jump = {true, true, true, true};
 std::array<bool, 4> p_restart = {false, false, false, false};
+bool game_has_restarted = false;
 
 void UpdateGameStateWithoutRequest() {
     // if somehow this is triggered, dont break the game
@@ -68,6 +69,7 @@ void UpdateGameState(std::array<uint8_t, 32>& message, ServerStage& stage) {
     if (can_restart > 2){
         std::cout << "reset" << std::endl;
         ChangeGameState(true);
+        p_restart = {false, false, false, false};
     }    
 }
 
@@ -298,7 +300,6 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
         }
 
     }
-    // position update
     ///// do not change this ///// was causing desync
     if ((req.player_positions[sender_id].x == curr.player_positions[sender_id].x) && (req.player_positions[sender_id].y == curr.player_positions[sender_id].y)){ 
         game_state.player_positions[sender_id] = req.player_positions[sender_id];
