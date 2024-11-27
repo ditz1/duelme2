@@ -1,0 +1,11 @@
+{
+    "cmake.ignoreCMakeListsMissing": true,
+    "files.associations": {
+        "iostream": "cpp"
+    },
+    "clangd.arguments": [
+        "-I${workspaceFolder}/client/include",
+        "-I${workspaceFolder}/client/inc",
+        "-I/Users/daniel/boost/"
+    ]
+}
