@@ -11,6 +11,7 @@ int current_game_stage = 0;
 int num_failed_pings = 0;
 bool stage_sent = true;
 bool in_loading_screen = false;
+bool in_reset_screen = false;
 bool stage_message_created = false;
 bool debug_mode = false;
 float player_size = 1.45;
@@ -210,6 +211,7 @@ int main() {
 
         CheckPlayersScale(client_player, all_players, stage);
 
+
         if (in_loading_screen) {
             InLoadingScreen();
             SendStageData(&conn, client_player, all_players, stage, items_rec);
@@ -298,6 +300,7 @@ int main() {
                     break;
                 case 2:
                     DrawText("Game Over", 400, 225, 20, RED);
+                    DrawText(TextFormat("reset in %.2f", reset_timer), 400, 250, 20, RED);
                     break;
             }
             

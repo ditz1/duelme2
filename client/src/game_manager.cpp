@@ -2,6 +2,8 @@
 #include <thread>
 #include <chrono>
 
+float reset_timer = 0.0f;
+
 void InitGameState(GameState* game){
     for (uint8_t& player_state : game->player_states) {
         player_state = 0xBB;
@@ -47,6 +49,7 @@ void ResetGameState(GameState* game){
         game->player_positions[i] = Vector2int{static_cast<uint16_t>(200 + ((i * 200))), 200};
         game->player_hps[i] = 100;
     }
+    
 }
 
 void UpdateGameState(GameState* game, Connection* conn){

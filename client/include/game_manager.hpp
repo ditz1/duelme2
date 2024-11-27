@@ -9,6 +9,7 @@
 
 
 extern Stage stage;
+extern float reset_timer;
 
 void InitGameState(GameState* game);
 void ParseGameState(GameState* game, Connection* conn, Player* player);
