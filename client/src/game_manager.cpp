@@ -49,6 +49,9 @@ void ResetGameState(GameState* game){
         game->player_positions[i] = Vector2int{static_cast<uint16_t>(200 + ((i * 200))), 200};
         game->player_hps[i] = 100;
     }
+    if (reset_timer == 0.0f){
+        reset_timer = 3.0f;
+    }
     
 }
 
@@ -61,6 +64,7 @@ void UpdateGameState(GameState* game, Connection* conn){
     data_from_server.clear();
     if (last_received_bytes[1] == msg_reset_game){
         ResetGameState(game);
+        current_game_stage = 2;
         return;
     }
     GameState new_game_state;
@@ -326,7 +330,11 @@ void AdjustPlayerDimensions(Player& client, std::array<Player, 4>& all_players){
 }
 
 void ParseEndState(GameState* game, Connection* conn, Player* player){
-    std::cout << "ERROR: End state not yet implemented" << std::endl;
+    reset_timer -= GetFrameTime();
+    if (reset_timer <= 0.0f){
+        current_game_stage = 1;
+        
+    }
 }
 
 void DrawGameState(std::array<Player, 4> players, std::vector<Item> items){

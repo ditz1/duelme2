@@ -320,6 +320,8 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     for (int i = 0; i < 4; i++){
         if (game_state.player_hps[i] == 0 || game_state.player_hps[i] > 240 || game_state.player_states[i] == MOVE_DOWN){
             p_restart[i] = true;
+        } else {
+            p_restart[i] = false;
         }
         if (i > (clients.size() - 1)){
             p_restart[i] = true;
