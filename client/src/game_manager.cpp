@@ -349,7 +349,7 @@ void DrawGameState(std::array<Player, 4> players, std::vector<Item> items){
 
 // this is basically a paraphrased version of the checks in Player::ProcessPlayerAnimLogic
 void UpdatePlayerCopyAnimInfo(Player& copy) {
-    if (copy.Id() == this_client_id) return;
+    //if (copy.Id() == this_client_id) return;
     if (copy.last_state != copy.State()) {
         copy.last_state = copy.State();
         copy.anim_current_frame = 0;
@@ -393,7 +393,6 @@ void UpdatePlayerCopyAnimInfo(Player& copy) {
 
 void UpdateClientPlayerCopies(std::array<Player, 4>& players, GameState* game){
     for (int i = 0; i < 4; i++){
-        if (i == this_client_id) continue;
         players[i].SetState(PlayerState(game->player_states[i]));
         players[i].SetHp(game->player_hps[i]);
         players[i].SetPosition(game->player_positions[i]);

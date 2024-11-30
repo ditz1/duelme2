@@ -244,8 +244,8 @@ void ProcessPlayerAttacks(float scale) {
                     for (size_t j = 0; j < 4; j++){
                         if (i == j) continue;
                         if (RectRectCollision(player_hitboxes[i], player_hurtboxes[j]) && !processed_hit[i]){
-                            std::cout << "player " << i << " hit player " << j << " with kick" << std::endl;
-                            game_state.player_hps[j] -= 10;
+                            std::cout << "player " << i << " hit player " << j << " with shoot" << std::endl;
+                            game_state.player_hps[j] -= 50;
                             processed_hit[i] = true;
                         }
                     }
