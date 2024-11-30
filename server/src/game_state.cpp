@@ -279,6 +279,8 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     GameState req;
     req.FromBytes(last_recieved_bytes);
 
+    stage.collision_grid.colls.clear();
+
     std::array<uint8_t, 32> tmp;
     tmp[0] = msg_update;
     for (int i = 0; i < 28; i++){
@@ -346,6 +348,28 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     ProcessPlayerFC();
     UpdatePlayerHurtboxes(stage.scale, stage.player_width, stage.player_height);
     ProcessPlayerAttacks(stage.scale);
+    // generate player collision rects
+    stage.collision_grid.colls.clear();
+    std::vector<Player> player_colls;
+    for (int i = 0; i < num_connections+1; i++){
+        Player p;
+        p.id = i;
+        p.rect1 = Rectangle{static_cast<uint16_t>(game_state.player_positions[i].x), 
+                            static_cast<uint16_t>(game_state.player_positions[i].y), 
+                            static_cast<uint16_t>(player_hurtboxes[i].width), 
+                            static_cast<uint16_t>(player_hurtboxes[i].height/2)};
+        p.rect2 = Rectangle{static_cast<uint16_t>(game_state.player_positions[i].x), 
+                            static_cast<uint16_t>(game_state.player_positions[i].y - player_hurtboxes[i].height/2), 
+                            static_cast<uint16_t>(player_hurtboxes[i].width), 
+                            static_cast<uint16_t>(player_hurtboxes[i].height/2)};
+        player_colls.push_back(p);
+    }
+    UpdateCollisionGrid(stage.collision_grid, player_colls);
+    std::vector<GridCoords> search = GetCollisionSearch(stage.collision_grid);
+    for (auto& i : stage.collision_grid.occupied_cells){
+        std::cout << "cell: " << i.x << " " << i.y << " " << i.pid << " | ";
+    }
+    std::cout << std::endl;
 
 
      // hp update

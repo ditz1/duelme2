@@ -1,6 +1,9 @@
 #include <s_stage.hpp>
+#include <collision_grid.hpp>
 
 void ServerStage::LoadDataIntoCells() {
+    CollisionGrid grid;
+    collision_grid = grid;
     max_y_level = 1000000;
     max_x_level = 1000000;
     min_y_level = 0;
@@ -63,6 +66,14 @@ void ServerStage::LoadDataIntoCells() {
     height.b.b1 = data[j+2];
     height.b.b0 = data[j+3];
     player_height = height.u;
+    int rows = (max_y_level - min_y_level) / max_rect_height;
+    int cols = (max_x_level - min_x_level) / max_rect_width;
+
+
+    // generate collision grid
+    GenerateCollisionGrid(collision_grid, max_rect_width, rows, cols);
+    std::cout << collision_grid.cell_size << ", " << collision_grid.rows << ", " << collision_grid.cols << std::endl;
+    
 
 }
 

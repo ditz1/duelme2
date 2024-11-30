@@ -14,4 +14,13 @@ elif [ "$1" = "local" ]; then
     cd ../../server/build/
     make
     ./program 127.0.0.1
+elif [ "$1" = "debug" ]; then
+    echo "running on LOCAL"
+    cd client/build
+    make
+    kill $(lsof -t -i:8080)
+    python3 -m http.server 8080 &
+    cd ../../server/build/
+    make
+    lldb ./program 127.0.0.1
 fi
