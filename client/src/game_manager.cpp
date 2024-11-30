@@ -45,14 +45,10 @@ void ParseAssignPlayerId(GameState* game, Connection* conn, Player* player){
 
 void ResetGameState(GameState* game){
     for (int i = 0; i < num_players_connected; i++){
-        game->player_states[i] = PlayerState::IDLE;
-        game->player_positions[i] = Vector2int{static_cast<uint16_t>(200 + ((i * 200))), 200};
+        game->player_states[i] = PlayerState::AIRBORNE;
+        game->player_positions[i] = Vector2int{static_cast<uint16_t>(200 + ((i * 200))), 300};
         game->player_hps[i] = 100;
     }
-    if (reset_timer == 0.0f){
-        reset_timer = 3.0f;
-    }
-    
 }
 
 void UpdateGameState(GameState* game, Connection* conn){
@@ -65,6 +61,7 @@ void UpdateGameState(GameState* game, Connection* conn){
     if (last_received_bytes[1] == msg_reset_game){
         ResetGameState(game);
         current_game_stage = 2;
+        reset_timer = 3.0f;    
         return;
     }
     GameState new_game_state;
@@ -333,7 +330,9 @@ void ParseEndState(GameState* game, Connection* conn, Player* player){
     reset_timer -= GetFrameTime();
     if (reset_timer <= 0.0f){
         current_game_stage = 1;
-        
+        player->SetRequestedState(PlayerState::AIRBORNE);
+        RequestStateUpdate(game, conn, player);
+        reset_timer = 0.0f;
     }
 }
 
