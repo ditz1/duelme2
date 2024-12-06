@@ -2,6 +2,14 @@
 #include <iostream>
 #include <set>
 
+void HandleCollisions(CollisionGrid& grid, GameState& game_state, std::vector<GridCoords>& search) {
+    std::cout << search.size() << std::endl;
+    std::cout << grid.colls.size() << std::endl;
+    std::cout << grid.colls_stage.size() << std::endl;
+    std::cout << grid.occupied_cells.size() << std::endl;
+
+}
+
 void GenerateCollisionGrid(CollisionGrid &grid, int cell_size, int rows, int cols){
     std::cout << "generating" << std::endl;
     std::cout << "rows: " << rows << std::endl;
@@ -60,9 +68,9 @@ void GenerateCollisionGrid(CollisionGrid &grid, int cell_size, int rows, int col
 
 void UpdateCollisionGrid(CollisionGrid &grid, std::vector<Player> &players){
     grid.occupied_cells.clear();
-    std::cout << grid.cells[0].size() << std::endl;
-    std::cout << grid.cells.size() << std::endl;
-    std::cout << grid.max_x << ", " << grid.max_y << std::endl;
+    //std::cout << grid.cells[0].size() << std::endl;
+    //std::cout << grid.cells.size() << std::endl;
+    //std::cout << grid.max_x << ", " << grid.max_y << std::endl;
 
     for (auto& i : players){
         int x1 = floor((i.rect1.x + ((float)grid.cell_size / 2.0f)) / grid.cell_size);
@@ -72,7 +80,7 @@ void UpdateCollisionGrid(CollisionGrid &grid, std::vector<Player> &players){
         if (i.rect1.x >= grid.max_y) x1 = grid.cells[0].size() - 1;
         if (i.rect1.y >= grid.max_x) y1 = grid.cells.size() - 1;
         // x, y is top left cell adjacent of player
-        std::cout << "x1: " << x1 << " y1: " << y1 << std::endl;
+        //std::cout << "x1: " << x1 << " y1: " << y1 << std::endl;
         grid.cells[y1][x1].is_occupied = true;
         grid.occupied_cells.push_back({x1, y1, i.id});
 
@@ -82,7 +90,7 @@ void UpdateCollisionGrid(CollisionGrid &grid, std::vector<Player> &players){
         if (y2 < 0) y2 = 0;
         if (i.rect2.x >= grid.max_y) x2 = grid.cells[0].size() - 1;
         if (i.rect2.y >= grid.max_x) y2 = grid.cells.size() - 1;
-        std::cout << "x1: " << x1 << " y1: " << y1 << std::endl;
+        //std::cout << "x1: " << x1 << " y1: " << y1 << std::endl;
 
         grid.cells[y2][x2].is_occupied = true;
         grid.occupied_cells.push_back({x2, y2, i.id});
@@ -91,6 +99,7 @@ void UpdateCollisionGrid(CollisionGrid &grid, std::vector<Player> &players){
 
 std::vector<GridCoords> GetCollisionSearch(CollisionGrid& grid) {
     grid.colls.clear();
+    grid.colls_stage.clear();
     std::vector<GridCoords> search;
     std::set<std::pair<int, int>> uniqueCells; // to prevent duplicates
     
@@ -151,48 +160,51 @@ int GetCollisionDirection(Rectangle r1, Rectangle r2) {
     }
 }
 
-void HandleCollisions(CollisionGrid& grid, std::vector<Player>& players, std::vector<Vector2>& vels) {
-    for (auto& i : grid.colls_stage) {
-        int p1 = i.first;
-        StageCell sc = i.second;
-        Rectangle r1 = {static_cast<uint16_t>(players[p1].rect1.x), static_cast<uint16_t>(players[p1].rect2.y), 
-                        static_cast<uint16_t>(grid.cell_size), static_cast<uint16_t>(grid.cell_size * 2.0f)};
-        int dir = GetCollisionDirection(r1, sc.rect);
-        switch (dir) {
-            case 0:
-                vels[p1].x *= -1;
-                break;
-            case 1:
-                vels[p1].y *= -1;
-                break;
-            case 2:
-                vels[p1].x *= -1;
-                break;
-            case 3:
-                vels[p1].y *= -1;
-                break;
-        }
-    }
-    for (auto& i : grid.colls) {
-        int p1 = i.first;
-        int p2 = i.second;
-        // AABB , combine both both player rectangles
-        Rectangle r1 = {static_cast<uint16_t>(players[p1].rect1.x), static_cast<uint16_t>(players[p1].rect2.y), static_cast<uint16_t>(grid.cell_size), static_cast<uint16_t>(grid.cell_size * 2.0f)};
-        Rectangle r2 = {static_cast<uint16_t>(players[p2].rect1.x), static_cast<uint16_t>(players[p2].rect2.y), static_cast<uint16_t>(grid.cell_size), static_cast<uint16_t>(grid.cell_size * 2.0f)};
-        if (RectRectCollision(r1, r2)) {
-            // Handle collision
-            // For now just reverse velocities
-            std::cout << "coll" << std::endl;
-            vels[p1].x *= -1;
-            vels[p1].y *= -1;
-            vels[p2].x *= -1;
-            vels[p2].y *= -1;
-            // this wont really work, need to normalize velocity vectors
-            // and have it move away from each other
+
+
+// this function was made for local testing, should not be used here. the Player is not the same, dead code
+// void HandleCollisions(CollisionGrid& grid, std::vector<Player>& players, std::vector<Vector2>& vels) {
+//     for (auto& i : grid.colls_stage) {
+//         int p1 = i.first;
+//         StageCell sc = i.second;
+//         Rectangle r1 = {static_cast<uint16_t>(players[p1].rect1.x), static_cast<uint16_t>(players[p1].rect2.y), 
+//                         static_cast<uint16_t>(grid.cell_size), static_cast<uint16_t>(grid.cell_size * 2.0f)};
+//         int dir = GetCollisionDirection(r1, sc.rect);
+//         switch (dir) {
+//             case 0:
+//                 vels[p1].x *= -1;
+//                 break;
+//             case 1:
+//                 vels[p1].y *= -1;
+//                 break;
+//             case 2:
+//                 vels[p1].x *= -1;
+//                 break;
+//             case 3:
+//                 vels[p1].y *= -1;
+//                 break;
+//         }
+//     }
+//     for (auto& i : grid.colls) {
+//         int p1 = i.first;
+//         int p2 = i.second;
+//         // AABB , combine both both player rectangles
+//         Rectangle r1 = {static_cast<uint16_t>(players[p1].rect1.x), static_cast<uint16_t>(players[p1].rect2.y), static_cast<uint16_t>(grid.cell_size), static_cast<uint16_t>(grid.cell_size * 2.0f)};
+//         Rectangle r2 = {static_cast<uint16_t>(players[p2].rect1.x), static_cast<uint16_t>(players[p2].rect2.y), static_cast<uint16_t>(grid.cell_size), static_cast<uint16_t>(grid.cell_size * 2.0f)};
+//         if (RectRectCollision(r1, r2)) {
+//             // Handle collision
+//             // For now just reverse velocities
+//             std::cout << "coll" << std::endl;
+//             vels[p1].x *= -1;
+//             vels[p1].y *= -1;
+//             vels[p2].x *= -1;
+//             vels[p2].y *= -1;
+//             // this wont really work, need to normalize velocity vectors
+//             // and have it move away from each other
           
             
-            break;
-        }
-    }
-}
+//             break;
+//         }
+//     }
+// }
 

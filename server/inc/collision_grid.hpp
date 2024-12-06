@@ -53,6 +53,7 @@ typedef struct CollisionGrid {
     int num_stage_cells;
 } CollisionGrid;
 
+void HandleCollisions(CollisionGrid& grid, GameState& game_state, std::vector<GridCoords>& search);
 void GenerateCollisionGrid(CollisionGrid &collision_grid, int cell_size, int rows, int cols);
 void ClearCollisionGrid(CollisionGrid &collision_grid);
 void UpdateCollisionGrid(CollisionGrid &collision_grid, std::vector<Player> &players);
