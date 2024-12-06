@@ -330,8 +330,8 @@ void ParseEndState(GameState* game, Connection* conn, Player* player){
     reset_timer -= GetFrameTime();
     if (reset_timer <= 0.0f){
         current_game_stage = 1;
-        player->SetRequestedState(PlayerState::AIRBORNE);
-        RequestStateUpdate(game, conn, player);
+        //player->SetRequestedState(PlayerState::AIRBORNE);
+        //RequestStateUpdate(game, conn, player);
         reset_timer = 0.0f;
     }
 }

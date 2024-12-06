@@ -312,7 +312,6 @@ int main() {
             
         EndDrawing();
 
-        HandleErrors(conn);
     }
 
     buf[0] = msg_disconnect;

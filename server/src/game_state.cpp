@@ -15,6 +15,7 @@ std::array<PlayerBody, 4> player_bodies;
 std::array<bool, 4> p_can_jump = {true, true, true, true};
 std::array<bool, 4> p_restart = {false, false, false, false};
 bool game_has_restarted = false;
+bool positions_have_reset = true;
 
 void UpdateGameStateWithoutRequest() {
     // if somehow this is triggered, dont break the game
@@ -54,6 +55,7 @@ void UpdateGameState(std::array<uint8_t, 32>& message, ServerStage& stage) {
 
     ParseGameStateRequest(curr_game_bytes, message, game_state, stage);
 
+
     std::array<uint8_t, 28> updated_game_bytes = game_state.ToBytes();
 
     response[0] = msg_update;
@@ -68,6 +70,7 @@ void UpdateGameState(std::array<uint8_t, 32>& message, ServerStage& stage) {
     }
     if (can_restart > 2){
         std::cout << "reset" << std::endl;
+        positions_have_reset = false;
         ChangeGameState(true);
         p_restart = {false, false, false, false};
     }    
@@ -87,6 +90,16 @@ void LoadStageData(std::array<uint8_t, 32>& message){
 void BroadcastStageData() {
     std::cout << "broadcasting stage data " << loading_stage_phase << std::endl;
 }
+
+void ResetPlayerPositionByStage(GameState& game_state, ServerStage& stage){
+    std::cout << stage.max_y_level << std::endl;
+    for (int i = 0; i <= num_connections; i++){
+        game_state.player_positions[i].x = 200 + (i * 200);
+        game_state.player_positions[i].y = stage.max_y_level - 50;
+    }
+
+}
+
 
 void ParseSerialStageData(std::array<uint8_t, 32>& message, ServerStage& stage){
     if (message[0] != msg_stage_data) return;
@@ -279,7 +292,9 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     GameState req;
     req.FromBytes(last_recieved_bytes);
 
-    stage.collision_grid.colls.clear();
+    //stage.collision_grid.colls.clear();
+
+  
 
     std::array<uint8_t, 32> tmp;
     tmp[0] = msg_update;
@@ -302,6 +317,13 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
         }
 
     }
+
+    if (!positions_have_reset){
+        std::cout << "need to reset positions" << std::endl;
+        ResetPlayerPositionByStage(game_state, stage);
+        positions_have_reset = true;
+    }
+
     ///// do not change this ///// was causing desync
     if ((req.player_positions[sender_id].x == curr.player_positions[sender_id].x) && (req.player_positions[sender_id].y == curr.player_positions[sender_id].y)){ 
         game_state.player_positions[sender_id] = req.player_positions[sender_id];
