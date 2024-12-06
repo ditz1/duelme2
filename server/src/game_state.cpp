@@ -71,6 +71,7 @@ void UpdateGameState(std::array<uint8_t, 32>& message, ServerStage& stage) {
     if (can_restart > 2){
         std::cout << "reset" << std::endl;
         positions_have_reset = false;
+        ResetPlayerPositionByStage(game_state, stage);
         ChangeGameState(true);
         p_restart = {false, false, false, false};
     }    
@@ -94,10 +95,23 @@ void BroadcastStageData() {
 void ResetPlayerPositionByStage(GameState& game_state, ServerStage& stage){
     std::cout << stage.max_y_level << std::endl;
     for (int i = 0; i <= num_connections; i++){
-        game_state.player_positions[i].x = 200 + (i * 200);
-        game_state.player_positions[i].y = stage.max_y_level - 50;
+        game_state.player_positions[i] = Vector2int{static_cast<uint16_t>(200 + ((i * 230))), static_cast<uint16_t>(250)};
+        player_bodies[i].last_pos_x = (float)game_state.player_positions[i].x;
+        player_bodies[i].last_pos_y = (float)game_state.player_positions[i].y;
+        player_bodies[i].pos_x = (float)game_state.player_positions[i].x;
+        player_bodies[i].pos_y = (float)game_state.player_positions[i].y;
+        game_state.player_hps[i] = 100;
     }
+    
+    std::array<uint8_t, 32> response;
+    response[0] = msg_update;
+    std::array<uint8_t, 28> updated_game_bytes = game_state.ToBytes();
+    std::copy(updated_game_bytes.begin(), updated_game_bytes.end(), response.begin() + 1);
+    response[29] = msg_end;
+    response[30] = msg_from_server;
+    response[31] = msg_end;
 
+    BroadcastMessage(response);
 }
 
 
@@ -322,6 +336,8 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
         std::cout << "need to reset positions" << std::endl;
         ResetPlayerPositionByStage(game_state, stage);
         positions_have_reset = true;
+        req.player_positions[sender_id] = game_state.player_positions[sender_id];
+        curr.player_positions[sender_id] = game_state.player_positions[sender_id];
     }
 
     ///// do not change this ///// was causing desync
@@ -359,6 +375,7 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     // if position is updated here, it will cause desync
     if (((req.player_positions[sender_id].x != curr.player_positions[sender_id].x) || (req.player_positions[sender_id].y != curr.player_positions[sender_id].y)) && req.player_states[sender_id] != AIRBORNE){
         std::cout << "desync" << std::endl;
+         
         
     }
     ///////////////////////
@@ -552,8 +569,12 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     if (pos.x > stage.max_x_level - spacing) {
         pos.x = stage.max_x_level - spacing;
     }
-    
+
+
     game_state.player_positions[sender_id] = pos;
+
+    
+    
     
 }
 
@@ -572,13 +593,12 @@ void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message){
 
 
 void InitGameState(GameState* game){
-    if (game_running) return;
+    loading_stage_phase = 0;
     std::cout << "init game" << std::endl;
     for (PlayerFC& pfc : player_fcs){
         pfc.anim_fc = 0;
         pfc.fc = 0;
     }
-    game_running = true;
     for (uint8_t& player_state : game->player_states) {
         player_state = 0xBB;
     }

@@ -68,9 +68,6 @@ void GenerateCollisionGrid(CollisionGrid &grid, int cell_size, int rows, int col
 
 void UpdateCollisionGrid(CollisionGrid &grid, std::vector<Player> &players){
     grid.occupied_cells.clear();
-    //std::cout << grid.cells[0].size() << std::endl;
-    //std::cout << grid.cells.size() << std::endl;
-    //std::cout << grid.max_x << ", " << grid.max_y << std::endl;
 
     for (auto& i : players){
         int x1 = floor((i.rect1.x + ((float)grid.cell_size / 2.0f)) / grid.cell_size);
@@ -80,7 +77,6 @@ void UpdateCollisionGrid(CollisionGrid &grid, std::vector<Player> &players){
         if (i.rect1.x >= grid.max_y) x1 = grid.cells[0].size() - 1;
         if (i.rect1.y >= grid.max_x) y1 = grid.cells.size() - 1;
         // x, y is top left cell adjacent of player
-        //std::cout << "x1: " << x1 << " y1: " << y1 << std::endl;
         grid.cells[y1][x1].is_occupied = true;
         grid.occupied_cells.push_back({x1, y1, i.id});
 

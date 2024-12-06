@@ -44,7 +44,7 @@ void ParseAssignPlayerId(GameState* game, Connection* conn, Player* player){
 }
 
 void ResetGameState(GameState* game){
-    for (int i = 0; i < num_players_connected; i++){
+    for (int i = 0; i < num_players_connected+1; i++){
         game->player_states[i] = PlayerState::AIRBORNE;
         game->player_positions[i] = Vector2int{static_cast<uint16_t>(200 + ((i * 200))), 300};
         game->player_hps[i] = 100;

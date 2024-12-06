@@ -250,6 +250,9 @@ int main() {
                 break;
             case 2:
                 ParseEndState(&game_state, &conn, &client_player);
+                UpdateClientPlayerCopies(all_players, &game_state);
+                UpdateItems(all_players, items);
+                ParseGameState(&game_state, &conn, &client_player);
                 if (reset_timer <= 0.0f) {
                     current_game_stage = 1;
                 }
