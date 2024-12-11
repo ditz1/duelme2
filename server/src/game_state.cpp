@@ -16,6 +16,7 @@ std::array<bool, 4> p_can_jump = {true, true, true, true};
 std::array<bool, 4> p_restart = {false, false, false, false};
 bool game_has_restarted = false;
 bool positions_have_reset = true;
+std::array<int, 4> player_scores = {0, 0, 0, 0};
 
 void UpdateGameStateWithoutRequest() {
     // if somehow this is triggered, dont break the game
@@ -94,7 +95,7 @@ void BroadcastStageData() {
 
 void ResetPlayerPositionByStage(GameState& game_state, ServerStage& stage){
     std::cout << stage.max_y_level << std::endl;
-    for (int i = 0; i <= num_connections; i++){
+    for (int i = 0; i < num_connections; i++){
         game_state.player_positions[i] = Vector2int{static_cast<uint16_t>(200 + ((i * 230))), static_cast<uint16_t>(250)};
         player_bodies[i].last_pos_x = (float)game_state.player_positions[i].x;
         player_bodies[i].last_pos_y = (float)game_state.player_positions[i].y;
@@ -581,6 +582,7 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
 void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message){
     if (message[0] != msg_lobby) return;
     if (message[1] == msg_player_ready){
+        loading_stage_phase = 0;
         int id = message[3];
         if (player_ready[id] == false){
             player_ready[id] = true;
