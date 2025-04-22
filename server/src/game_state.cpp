@@ -18,6 +18,9 @@ bool game_has_restarted = false;
 bool positions_have_reset = true;
 std::array<int, 4> player_scores = {0, 0, 0, 0};
 
+int dummy_move_timer = 0;
+int dummy_timer_max = 100;
+
 void UpdateGameStateWithoutRequest() {
     // if somehow this is triggered, dont break the game
     // but log that it happened and most likely it was desync,
@@ -150,7 +153,18 @@ void UpdateLobbyState(std::array<uint8_t, 32>& message) {
     }
     std::array<uint8_t, 32> response;
     response[0] = msg_lobby;
-    response[1] = clients.size();
+    if (clients.size() < 2){ // for singleplayer mode
+        response[1] = 2;        
+        game_state.player_positions[1].x = 400;
+        game_state.player_positions[1].y = 200;
+        game_state.player_hps[1] = 100;
+        player_bodies[1].pos_x = 400;
+        player_bodies[1].pos_y = 200;
+        player_bodies[1].last_pos_x = 400;
+        player_bodies[1].last_pos_y = 200;
+    } else {
+        response[1] = clients.size();
+    }
     response[2] = player_ready[0];
     response[3] = player_ready[1];
     response[4] = player_ready[2];
@@ -305,6 +319,19 @@ void ProcessPlayerPhysics() {
     // }
 }
 
+void RunDummyPlayer(){
+    game_state.player_states[1] = AIRBORNE;
+    dummy_move_timer++;
+    if (dummy_move_timer < 50){
+        game_state.player_states[1] = MOVE_RIGHT;
+    } else if (dummy_move_timer > 50){
+        game_state.player_states[1] = MOVE_LEFT;
+    }
+    
+    
+    if (dummy_move_timer > dummy_timer_max) dummy_move_timer = 0;
+
+}
 
 // this function is meant to be unique to the client,
 // i.e. the client's request should only be changing
@@ -316,6 +343,17 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     req.FromBytes(last_recieved_bytes);
 
     //stage.collision_grid.colls.clear();
+
+    // for single player, insert dummy plug for player 2
+    if (clients.size() == 1 && num_connections == 2){
+        RunDummyPlayer();
+        // create dummy request with sender_id as player 2 so that physics update
+        std::array<uint8_t, 32> dummy_request;
+        std::copy(last_recieved_bytes.begin(), last_recieved_bytes.end(), dummy_request.begin());
+        dummy_request[30] = 2;
+        dummy_request[31] = msg_end;
+        //ParseGameStateRequest(current_game_state, dummy_request, game_state, stage);
+    }
 
   
 
@@ -583,8 +621,6 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     game_state.player_positions[sender_id] = pos;
 
     
-    
-    
 }
 
 void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message){
@@ -615,16 +651,13 @@ void InitGameState(GameState* game){
         pfc.anim_fc = 0;
         pfc.fc = 0;
     }
-    for (uint8_t& player_state : game->player_states) {
-        player_state = 0xBB;
+    for (int i = 0; i < game->player_ids.size(); i++){
+        if (i >= num_connections){
+            game->player_states[i] = 0xBB;
+            game->player_hps[i] = 0xCC;
+            game->player_ids[i] = 0xAA;
+            game->player_positions[i] = Vector2int{0xDDDD, 0xEEEE};
+        }
     }
-    for (uint8_t& player_hp : game->player_hps){
-        player_hp = 0xCC;
-    }
-    for (uint8_t& player_id : game->player_ids) {
-        player_id = 0xAA;
-    }
-    for (Vector2int& player_position : game->player_positions) {
-        player_position = Vector2int{0xDDDD, 0xEEEE};
-    }
+  
 }

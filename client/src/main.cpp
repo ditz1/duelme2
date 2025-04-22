@@ -31,7 +31,7 @@ std::string test2 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \
                       #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  G  G  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
@@ -46,7 +46,7 @@ std::string test3 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r
                       #  R  R  R  R  R  R  R  R  R  G  G  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  #  #  #  #  #  #  #  #  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  #  #  #  #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  #  #  #  R  R  R  # \n \
