@@ -9,3 +9,4 @@ int current_game_stage = 0;
 GameState game_state;
 int loading_stage_phase = 0;
 std::array<PlayerFC, 4> player_fcs;
+bool single_player = false;

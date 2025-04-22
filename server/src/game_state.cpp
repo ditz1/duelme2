@@ -126,7 +126,6 @@ void ParseSerialStageData(std::array<uint8_t, 32>& message, ServerStage& stage){
         printf("scale: %f player width: %d player height: %d\n", stage.scale, stage.player_width, stage.player_height);
         // save max y level (lowest block) for player gravity
        
-
         loading_stage_phase = 2;
         ChangeGameState();
         std::cout << "recieved end stage data, starting game" << std::endl;
@@ -167,6 +166,13 @@ void ChangeGameState(bool restart){
     for (int i = 0; i < 4; i++){
         if (player_ready[i]) players_ready++;
     }
+
+
+    // init dummy plug - if game is starting and there is only 1 player, add bot
+    // CPU player will look the same as a regular player to the gamestate, but the server will only see 1 client
+    
+
+
     if (restart) {
         std::cout << "restarting game" << std::endl;
         std::array<uint8_t, 32> response;
@@ -192,6 +198,8 @@ void ChangeGameState(bool restart){
                 loading_stage_phase++;
                 break;
             case 2:
+                // if game is starting and there is only 1 player,
+                // assume dummy plug for player 2 
                 std::cout << "changing game state" << std::endl;
                 response[0] = msg_stage_data;
                 response[1] = msg_end_stage_data;
@@ -366,7 +374,7 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
             p_restart[i] = false;
         }
         if (i > (clients.size() - 1)){
-            p_restart[i] = true;
+            //p_restart[i] = true;
         }
     }
 
@@ -590,6 +598,12 @@ void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message){
             player_ready[id] = false;
         }
         std::cout << "Player " << int(message[3]) << " is ready: " << player_ready[message[3]] << std::endl;
+        if (clients.size() == 1){
+            // dummy plug
+            num_connections = 2;
+            game_state.player_ids[1] = 1;
+            SendBackPlayerId(1);
+        }
     }
 }
 
