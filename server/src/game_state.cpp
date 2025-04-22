@@ -153,18 +153,7 @@ void UpdateLobbyState(std::array<uint8_t, 32>& message) {
     }
     std::array<uint8_t, 32> response;
     response[0] = msg_lobby;
-    if (clients.size() < 2){ // for singleplayer mode
-        response[1] = 2;        
-        game_state.player_positions[1].x = 400;
-        game_state.player_positions[1].y = 200;
-        game_state.player_hps[1] = 100;
-        player_bodies[1].pos_x = 400;
-        player_bodies[1].pos_y = 200;
-        player_bodies[1].last_pos_x = 400;
-        player_bodies[1].last_pos_y = 200;
-    } else {
-        response[1] = clients.size();
-    }
+    response[1] = clients.size();
     response[2] = player_ready[0];
     response[3] = player_ready[1];
     response[4] = player_ready[2];
@@ -181,11 +170,10 @@ void ChangeGameState(bool restart){
         if (player_ready[i]) players_ready++;
     }
 
+    
 
     // init dummy plug - if game is starting and there is only 1 player, add bot
     // CPU player will look the same as a regular player to the gamestate, but the server will only see 1 client
-    
-
 
     if (restart) {
         std::cout << "restarting game" << std::endl;
@@ -319,19 +307,6 @@ void ProcessPlayerPhysics() {
     // }
 }
 
-void RunDummyPlayer(){
-    game_state.player_states[1] = AIRBORNE;
-    dummy_move_timer++;
-    if (dummy_move_timer < 50){
-        game_state.player_states[1] = MOVE_RIGHT;
-    } else if (dummy_move_timer > 50){
-        game_state.player_states[1] = MOVE_LEFT;
-    }
-    
-    
-    if (dummy_move_timer > dummy_timer_max) dummy_move_timer = 0;
-
-}
 
 // this function is meant to be unique to the client,
 // i.e. the client's request should only be changing
@@ -343,18 +318,6 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     req.FromBytes(last_recieved_bytes);
 
     //stage.collision_grid.colls.clear();
-
-    // for single player, insert dummy plug for player 2
-    if (clients.size() == 1 && num_connections == 2){
-        RunDummyPlayer();
-        // create dummy request with sender_id as player 2 so that physics update
-        std::array<uint8_t, 32> dummy_request;
-        std::copy(last_recieved_bytes.begin(), last_recieved_bytes.end(), dummy_request.begin());
-        dummy_request[30] = 2;
-        dummy_request[31] = msg_end;
-        //ParseGameStateRequest(current_game_state, dummy_request, game_state, stage);
-    }
-
   
 
     std::array<uint8_t, 32> tmp;
@@ -638,7 +601,10 @@ void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message){
             // dummy plug
             num_connections = 2;
             game_state.player_ids[1] = 1;
-            SendBackPlayerId(1);
+            game_state.player_positions[1] = Vector2int{static_cast<uint16_t>(200 + ((1 * 230))), static_cast<uint16_t>(250)};
+            game_state.player_hps[1] = 100;
+            player_bodies[1].last_pos_x = (float)game_state.player_positions[1].x;
+            game_state.player_states[1] = MOVE_LEFT;
         }
     }
 }

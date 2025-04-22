@@ -20,4 +20,3 @@ void ParseSerialStageData(std::array<uint8_t, 32>& message, ServerStage& stage);
 void ProcessPlayerFC();
 void ProcessPlayerAttacks(float scale);
 void ProcessPlayerPhysics();
-void RunDummyPlayer();

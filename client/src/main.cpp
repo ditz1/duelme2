@@ -18,6 +18,7 @@ float player_size = 1.45;
 int max_camera_y = 0;
 int check_adjust = 0;
 bool player_size_set = false;
+bool single_player_mode = false;
 
 
 Stage stage;
@@ -186,6 +187,8 @@ int main() {
     items.push_back(item);
     items.push_back(item2);
 
+    Player dummy_player;
+
 
     // eventually will need something for managing the texture assignment
     int lobby_state = 0;
@@ -243,6 +246,11 @@ int main() {
                 if (check_adjust < 3) {
                     AdjustPlayerDimensions(client_player, all_players);
                     check_adjust++;
+                }
+                if (num_players_connected == 1){
+                    RunDummyPlayer(dummy_player);
+                    all_players[1] = dummy_player;
+                    RequestStateUpdate(&game_state, &conn, &dummy_player);
                 }
                 UpdateClientPlayerCopies(all_players, &game_state);
                 UpdateItems(all_players, items);

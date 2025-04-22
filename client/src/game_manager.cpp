@@ -32,6 +32,27 @@ void RequestStateUpdate(GameState* game, Connection* conn, Player* player) {
     }
 }
 
+void RequestDummyStateUpdate(GameState* game, Connection* conn, Player* player) {
+    if (current_game_stage < 1) return;
+    if ((int(player->RequestedState()) <= int(PlayerState::IDLE))) { 
+        if (player->RequestedState() == PlayerState::IDLE 
+            && (player->State() == PlayerState::IDLE)) return;
+            
+        game->player_states[1] = uint8_t(player->RequestedState());
+        
+        std::array<uint8_t, 32> bytes_to_send;
+        bytes_to_send[0] = msg_update;
+        std::array<uint8_t, 28> game_bytes = game->ToBytes();
+        for (int i = 0; i < 28; i++) {
+            bytes_to_send[i+1] = game_bytes[i];
+        }
+        bytes_to_send[29] = msg_signature;    
+        bytes_to_send[30] = 2;
+        bytes_to_send[31] = msg_end;
+        ClientSendBytes(conn, (void*)&bytes_to_send, 32);
+    }
+}
+
 void ParseAssignPlayerId(GameState* game, Connection* conn, Player* player){
     if (!conn->connected || data_from_server.size() == 0 || data_from_server[0] != msg_assign_id) return;
     if (current_game_stage > 0) return;
@@ -126,6 +147,21 @@ void SendGameStateRequest(GameState* game, Connection* conn) {
     bytes_to_send[31] = msg_end;
     ClientSendBytes(conn, (void*)&bytes_to_send, 32);
 }
+
+void SendDummyStateRequest(GameState* game, Connection* conn) {
+    num_failed_pings++;
+    std::array<uint8_t, 32> bytes_to_send;
+    bytes_to_send[0] = msg_update;
+    std::array<uint8_t, 28> game_bytes = game->ToBytes();
+    for (int i = 0; i < 28; i++) {
+        bytes_to_send[i+1] = game_bytes[i];
+    }
+    bytes_to_send[29] = msg_signature;    
+    bytes_to_send[30] = 1;
+    bytes_to_send[31] = msg_end;
+    ClientSendBytes(conn, (void*)&bytes_to_send, 32);
+}
+
 
 int ParseLobbyState(GameState* game, std::array<Player, 4>& all_players){
     if (data_from_server.size() < 32) return 0;
@@ -404,6 +440,15 @@ void UpdateItems(std::array<Player, 4>& players, std::vector<Item>& items){
         item.face_dir = players[item.player_assigned].FaceDir();
         item.Update(players[item.player_assigned].Position(), players[item.player_assigned].draw_data);
     }
+}
+
+void RunDummyPlayer(Player& dummy_player){
+    dummy_player.SetId(2);
+    dummy_player.SetPosition(Vector2int{200, 200});
+    dummy_player.SetState(PlayerState::MOVE_RIGHT);
+    dummy_player.SetFaceDir(1);
+    dummy_player.SetRequestedState(PlayerState::MOVE_RIGHT);
+    dummy_player.SetIsAnimating(true);
 }
 
 

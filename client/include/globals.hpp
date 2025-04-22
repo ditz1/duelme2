@@ -22,7 +22,7 @@ extern bool in_loading_screen;
 extern bool stage_sent;
 extern bool stage_message_created;
 extern float player_size;
-
+extern bool single_player_mode;
 
 typedef struct Vector2int {
     uint16_t x;
