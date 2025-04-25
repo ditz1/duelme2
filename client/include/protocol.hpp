@@ -17,3 +17,4 @@
 #define msg_stage_data 0x5b
 #define msg_end_stage_data 0x6b
 #define msg_reset_game 0x7b
+#define msg_move_bot 0x8b

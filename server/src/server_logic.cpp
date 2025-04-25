@@ -56,6 +56,11 @@ void ParseMessageReceived(std::array<uint8_t, 32>& message) {
                 UpdateLobbyState(message);
                 ChangeGameState();
                 break;
+            case msg_move_bot:
+                std::cout << "MOVE BOT" << std::endl;
+                //LogMessageReceived(message);
+                UpdateBot(game_state, message, stage);
+                break;
             default:
                 std::cout << "Unknown message" << std::endl;
                 std::cout << "Message: " << std::endl;

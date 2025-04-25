@@ -5,7 +5,6 @@
 #include <chrono>
 #include <algorithm>
 
-
 //------------------------------------------------------------------------------
 void StartSession(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
     try {
@@ -19,6 +18,7 @@ void StartSession(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
             num_connections++;
             std::cout << "client connected -- " << clients.size() << " clients remain" << std::endl;
         }
+
 
         for(;;) {
            // sleep for framerate and not to explode
@@ -34,7 +34,6 @@ void StartSession(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
            } else {
                 std::cout << "Invalid message size: " << buffer.size() << std::endl;
            }
-
         }
     }
     catch (const beast::system_error& se) {

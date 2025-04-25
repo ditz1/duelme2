@@ -20,6 +20,10 @@ int check_adjust = 0;
 bool player_size_set = false;
 bool single_player_mode = false;
 
+float dt = 0.016f;
+
+
+
 
 Stage stage;
 
@@ -192,6 +196,7 @@ int main() {
 
     // eventually will need something for managing the texture assignment
     int lobby_state = 0;
+    float bot_ping_timer = 0;
 
     while (!WindowShouldClose()) {
         // todo: really we should just move the client_player into the all_players array
@@ -221,6 +226,7 @@ int main() {
             ListenStageData(&conn, client_player, all_players, stage);
             continue;
         }
+
        
         switch (current_game_stage){
             case 0:
@@ -241,16 +247,15 @@ int main() {
                     player.LoadTextures();
                 }
                 UpdateItems(all_players, items);
+                if (num_players_connected < 1){
+                    std::cout << "single player mode" << std::endl;
+                    single_player_mode = true;
+                }
                 break;
             case 1:
                 if (check_adjust < 3) {
                     AdjustPlayerDimensions(client_player, all_players);
                     check_adjust++;
-                }
-                if (num_players_connected == 1){
-                    RunDummyPlayer(dummy_player);
-                    all_players[1] = dummy_player;
-                    RequestStateUpdate(&game_state, &conn, &dummy_player);
                 }
                 UpdateClientPlayerCopies(all_players, &game_state);
                 UpdateItems(all_players, items);
@@ -295,6 +300,15 @@ int main() {
             p.Update(); 
         }
         all_players[this_client_id].SetFaceDir(client_player.FaceDir());
+
+        if (single_player_mode){
+            bot_ping_timer += dt;
+            std::cout << "bot ping timer: " << bot_ping_timer << std::endl;
+            if (bot_ping_timer >= 0.4f){
+                RequestDummyStateUpdate(&game_state, &conn, &dummy_player);
+                bot_ping_timer = 0;
+            }
+        }
         AdjustCameraPosition(all_players, camera, max_camera_y);
         /////// draw /////////
         BeginDrawing();

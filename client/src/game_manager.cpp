@@ -34,23 +34,21 @@ void RequestStateUpdate(GameState* game, Connection* conn, Player* player) {
 
 void RequestDummyStateUpdate(GameState* game, Connection* conn, Player* player) {
     if (current_game_stage < 1) return;
-    if ((int(player->RequestedState()) <= int(PlayerState::IDLE))) { 
-        if (player->RequestedState() == PlayerState::IDLE 
-            && (player->State() == PlayerState::IDLE)) return;
-            
-        game->player_states[1] = uint8_t(player->RequestedState());
-        
-        std::array<uint8_t, 32> bytes_to_send;
-        bytes_to_send[0] = msg_update;
-        std::array<uint8_t, 28> game_bytes = game->ToBytes();
-        for (int i = 0; i < 28; i++) {
-            bytes_to_send[i+1] = game_bytes[i];
-        }
-        bytes_to_send[29] = msg_signature;    
-        bytes_to_send[30] = 2;
-        bytes_to_send[31] = msg_end;
-        ClientSendBytes(conn, (void*)&bytes_to_send, 32);
+    
+    std::array<uint8_t, 32> bytes_to_send;
+    bytes_to_send[0] = msg_move_bot;
+    
+    // can edit bot moves here
+
+    std::array<uint8_t, 28> game_bytes = game->ToBytes();
+    for (int i = 0; i < 28; i++) {
+        bytes_to_send[i+1] = game_bytes[i];
     }
+    bytes_to_send[29] = msg_signature;    
+    bytes_to_send[30] = 2;
+    bytes_to_send[31] = msg_end;
+    ClientSendBytes(conn, (void*)&bytes_to_send, 32);
+    
 }
 
 void ParseAssignPlayerId(GameState* game, Connection* conn, Player* player){

@@ -4,6 +4,8 @@
 #include <s_player.hpp>
 #include <hitboxes.hpp>
 
+extern bool single_player_mode;
+
 extern std::array<PlayerBody, 4> player_bodies;
 
 void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::array<uint8_t, 32>& last_recieved_bytes, GameState& game_state, ServerStage& stage);
@@ -20,3 +22,4 @@ void ParseSerialStageData(std::array<uint8_t, 32>& message, ServerStage& stage);
 void ProcessPlayerFC();
 void ProcessPlayerAttacks(float scale);
 void ProcessPlayerPhysics();
+void UpdateBot(GameState& game_state, std::array<uint8_t, 32>& message, ServerStage& stage);

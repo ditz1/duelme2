@@ -17,9 +17,10 @@ std::array<bool, 4> p_restart = {false, false, false, false};
 bool game_has_restarted = false;
 bool positions_have_reset = true;
 std::array<int, 4> player_scores = {0, 0, 0, 0};
-
 int dummy_move_timer = 0;
-int dummy_timer_max = 100;
+int dummy_timer_max = 20;
+
+bool single_player_mode = false;
 
 void UpdateGameStateWithoutRequest() {
     // if somehow this is triggered, dont break the game
@@ -47,6 +48,21 @@ void UpdateGameStateWithoutRequest() {
     response[31] = msg_end;
     BroadcastMessage(response);
 
+}
+
+void UpdateBot(GameState& game_state, std::array<uint8_t, 32>& message, ServerStage& stage){
+    if (dummy_move_timer > dummy_timer_max){
+        dummy_move_timer = 0;
+    } else {
+        dummy_move_timer++;
+    }
+
+    std::cout << "dummy move timer: " << dummy_move_timer << std::endl;
+
+    if (dummy_move_timer < 10) game_state.player_states[1] = MOVE_LEFT;
+    if (dummy_move_timer >= 10) game_state.player_states[1] = MOVE_RIGHT;
+    ParseGameStateRequest(game_state.ToBytes(), message, game_state, stage);
+    
 }
 
 
@@ -599,6 +615,7 @@ void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message){
         std::cout << "Player " << int(message[3]) << " is ready: " << player_ready[message[3]] << std::endl;
         if (clients.size() == 1){
             // dummy plug
+            single_player_mode = true;
             num_connections = 2;
             game_state.player_ids[1] = 1;
             game_state.player_positions[1] = Vector2int{static_cast<uint16_t>(200 + ((1 * 230))), static_cast<uint16_t>(250)};
