@@ -39,13 +39,18 @@ void RequestDummyStateUpdate(GameState* game, Connection* conn, Player* player) 
     bytes_to_send[0] = msg_move_bot;
     
     // can edit bot moves here
+    if (game->player_positions[0].x > game->player_positions[1].x){
+        game->player_states[1] = MOVE_RIGHT;
+    } else {
+        game->player_states[1] = MOVE_LEFT;
+    }
 
     std::array<uint8_t, 28> game_bytes = game->ToBytes();
     for (int i = 0; i < 28; i++) {
         bytes_to_send[i+1] = game_bytes[i];
     }
     bytes_to_send[29] = msg_signature;    
-    bytes_to_send[30] = 2;
+    bytes_to_send[30] = 1;
     bytes_to_send[31] = msg_end;
     ClientSendBytes(conn, (void*)&bytes_to_send, 32);
     

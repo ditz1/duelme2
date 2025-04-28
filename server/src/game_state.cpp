@@ -59,10 +59,22 @@ void UpdateBot(GameState& game_state, std::array<uint8_t, 32>& message, ServerSt
 
     std::cout << "dummy move timer: " << dummy_move_timer << std::endl;
 
-    if (dummy_move_timer < 10) game_state.player_states[1] = MOVE_LEFT;
-    if (dummy_move_timer >= 10) game_state.player_states[1] = MOVE_RIGHT;
-    ParseGameStateRequest(game_state.ToBytes(), message, game_state, stage);
+    //if (dummy_move_timer < 10) game_state.player_states[1] = MOVE_LEFT;
+    //if (dummy_move_timer >= 10) game_state.player_states[1] = MOVE_RIGHT; 
+
+    std::array<uint8_t, 28> curr_game_bytes = game_state.ToBytes();
+    message[30] = 1;
+    ParseGameStateRequest(curr_game_bytes, message, game_state, stage);
+    std::array<uint8_t, 32> response;    
+    std::array<uint8_t, 28> updated_game_bytes = game_state.ToBytes();
+    response[0] = msg_update;
+    std::copy(updated_game_bytes.begin(), updated_game_bytes.end(), response.begin() + 1);
+    response[29] = msg_end;
+    response[30] = msg_from_server;
+    response[31] = msg_end;
+    BroadcastMessage(response);
     
+
 }
 
 
@@ -112,8 +124,9 @@ void BroadcastStageData() {
     std::cout << "broadcasting stage data " << loading_stage_phase << std::endl;
 }
 
-void ResetPlayerPositionByStage(GameState& game_state, ServerStage& stage){
+void ResetPlayerPositionByStage(GameState& game_state, ServerStage& stage){    
     std::cout << stage.max_y_level << std::endl;
+    std::cout << "num connections: " << num_connections << std::endl;
     for (int i = 0; i < num_connections; i++){
         game_state.player_positions[i] = Vector2int{static_cast<uint16_t>(200 + ((i * 230))), static_cast<uint16_t>(250)};
         player_bodies[i].last_pos_x = (float)game_state.player_positions[i].x;
@@ -346,6 +359,7 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     curr.FromBytes(tmp);
 
     int sender_id = last_recieved_bytes[30];
+    //std::cout << "sender id: " << sender_id << std::endl;
     // state update
     if (req.player_states[sender_id] != curr.player_states[sender_id]){ 
         if (game_state.player_states[sender_id] == AIRBORNE && req.player_states[sender_id] == MOVE_UP){
@@ -617,11 +631,18 @@ void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message){
             // dummy plug
             single_player_mode = true;
             num_connections = 2;
-            game_state.player_ids[1] = 1;
-            game_state.player_positions[1] = Vector2int{static_cast<uint16_t>(200 + ((1 * 230))), static_cast<uint16_t>(250)};
+            // game_state.player_ids[1] = 1;
+            // game_state.player_positions[1] = Vector2int{static_cast<uint16_t>(200 + ((1 * 230))), static_cast<uint16_t>(250)};
+            // game_state.player_hps[1] = 100;
+            // player_bodies[1].last_pos_x = (float)game_state.player_positions[1].x;
+            // game_state.player_states[1] = MOVE_LEFT;
+            game_state.player_positions[1].x = 400;
+            game_state.player_positions[1].y = 200;
             game_state.player_hps[1] = 100;
-            player_bodies[1].last_pos_x = (float)game_state.player_positions[1].x;
-            game_state.player_states[1] = MOVE_LEFT;
+            player_bodies[1].pos_x = 400;
+            player_bodies[1].pos_y = 200;
+            player_bodies[1].last_pos_x = 400;
+            player_bodies[1].last_pos_y = 200;
         }
     }
 }
