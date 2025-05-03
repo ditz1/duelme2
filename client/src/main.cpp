@@ -22,6 +22,9 @@ bool single_player_mode = false;
 bool can_move_bot = true;
 bool can_move_player = true;
 
+int round_number = 1;
+std::array<int, 4> player_wins = {0, 0, 0, 0};
+
 float dt = 0.016f;
 
 
@@ -275,6 +278,7 @@ int main() {
                 ParseGameState(&game_state, &conn, &client_player);
                 if (reset_timer <= 0.0f) {
                     current_game_stage = 1;
+                    round_number++;
                     can_move_bot = true;
                     can_move_player = true;
                 }

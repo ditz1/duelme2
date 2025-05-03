@@ -16,6 +16,12 @@ void DrawGameUI(GameState game, Player& client_player, std::array<Player, 4> all
     if (single_player_mode) {
         num_players_connected = 2;
     }
+
+    int center_x = GetScreenWidth() / 2;
+    
+    DrawText(TextFormat("Round: %d", round_number), center_x - 50, 25, font_size, RAYWHITE);
+    DrawText(TextFormat("Wins: %d, %d, %d, %d", player_wins[0], player_wins[1], player_wins[2], player_wins[3]), center_x - 50, 50, font_size, RAYWHITE);
+
     for (int i = 0; i < 4; i++) {
         if (i >= num_players_connected) break;
         DrawText(TextFormat("P%d HP: %d", i, game.player_hps[i]), x_start + hp_bar_spacing * i, hp_y_start, font_size, RAYWHITE);

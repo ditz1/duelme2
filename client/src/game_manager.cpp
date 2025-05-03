@@ -104,7 +104,11 @@ void ParseAssignPlayerId(GameState* game, Connection* conn, Player* player){
 }
 
 void ResetGameState(GameState* game){
-    for (int i = 0; i < num_players_connected+1; i++){
+
+    for (int i = 0; i < num_players_connected; i++){
+        if (game->player_hps[i] > 0){
+            player_wins[i]++;
+        }
         game->player_states[i] = PlayerState::AIRBORNE;
         game->player_positions[i] = Vector2int{static_cast<uint16_t>(200 + ((i * 200))), 300};
         game->player_hps[i] = 100;
@@ -138,6 +142,8 @@ void UpdateGameState(GameState* game, Connection* conn){
 void ParseGameState(GameState* game, Connection* conn, Player* player) {
     if (!conn->connected) return;
     if (data_from_server.size() < 1) return;
+
+    // check player score
 
     num_failed_pings <= 0 ? num_failed_pings = 0 : num_failed_pings--;
     switch (data_from_server[0]){

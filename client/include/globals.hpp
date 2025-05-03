@@ -24,6 +24,8 @@ extern bool stage_message_created;
 extern float player_size;
 extern bool single_player_mode;
 extern bool can_move_bot;
+extern int round_number;
+extern std::array<int, 4> player_wins;
 
 typedef struct Vector2int {
     uint16_t x;
