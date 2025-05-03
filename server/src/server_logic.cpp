@@ -57,7 +57,7 @@ void ParseMessageReceived(std::array<uint8_t, 32>& message) {
                 ChangeGameState();
                 break;
             case msg_move_bot:
-                std::cout << "MOVE BOT" << std::endl;
+                //std::cout << "MOVE BOT" << std::endl;
                 //LogMessageReceived(message);
                 UpdateBot(game_state, message, stage);
                 break;
@@ -114,6 +114,8 @@ void SendBackPlayerId(size_t client_id) {
     msg[1] = static_cast<uint8_t>(client_id);
     msg[2] = msg_end;
     game_state.player_ids[client_id] = client_id;
+
+
     switch (client_id){
         case 0:
             game_state.player_positions[client_id].x = 200;

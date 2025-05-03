@@ -23,6 +23,7 @@ extern bool stage_sent;
 extern bool stage_message_created;
 extern float player_size;
 extern bool single_player_mode;
+extern bool can_move_bot;
 
 typedef struct Vector2int {
     uint16_t x;

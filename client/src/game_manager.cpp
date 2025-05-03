@@ -3,6 +3,7 @@
 #include <chrono>
 
 float reset_timer = 0.0f;
+float dummy_shoot_timer = 0.0f;
 
 void InitGameState(GameState* game){
     for (uint8_t& player_state : game->player_states) {
@@ -32,6 +33,45 @@ void RequestStateUpdate(GameState* game, Connection* conn, Player* player) {
     }
 }
 
+void UpdateDummyMovement(GameState* game){
+    if (!can_move_bot){
+        game->player_states[1] = PlayerState::AIRBORNE;
+        return;
+    } 
+
+    if (game->player_hps[1] <= 0){
+        game->player_states[1] = MOVE_DOWN;
+        return;
+    }
+    
+
+    if (dummy_shoot_timer > 1.5f){
+        game->player_states[1] = PlayerState::SHOOT;
+        dummy_shoot_timer += 0.016f;
+        if (dummy_shoot_timer > 2.0f){
+            game->player_states[1] = PlayerState::IDLE;
+            dummy_shoot_timer = 0.0f;
+        }
+        return;
+    }
+
+    // dummy is within 50 units of player, they will go idle so that they can shoot
+    if ((abs(int(game->player_positions[0].x) - int(game->player_positions[1].x)) < 100) && game->player_states[1] != PlayerState::SHOOT){
+        game->player_states[1] = PlayerState::IDLE;
+        dummy_shoot_timer += 0.016f;
+        return;
+    }
+    
+
+    if (game->player_positions[0].x > game->player_positions[1].x){
+        game->player_states[1] = MOVE_RIGHT;
+        dummy_shoot_timer = 0.0f;
+    } else {
+        game->player_states[1] = MOVE_LEFT;
+        dummy_shoot_timer = 0.0f;
+    }
+}
+
 void RequestDummyStateUpdate(GameState* game, Connection* conn, Player* player) {
     if (current_game_stage < 1) return;
     
@@ -39,11 +79,7 @@ void RequestDummyStateUpdate(GameState* game, Connection* conn, Player* player) 
     bytes_to_send[0] = msg_move_bot;
     
     // can edit bot moves here
-    if (game->player_positions[0].x > game->player_positions[1].x){
-        game->player_states[1] = MOVE_RIGHT;
-    } else {
-        game->player_states[1] = MOVE_LEFT;
-    }
+    UpdateDummyMovement(game);
 
     std::array<uint8_t, 28> game_bytes = game->ToBytes();
     for (int i = 0; i < 28; i++) {
@@ -82,7 +118,9 @@ void UpdateGameState(GameState* game, Connection* conn){
         last_received_bytes[i] = data_from_server[i];
     }
     data_from_server.clear();
+    
     if (last_received_bytes[1] == msg_reset_game){
+        std::cout << "resetting game state" << std::endl;
         ResetGameState(game);
         current_game_stage = 2;
         reset_timer = 3.0f;    
@@ -102,7 +140,6 @@ void ParseGameState(GameState* game, Connection* conn, Player* player) {
     if (data_from_server.size() < 1) return;
 
     num_failed_pings <= 0 ? num_failed_pings = 0 : num_failed_pings--;
-
     switch (data_from_server[0]){
         case msg_connect:
             std::cout << "Connected To Server" << std::endl;
@@ -447,10 +484,10 @@ void UpdateItems(std::array<Player, 4>& players, std::vector<Item>& items){
 
 void RunDummyPlayer(Player& dummy_player){
     dummy_player.SetId(2);
-    dummy_player.SetPosition(Vector2int{200, 200});
-    dummy_player.SetState(PlayerState::MOVE_RIGHT);
-    dummy_player.SetFaceDir(1);
-    dummy_player.SetRequestedState(PlayerState::MOVE_RIGHT);
+   // dummy_player.SetPosition(Vector2int{200, 200});
+   // dummy_player.SetState(PlayerState::MOVE_RIGHT);
+   // dummy_player.SetFaceDir(1);
+    //dummy_player.SetRequestedState(PlayerState::MOVE_RIGHT);
     dummy_player.SetIsAnimating(true);
 }
 

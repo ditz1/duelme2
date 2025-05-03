@@ -21,6 +21,7 @@ int dummy_move_timer = 0;
 int dummy_timer_max = 20;
 
 bool single_player_mode = false;
+std::array<float, 4> death_timers = {0.0f, 0.0f, 0.0f, 0.0f};
 
 void UpdateGameStateWithoutRequest() {
     // if somehow this is triggered, dont break the game
@@ -56,12 +57,6 @@ void UpdateBot(GameState& game_state, std::array<uint8_t, 32>& message, ServerSt
     } else {
         dummy_move_timer++;
     }
-
-    std::cout << "dummy move timer: " << dummy_move_timer << std::endl;
-
-    //if (dummy_move_timer < 10) game_state.player_states[1] = MOVE_LEFT;
-    //if (dummy_move_timer >= 10) game_state.player_states[1] = MOVE_RIGHT; 
-
     std::array<uint8_t, 28> curr_game_bytes = game_state.ToBytes();
     message[30] = 1;
     ParseGameStateRequest(curr_game_bytes, message, game_state, stage);
@@ -73,8 +68,6 @@ void UpdateBot(GameState& game_state, std::array<uint8_t, 32>& message, ServerSt
     response[30] = msg_from_server;
     response[31] = msg_end;
     BroadcastMessage(response);
-    
-
 }
 
 
@@ -97,10 +90,22 @@ void UpdateGameState(std::array<uint8_t, 32>& message, ServerStage& stage) {
     response[31] = msg_end;
     BroadcastMessage(response);
     int can_restart = 0;
+    // bug? with player can move down anim but not try to reset
+    for (int i = 0; i < 4; i++){
+        if (game_state.player_states[i] == MOVE_DOWN){
+            death_timers[i] += 0.1f;
+            std::cout << "player " << i << " death timer: " << death_timers[i] << std::endl;
+        } else {
+            death_timers[i] = 0.0f;
+        }
+        if (death_timers[i] > 2.0f){
+            p_restart[i] = true;
+        }
+    }
     for (int i = 0; i < 4; i++){
         if (p_restart[i]) can_restart++;
     }
-    if (can_restart > 2){
+    if (can_restart > (num_connections - 1)){
         std::cout << "reset" << std::endl;
         positions_have_reset = false;
         ResetPlayerPositionByStage(game_state, stage);
@@ -134,6 +139,14 @@ void ResetPlayerPositionByStage(GameState& game_state, ServerStage& stage){
         player_bodies[i].pos_x = (float)game_state.player_positions[i].x;
         player_bodies[i].pos_y = (float)game_state.player_positions[i].y;
         game_state.player_hps[i] = 100;
+    }
+    if (single_player_mode){
+        game_state.player_positions[1] = Vector2int{static_cast<uint16_t>(200 + ((1 * 230))), static_cast<uint16_t>(250)};
+        player_bodies[1].last_pos_x = (float)game_state.player_positions[1].x;
+        player_bodies[1].last_pos_y = (float)game_state.player_positions[1].y;
+        player_bodies[1].pos_x = (float)game_state.player_positions[1].x;
+        player_bodies[1].pos_y = (float)game_state.player_positions[1].y;
+        game_state.player_hps[1] = 100;
     }
     
     std::array<uint8_t, 32> response;
@@ -197,6 +210,7 @@ void ChangeGameState(bool restart){
     size_t players_ready = 0;
     for (int i = 0; i < 4; i++){
         if (player_ready[i]) players_ready++;
+        // if player hp is above 100, set to 100
     }
 
     
@@ -359,6 +373,15 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
     curr.FromBytes(tmp);
 
     int sender_id = last_recieved_bytes[30];
+
+    // bug with bot or player health being above 100, and then
+    // not resetting because its an uint so it wraps back around
+    // need to account for that here
+    for (int i = 0; i < 4; i++){
+        if (game_state.player_hps[i] > 100){
+            game_state.player_hps[i] = 100;
+        }
+    }
     //std::cout << "sender id: " << sender_id << std::endl;
     // state update
     if (req.player_states[sender_id] != curr.player_states[sender_id]){ 
@@ -378,6 +401,14 @@ void ParseGameStateRequest(std::array<uint8_t, 28>& current_game_state, std::arr
         positions_have_reset = true;
         req.player_positions[sender_id] = game_state.player_positions[sender_id];
         curr.player_positions[sender_id] = game_state.player_positions[sender_id];
+        if (single_player_mode){
+            game_state.player_positions[1] = Vector2int{static_cast<uint16_t>(200 + ((1 * 230))), static_cast<uint16_t>(250)};
+            player_bodies[1].last_pos_x = (float)game_state.player_positions[1].x;
+            player_bodies[1].last_pos_y = (float)game_state.player_positions[1].y;
+            player_bodies[1].pos_x = (float)game_state.player_positions[1].x;
+            player_bodies[1].pos_y = (float)game_state.player_positions[1].y;
+            game_state.player_hps[1] = 100;
+        }
     }
 
     ///// do not change this ///// was causing desync
@@ -628,14 +659,8 @@ void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message){
         }
         std::cout << "Player " << int(message[3]) << " is ready: " << player_ready[message[3]] << std::endl;
         if (clients.size() == 1){
-            // dummy plug
             single_player_mode = true;
-            num_connections = 2;
-            // game_state.player_ids[1] = 1;
-            // game_state.player_positions[1] = Vector2int{static_cast<uint16_t>(200 + ((1 * 230))), static_cast<uint16_t>(250)};
-            // game_state.player_hps[1] = 100;
-            // player_bodies[1].last_pos_x = (float)game_state.player_positions[1].x;
-            // game_state.player_states[1] = MOVE_LEFT;
+            num_connections = 1;
             game_state.player_positions[1].x = 400;
             game_state.player_positions[1].y = 200;
             game_state.player_hps[1] = 100;
@@ -643,6 +668,7 @@ void ParsePlayerReadyRequest(std::array<uint8_t, 32>& message){
             player_bodies[1].pos_y = 200;
             player_bodies[1].last_pos_x = 400;
             player_bodies[1].last_pos_y = 200;
+            
         }
     }
 }

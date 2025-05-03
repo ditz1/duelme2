@@ -13,6 +13,9 @@ void DrawGameUI(GameState game, Player& client_player, std::array<Player, 4> all
     int hp_bottom_spacing = 50;
     int hp_y_start = GetScreenHeight() - hp_bottom_spacing;
     int hp_bar_spacing = 200;
+    if (single_player_mode) {
+        num_players_connected = 2;
+    }
     for (int i = 0; i < 4; i++) {
         if (i >= num_players_connected) break;
         DrawText(TextFormat("P%d HP: %d", i, game.player_hps[i]), x_start + hp_bar_spacing * i, hp_y_start, font_size, RAYWHITE);
@@ -33,7 +36,7 @@ void DrawDebugInfo(GameState game, Player& client_player, std::array<Player, 4> 
             int x_start = 30;
             int y_start = 30;
             int y_start_other = 30;
-            int x_start_other = GetScreenWidth() - 120;
+            int x_start_other = GetScreenWidth() - 220;
             unsigned int frame_gap = 0;
 
             // right side

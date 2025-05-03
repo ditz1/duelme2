@@ -19,6 +19,8 @@ int max_camera_y = 0;
 int check_adjust = 0;
 bool player_size_set = false;
 bool single_player_mode = false;
+bool can_move_bot = true;
+bool can_move_player = true;
 
 float dt = 0.016f;
 
@@ -244,16 +246,16 @@ int main() {
                     case 1:
                         SendStageData(&conn, client_player, all_players, stage, items_rec);
                         LoadGameState(&game_state, client_player, all_players);
+                        if (num_players_connected < 1){
+                            std::cout << "single player mode" << std::endl;
+                            single_player_mode = true;
+                        }
                         break;
                 }
                 for (auto& player : all_players){
                     player.LoadTextures();
                 }
                 UpdateItems(all_players, items);
-                if (num_players_connected < 1){
-                    std::cout << "single player mode" << std::endl;
-                    single_player_mode = true;
-                }
                 break;
             case 1:
                 if (check_adjust < 3) {
@@ -265,12 +267,16 @@ int main() {
                 ParseGameState(&game_state, &conn, &client_player);
                 break;
             case 2:
+                can_move_bot = false;
+                can_move_player = false;
                 ParseEndState(&game_state, &conn, &client_player);
                 UpdateClientPlayerCopies(all_players, &game_state);
                 UpdateItems(all_players, items);
                 ParseGameState(&game_state, &conn, &client_player);
                 if (reset_timer <= 0.0f) {
                     current_game_stage = 1;
+                    can_move_bot = true;
+                    can_move_player = true;
                 }
                 break;
         }
@@ -291,7 +297,7 @@ int main() {
             debug_mode = !debug_mode;
         }
 
-        client_player.PollInput();
+        if (can_move_player) client_player.PollInput();
 
         if (IsKeyPressed(KEY_W)){
            client_player.SetRequestedState(MOVE_UP);
@@ -304,9 +310,12 @@ int main() {
         }
         all_players[this_client_id].SetFaceDir(client_player.FaceDir());
 
-        if (single_player_mode){
+        if (single_player_mode && game_state.player_states[1] != MOVE_DOWN){
             bot_ping_timer += dt;
-            if (bot_ping_timer >= 0.05f){
+            // so there needs to be a request every frame so that the server can update the 
+            // bot at the same frequency, else the bot will move slower - but the cost
+            // is now the client does the work of 2
+            if (bot_ping_timer >= dt){
                 RequestDummyStateUpdate(&game_state, &conn, &dummy_player);
                 bot_ping_timer = 0;
             }
@@ -329,6 +338,10 @@ int main() {
                     DrawGameUI(game_state, client_player, all_players);
                     break;
                 case 2:
+                    BeginMode2D(camera);
+                        stage.Draw();
+                        DrawGameState(all_players, items);
+                    EndMode2D();
                     DrawText("Game Over", 400, 225, 20, RED);
                     DrawText(TextFormat("reset in %.2f", reset_timer), 400, 250, 20, RED);
                     break;
