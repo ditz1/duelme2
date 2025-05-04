@@ -23,3 +23,4 @@ void ProcessPlayerFC();
 void ProcessPlayerAttacks(float scale);
 void ProcessPlayerPhysics();
 void UpdateBot(GameState& game_state, std::array<uint8_t, 32>& message, ServerStage& stage);
+void ClearStageData(ServerStage& stage);

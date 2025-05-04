@@ -36,3 +36,4 @@ void DrawGameState(std::array<Player, 4> players, std::vector<Item> items);
 void DrawLobbyState(GameState* game);
 void UpdateItems(std::array<Player, 4>& players, std::vector<Item>& items);
 void RunDummyPlayer(Player& dummy_player);
+void SendClearStageData(Connection* conn, Player& client);

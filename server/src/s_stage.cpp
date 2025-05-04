@@ -2,6 +2,8 @@
 #include <collision_grid.hpp>
 
 void ServerStage::LoadDataIntoCells() {
+    // clear original data
+
     CollisionGrid grid;
     collision_grid = grid;
     max_y_level = 1000000;

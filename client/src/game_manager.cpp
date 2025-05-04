@@ -4,6 +4,7 @@
 
 float reset_timer = 0.0f;
 float dummy_shoot_timer = 0.0f;
+bool can_update_score = false;
 
 void InitGameState(GameState* game){
     for (uint8_t& player_state : game->player_states) {
@@ -104,10 +105,21 @@ void ParseAssignPlayerId(GameState* game, Connection* conn, Player* player){
 }
 
 void ResetGameState(GameState* game){
+    int total_wins = 0;
+    for (int i = 0; i < 4; i++){
+        total_wins += player_wins[i];
+    }
+    if (round_number > total_wins){
+        can_update_score = true;
+    } else {
+        can_update_score = false;
+    }
 
     for (int i = 0; i < num_players_connected; i++){
-        if (game->player_hps[i] > 0){
-            player_wins[i]++;
+        if (!single_player_mode && can_update_score){
+            if (game->player_hps[i] > 0){
+                player_wins[i]++;
+            }
         }
         game->player_states[i] = PlayerState::AIRBORNE;
         game->player_positions[i] = Vector2int{static_cast<uint16_t>(200 + ((i * 200))), 300};
@@ -121,14 +133,19 @@ void UpdateGameState(GameState* game, Connection* conn){
     for (size_t i = 0; i < 32; i++) {
         last_received_bytes[i] = data_from_server[i];
     }
-    printf("datafromserver: %x\n", data_from_server[1]);
     data_from_server.clear();
     
     if (last_received_bytes[1] == msg_reset_game){
+        if (single_player_mode){
+            if (last_received_bytes[2] == 1){
+                player_wins[1]++;
+            } else {
+                player_wins[0]++;
+            }
+        }
         ResetGameState(game);
         current_game_stage = 2;
         reset_timer = 3.0f;    
-        std::cout << "resetting game state" << std::endl;
         return;
     }
     GameState new_game_state;
@@ -145,6 +162,7 @@ void ParseGameState(GameState* game, Connection* conn, Player* player) {
     if (data_from_server.size() < 1) return;
 
     // check player score
+    
 
     num_failed_pings <= 0 ? num_failed_pings = 0 : num_failed_pings--;
     switch (data_from_server[0]){
@@ -381,6 +399,16 @@ void SendStageData(Connection* conn, Player& client, std::array<Player, 4>& play
     }
     std::cout << "sent " << messages.size() << " messages" << std::endl;
     EndSendStageData(conn, players, stage);
+}
+
+void SendClearStageData(Connection* conn, Player& client){
+    if (this_client_id != 0) return;
+    std::array<uint8_t, 32> message;
+    message[0] = msg_new_stage;
+    message[1] = msg_stage_data;
+    message[2] = msg_signature;
+    message[3] = msg_end;
+    ClientSendBytes(conn, (void*)&message, 32);
 }
 
 

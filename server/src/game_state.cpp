@@ -69,6 +69,7 @@ void UpdateBot(GameState& game_state, std::array<uint8_t, 32>& message, ServerSt
     response[31] = msg_end;
     if (game_state.player_hps[0] <= 0){
         response[1] = msg_reset_game;
+        response[2] = 1; // winner id
     }
     BroadcastMessage(response);
 }
@@ -185,6 +186,24 @@ void ParseSerialStageData(std::array<uint8_t, 32>& message, ServerStage& stage){
     }
     std::cout << std::endl;
     
+}
+
+void ClearStageData(ServerStage& stage){
+    stage.data.clear();
+    stage.cells.clear();
+    stage.collision_grid.cells.clear();
+    stage.collision_grid.occupied_cells.clear();
+    stage.collision_grid.stage_cells.clear();
+    stage.collision_grid.colls.clear();
+    stage.collision_grid.colls_stage.clear();
+    stage.width = 0;
+    stage.height = 0;
+    stage.player_width = 0;
+    stage.player_height = 0;
+    stage.max_y_level = 0;
+    stage.max_x_level = 0;
+    stage.min_y_level = 0;
+    stage.min_x_level = 0;
 }
 
 void UpdateLobbyState(std::array<uint8_t, 32>& message) {

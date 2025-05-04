@@ -50,6 +50,11 @@ void ParseMessageReceived(std::array<uint8_t, 32>& message) {
                 ParseSerialStageData(message, stage);
                 //LogMessageReceived(message);
                 break;
+            case msg_new_stage:
+                std::cout << "NEW STAGE" << std::endl;
+                //LogMessageReceived(message);
+                ClearStageData(stage);
+                break;
             case msg_lobby:
                 std::cout << "LOBBY" << std::endl;
                 //LogMessageReceived(message);

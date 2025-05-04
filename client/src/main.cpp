@@ -235,6 +235,7 @@ int main() {
             continue;
         }
 
+        
        
         switch (current_game_stage){
             case 0:
@@ -325,6 +326,7 @@ int main() {
                 bot_ping_timer = 0;
             }
         }
+        
         AdjustCameraPosition(all_players, camera, max_camera_y);
         /////// draw /////////
         BeginDrawing();
