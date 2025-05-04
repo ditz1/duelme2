@@ -67,6 +67,9 @@ void UpdateBot(GameState& game_state, std::array<uint8_t, 32>& message, ServerSt
     response[29] = msg_end;
     response[30] = msg_from_server;
     response[31] = msg_end;
+    if (game_state.player_hps[0] <= 0){
+        response[1] = msg_reset_game;
+    }
     BroadcastMessage(response);
 }
 

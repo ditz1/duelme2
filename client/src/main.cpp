@@ -297,6 +297,7 @@ int main() {
         }
 
 
+
         if (IsKeyPressed(KEY_ENTER)){
             debug_mode = !debug_mode;
         }

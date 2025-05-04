@@ -202,6 +202,10 @@ void Player::ResetState() {
 }
 
 void Player::PollInput() {
+    if (_hp <= 0) {
+        _requested_state = uint8_t(MOVE_DOWN);
+        return;
+    }
 
     if (IsKeyPressed(KEY_SPACE)){
         _ready = !_ready;

@@ -121,13 +121,14 @@ void UpdateGameState(GameState* game, Connection* conn){
     for (size_t i = 0; i < 32; i++) {
         last_received_bytes[i] = data_from_server[i];
     }
+    printf("datafromserver: %x\n", data_from_server[1]);
     data_from_server.clear();
     
     if (last_received_bytes[1] == msg_reset_game){
-        std::cout << "resetting game state" << std::endl;
         ResetGameState(game);
         current_game_stage = 2;
         reset_timer = 3.0f;    
+        std::cout << "resetting game state" << std::endl;
         return;
     }
     GameState new_game_state;
