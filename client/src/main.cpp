@@ -68,21 +68,37 @@ std::string test3 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
 
-std::string test4 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \
-                      #  #  #  #  #  #  #  #  #  #  #  #  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  #  #  #  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
+std::string test4 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \
+                      #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  G  G  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  #  #  #  #  #  #  #  #  #  #  #  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  #  #  #  #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  #  #  #  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
+
+std::string test5 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \
+                      #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  G  G  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  #  #  #  #  #  #  #  #  #  #  #  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  #  #  #  R  R  R  R  R  R  R  # \n \
+                      #  #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  #  #  #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  #  #  #  #  #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
 
 void InLoadingScreen(){
     BeginDrawing();
@@ -129,9 +145,9 @@ int main() {
     InitWindow(800, 450, "client");
     SetTargetFPS(60);
 
-    stages.push_back(test);
-    stages.push_back(test2);
     stages.push_back(test3);
+    stages.push_back(test4);
+    stages.push_back(test5);
     
     GameState game_state;
 

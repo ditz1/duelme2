@@ -442,7 +442,8 @@ void ParseEndState(GameState* game, Connection* conn, Player* player){
     if (reset_timer <= 0.0f){
         if (this_client_id == 0) { // Only player1 client handles stage rotation
             // Cycle to next stage
-            current_stage = (current_stage + 1) % stages.size();
+            current_stage++;
+            if (current_stage >= stages.size()) current_stage = 0;
             
             // Send clear stage message to server
             SendClearStageData(conn, *player);
