@@ -27,6 +27,9 @@ std::array<int, 4> player_wins = {0, 0, 0, 0};
 
 float dt = 0.016f;
 
+std::vector<std::string> stages;
+int current_stage = 0;
+
 
 
 
@@ -125,6 +128,10 @@ int main() {
     
     InitWindow(800, 450, "client");
     SetTargetFPS(60);
+
+    stages.push_back(test);
+    stages.push_back(test2);
+    stages.push_back(test3);
     
     GameState game_state;
 

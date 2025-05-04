@@ -204,6 +204,8 @@ void ClearStageData(ServerStage& stage){
     stage.max_x_level = 0;
     stage.min_y_level = 0;
     stage.min_x_level = 0;
+
+    loading_stage_phase = 0;
 }
 
 void UpdateLobbyState(std::array<uint8_t, 32>& message) {

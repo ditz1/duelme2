@@ -440,9 +440,24 @@ void AdjustPlayerDimensions(Player& client, std::array<Player, 4>& all_players){
 void ParseEndState(GameState* game, Connection* conn, Player* player){
     reset_timer -= GetFrameTime();
     if (reset_timer <= 0.0f){
-        current_game_stage = 1;
-        //player->SetRequestedState(PlayerState::AIRBORNE);
-        //RequestStateUpdate(game, conn, player);
+        if (this_client_id == 0) { // Only player1 client handles stage rotation
+            // Cycle to next stage
+            current_stage = (current_stage + 1) % stages.size();
+            
+            // Send clear stage message to server
+            SendClearStageData(conn, *player);
+            
+            // Load new stage
+            stage.cells.clear();
+            stage.LoadFromString(stages[current_stage]);
+            stage.Generate();
+            
+            // Set flags to trigger stage sending
+            stage_sent = false;
+            in_loading_screen = true;
+            stage_message_created = false;
+        }
+        current_game_stage = 0;
         reset_timer = 0.0f;
     }
 }

@@ -22,6 +22,13 @@ elif [ "$1" = "local" ]; then
     cd ../../server/build
     cmake -DBOOST_ROOT="${BOOST_ROOT}" ..
     make
+elif [ "$1" = "app" ]; then
+    mkdir -p client/build
+    cd client/build 
+    mkdir ../../server/build
+    cd ../../server/build
+    cmake -DBOOST_ROOT="${BOOST_ROOT}" ..
+    make
 elif [ "$1" = "clean" ]; then
     rm -rf client/build
     rm -rf server/build

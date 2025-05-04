@@ -3,9 +3,12 @@ project(index)
 
 set(CMAKE_CXX_STANDARD 17)
 
+# Define platform variables
 if(EMSCRIPTEN)
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
     set(PLATFORM_WEB "PLATFORM_WEB")
+elseif(APPLE)
+    set(PLATFORM_OSX "PLATFORM_DESKTOP")
 else()
     set(CMAKE_C_COMPILER "gcc")
     set(CMAKE_CXX_COMPILER "g++")
@@ -16,7 +19,6 @@ include_directories(include/stage)
 include_directories(include/player)
 include_directories(include/raylib)
 include_directories(include/physics)
-
 
 if(EMSCRIPTEN)
     include_directories(${EMSCRIPTEN_ROOT_PATH}/upstream/emscripten/system/include/emscripten)
@@ -39,10 +41,11 @@ if(USE_LOCAL)
     target_compile_definitions(index PRIVATE LOCAL)
 endif()
 
+# Platform-specific configurations
 if(EMSCRIPTEN)
-    if (APPLE)
+    if(APPLE)
         set(RAYLIB_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/lib/libraylibwebmac.a")
-    elseif (Win32)
+    elseif(WIN32)
         set(RAYLIB_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/lib/libraylibweb.a")
     else()
         set(RAYLIB_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/lib/libraylibweb.a")
@@ -59,12 +62,40 @@ if(EMSCRIPTEN)
                                                           -s NO_DISABLE_EXCEPTION_CATCHING \
                                                           -s INITIAL_MEMORY=268435456")
     target_compile_definitions(index PRIVATE ${PLATFORM_WEB})
+elseif(APPLE)
+    # macOS specific configuration
+    set(RAYLIB_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/lib/libraylib.a")
+    set(MACOSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum macOS version")
+    
+    # Add required macOS frameworks
+    set(MACOS_FRAMEWORKS 
+        "-framework CoreVideo"
+        "-framework IOKit"
+        "-framework Cocoa"
+        "-framework GLUT"
+        "-framework OpenGL"
+        "-framework CoreFoundation"
+        "-framework CoreAudio")
+    
+    # Set macOS specific compile and link flags
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MACOS_FRAMEWORKS}")
+    target_compile_definitions(index PRIVATE ${PLATFORM_OSX})
 else()
     set(RAYLIB_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/lib/libraylib.a")
 endif()
 
-target_link_libraries(index ${RAYLIB_LIBRARY} -lwebsocket.js)
+# Set up library linking
+target_link_libraries(index ${RAYLIB_LIBRARY})
 
-if(NOT EMSCRIPTEN)
+# Platform-specific linking
+if(EMSCRIPTEN)
+    target_link_libraries(index -lwebsocket.js)
+elseif(WIN32 AND NOT EMSCRIPTEN)
     target_link_libraries(index -lwinmm -lgdi32 -lopengl32)
 endif()
+
+# Set installation targets
+install(TARGETS index
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib/static)

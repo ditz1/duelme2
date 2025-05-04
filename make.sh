@@ -23,4 +23,12 @@ elif [ "$1" = "debug" ]; then
     cd ../../server/build/
     make
     lldb ./program 127.0.0.1
+elif [ "$1" = "app" ]; then
+    echo "attempting to build standlone application"
+    cd client/build
+    make
+    kill $(lsof -t -i:8080)
+    cd ../../server/build/
+    make
+    ./program 127.0.0.1
 fi
