@@ -200,8 +200,8 @@ void ClearStageData(ServerStage& stage){
     stage.height = 0;
     stage.player_width = 0;
     stage.player_height = 0;
-    stage.max_y_level = 0;
-    stage.max_x_level = 0;
+    stage.max_y_level = 10000;
+    stage.max_x_level = 10000;
     stage.min_y_level = 0;
     stage.min_x_level = 0;
 

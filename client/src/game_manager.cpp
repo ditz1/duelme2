@@ -6,6 +6,8 @@ float reset_timer = 0.0f;
 float dummy_shoot_timer = 0.0f;
 bool can_update_score = false;
 
+int last_winner = -1;
+
 void InitGameState(GameState* game){
     for (uint8_t& player_state : game->player_states) {
         player_state = 0xBB;
@@ -119,6 +121,8 @@ void ResetGameState(GameState* game){
         if (!single_player_mode && can_update_score){
             if (game->player_hps[i] > 0){
                 player_wins[i]++;
+            } else{
+                game->player_states[i] = PlayerState::MOVE_DOWN;
             }
         }
         game->player_states[i] = PlayerState::AIRBORNE;
@@ -139,8 +143,10 @@ void UpdateGameState(GameState* game, Connection* conn){
         if (single_player_mode){
             if (last_received_bytes[2] == 1){
                 player_wins[1]++;
+                last_winner = 1;
             } else {
                 player_wins[0]++;
+                last_winner = 0;
             }
         }
         ResetGameState(game);
@@ -460,10 +466,15 @@ void ParseEndState(GameState* game, Connection* conn, Player* player){
         }
         current_game_stage = 0;
         reset_timer = 0.0f;
+        last_winner = -1;
     }
 }
 
 void DrawGameState(std::array<Player, 4> players, std::vector<Item> items){
+    if (last_winner != -1){
+        Vector2int winner_pos = players[last_winner].Position();
+        DrawText(TextFormat("Player %d wins!", last_winner), (int)winner_pos.x - 50, (int)winner_pos.y - 100, 20, WHITE);
+    }
     for (int i = 0; i < 4; i++){
         players[i].Draw();
         AnimatePlayer(players[i]);

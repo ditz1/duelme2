@@ -71,7 +71,7 @@ void PlayerMoveUp(CollisionIndex dirs, PlayerBody& body, PlayerFC fc) {
 
     if (fc.anim_fc < 1) {
         body.last_pos_y -= 0.75f;
-        body.pos_y -= 1.5f;
+        body.pos_y -= 2.0f;
     }
 }
 

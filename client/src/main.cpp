@@ -29,6 +29,7 @@ float dt = 0.016f;
 
 std::vector<std::string> stages;
 int current_stage = 0;
+bool loaded_textures = false;
 
 
 
@@ -40,17 +41,17 @@ std::string test = "RRRRRR \
                     RRRRRR ";
 
 // 7 x 9              0 1 2 3 4 5 6 7 8 9101112
-std::string test2 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \
-                      #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
+std::string test2 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \
+                      #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
 
 std::string test3 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \
                       #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n \
@@ -63,6 +64,11 @@ std::string test3 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  #  #  #  #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  #  #  #  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
@@ -231,10 +237,15 @@ int main() {
         // todo: really we should just move the client_player into the all_players array
         // but i dont want to rewrite the draw function since even though it would be better to have pointers
         // so do this for now but this is still bad
+        max_camera_y = stage.cell_size * stage.rows;
+        Vector2 max_cam_pos = GetScreenToWorld2D({0, (float)max_camera_y + 50.0f}, camera);
+        max_camera_y = max_cam_pos.y;
         
         // born to do id forced to do Id
         all_players[this_client_id] = client_player;
-        all_players[this_client_id].SetId(this_client_id);
+        if (!loaded_textures){
+            all_players[this_client_id].SetId(this_client_id);
+        }
         all_players[client_player.Id()].anim_current_frame = client_player.anim_current_frame;
         all_players[client_player.Id()].SetState(client_player.State());
         all_players[client_player.Id()].SetIsAnimating(client_player.IsAnimating());
@@ -279,8 +290,12 @@ int main() {
                         }
                         break;
                 }
-                for (auto& player : all_players){
-                    player.LoadTextures();
+                if (!loaded_textures){
+                    for (auto& player : all_players){
+                        player.LoadTextures();
+                        std::cout << "loaded textures for player " << player.Id() << std::endl;
+                    }
+                    loaded_textures = true;
                 }
                 UpdateItems(all_players, items);
                 break;
@@ -301,6 +316,7 @@ int main() {
                 UpdateItems(all_players, items);
                 ParseGameState(&game_state, &conn, &client_player);
                 if (reset_timer <= 0.0f) {
+                    
                     current_game_stage = 1;
                     round_number++;
                     can_move_bot = true;
