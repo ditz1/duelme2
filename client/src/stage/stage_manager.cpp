@@ -80,6 +80,8 @@ void Stage::LoadFromString(std::string stage_str) {
     int grid_x = 0;
     int grid_y = -1;
 
+    Image tileset_img = LoadImageFromTexture(tileset);
+    Rectangle src_rect = {0, 0, (float)32, (float)32};
 
     for (int i = 0; i < stage_str.size(); i++) {
         
@@ -95,21 +97,31 @@ void Stage::LoadFromString(std::string stage_str) {
 
         StageCell cell;
         cell.grid_location = {(float)grid_x, (float)grid_y};
-
         if (stage_str[i] == 'R') {
             cell.color = PURPLE;
+            src_rect.x = 2 * 32;
+            src_rect.y = 0;
+            Image tile_img = ImageFromImage(tileset_img, src_rect);
+            cell.tex = LoadTextureFromImage(tile_img);
+            UnloadImage(tile_img);
         } else if (stage_str[i] == 'G') {
             cell.color = GREEN;
         } else if (stage_str[i] == 'B') {
             cell.color = BLUE;
         } else if (stage_str[i] == '#') {
+            src_rect.x = 4 * 32;
+            src_rect.y = 0;
+            Image tile_img = ImageFromImage(tileset_img, src_rect);
+            cell.tex = LoadTextureFromImage(tile_img); 
             cell.collidable = true;
             cell.color = BLACK;
+            UnloadImage(tile_img);
         } else {
             cell.color = WHITE;
         }
         cells.push_back(cell);
     }
+    UnloadImage(tileset_img);
     is_loaded = true;
 }
 

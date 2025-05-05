@@ -155,6 +155,7 @@ int main() {
     stages.push_back(test3);
     stages.push_back(test4);
     stages.push_back(test5);
+
     
     GameState game_state;
 
@@ -163,6 +164,8 @@ int main() {
     Player client_player;
 
     std::array<Player, 4> all_players = {Player(), Player(), Player(), Player()};
+
+    stage.tileset = LoadTexture("assets/tiles.png");
 
     stage.LoadFromString(test3);
     stage.Generate();

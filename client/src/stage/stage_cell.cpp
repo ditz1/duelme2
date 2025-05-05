@@ -6,6 +6,7 @@ StageCell::StageCell() {
     rect = {0, 0, 0, 0};
     collidable = false;
     color = WHITE;
+    tex = {0};
 }
 
 StageCell::StageCell(Vector2 grid_location, char type, Rectangle rect, Color color) {
@@ -16,5 +17,6 @@ StageCell::StageCell(Vector2 grid_location, char type, Rectangle rect, Color col
 }
 
 void StageCell::Draw() {
-    DrawRectangleRec(rect, color);
+    DrawTexture(tex, rect.x, rect.y, WHITE);
+    //DrawRectangleRec(rect, color);
 }

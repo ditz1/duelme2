@@ -13,5 +13,5 @@ public:
     Rectangle rect;
     bool collidable;
     Color color;
-private:
+
 } StageCell;

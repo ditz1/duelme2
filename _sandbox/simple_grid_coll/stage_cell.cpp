@@ -5,6 +5,7 @@ StageCell::StageCell () {
     rect = {0, 0, 0, 0};
     collidable = false;
     color = WHITE;
+    tex = {0};
 }
 
 void StageCell::Draw() {

@@ -23,5 +23,6 @@ public:
     int current_stage_id;
     bool is_loaded;
     bool should_regenerate;
+    Texture2D tileset;
 private:
 } Stage;
