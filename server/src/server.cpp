@@ -52,6 +52,10 @@ void StartSession(std::shared_ptr<websocket::stream<tcp::socket>> ws) {
                 return client_ws == ws;
             }), clients.end());
         std::cout << "client disconnected -- " << clients.size() << " clients remain" << std::endl;
+        if (clients.size() == 0) {
+            std::cout << "all clients disconnected" << std::endl;
+            // reset all game state
+        }
         ReAssignPlayerIds();
         num_connections--;
     }

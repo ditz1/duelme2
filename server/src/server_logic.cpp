@@ -15,6 +15,7 @@ void LogMessageReceived(std::array<uint8_t, 32>& message) {
             case msg_switch_to_game: std::cout << "SWITCH_TO_GAME" << std::endl; break;
             case msg_load_stage_grid: std::cout << "LOAD_STAGE_GRID" << std::endl; break;
             case msg_stage_data: std::cout << "STAGE_DATA" << std::endl; break;
+            case msg_move_bot: std::cout << "MOVE_BOT" << std::endl; break;
             default: std::cout << "UNKNOWN" << std::endl; break;
         }
     }
@@ -28,6 +29,7 @@ void LogMessageReceived(std::array<uint8_t, 32>& message) {
 
 void ParseMessageReceived(std::array<uint8_t, 32>& message) {
     if (!message.empty()) {
+        //LogMessageReceived(message);
         switch(message[0]) {
             case msg_connect:
                 //LogMessageReceived(message);

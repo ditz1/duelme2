@@ -123,6 +123,7 @@ void Player::SetFaceDir(int dir) {
 }
 
 void Player::ProcessPlayerAnimLogic() {
+    if (_id != this_client_id) return;
 
     if (_state == MOVE_LEFT && _player_face_dir == 1) {
         _player_face_dir = -1;
@@ -140,7 +141,6 @@ void Player::ProcessPlayerAnimLogic() {
         is_dead = true;
         return;
     }
-    
 
 
     AssignTexture(_state);
@@ -160,7 +160,6 @@ void Player::ProcessPlayerAnimLogic() {
         fc = 0;
     }
 
-    if (_id != this_client_id) return;
 
 }
 
@@ -256,6 +255,14 @@ void Player::PollInput() {
     
 }
 
+void Player::UnloadTextures() {
+    for (int i = 0; i < 7; i++) {
+        UnloadImage(texs[i].img);
+        UnloadTexture(texs[i].tex);
+    }
+    _textures_loaded = false;
+}
+
 bool Player::Ready() {
     return _ready;
 }
@@ -265,7 +272,7 @@ PlayerState Player::State() {
 }
 
 void Player::SetId(int id) {
-
+    //if (_id == id) return;
     _id = id;
     switch(_id){
         case 0:
@@ -283,6 +290,9 @@ void Player::SetId(int id) {
         case 3:
             _color = YELLOW;
             //_name == "" ? _name = "P4" : _name;
+            break;
+        default:
+            _color = GREEN;
             break;
     }
     LoadTextures();

@@ -45,6 +45,8 @@ public:
     void PlayAnimOnce(PlayerState state);
     void AssignTexture(PlayerState state);
     void SetFaceDir(int dir);
+    void UnloadTextures();
+    inline bool TexturesLoaded() { return _textures_loaded; }
     
     DrawData draw_data;
     PlayerState last_state;
@@ -65,7 +67,7 @@ private:
     void PollAttackInput();
     void ResetState();
     bool _is_jumping;
-    bool _textures_loaded;
+    bool _textures_loaded = false;
     uint8_t _id;
     Vector2int _position;
     int _hp;

@@ -47,7 +47,6 @@ void UpdateDummyMovement(GameState* game){
         return;
     }
     
-
     if (dummy_shoot_timer > 1.5f){
         game->player_states[1] = PlayerState::SHOOT;
         dummy_shoot_timer += 0.016f;
@@ -55,6 +54,12 @@ void UpdateDummyMovement(GameState* game){
             game->player_states[1] = PlayerState::IDLE;
             dummy_shoot_timer = 0.0f;
         }
+        return;
+    }
+
+    if (game->player_positions[0].y < game->player_positions[1].y - 20){
+        game->player_states[1] = MOVE_UP;
+        dummy_shoot_timer = 0.0f;
         return;
     }
 

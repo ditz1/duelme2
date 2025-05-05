@@ -21,6 +21,7 @@ bool player_size_set = false;
 bool single_player_mode = false;
 bool can_move_bot = true;
 bool can_move_player = true;
+Vector2 center_stage = {0, 0};
 
 int round_number = 1;
 std::array<int, 4> player_wins = {0, 0, 0, 0};
@@ -68,10 +69,10 @@ std::string test3 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
-                      #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  #  #  #  #  R  R  R  R  R  R  R  #  #  #  #  #  #  #  #  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
+                      #  #  #  #  #  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  R  # \n \
                       #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  # \n ";
 
 std::string test4 = "\r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \r \
@@ -226,8 +227,19 @@ int main() {
     items.push_back(item2);
 
     Player dummy_player;
+    // this isn't exactly the right way of doing this,
+    // because really we should only be using the textures
+    // for each player in the game, so now if there are only 2
+    // we still load 4 textures - however, if we don't do this,
+    // then the client will have its id malformed on page refresh
+    // and textures wont load
 
+    client_player.SetId(0);
     dummy_player.SetId(1);
+    all_players[0].SetId(0);
+    all_players[1].SetId(1);
+    all_players[2].SetId(2);
+    all_players[3].SetId(3);
 
     // eventually will need something for managing the texture assignment
     int lobby_state = 0;
@@ -241,16 +253,11 @@ int main() {
         Vector2 max_cam_pos = GetScreenToWorld2D({0, (float)max_camera_y + 50.0f}, camera);
         max_camera_y = max_cam_pos.y;
         
-        // born to do id forced to do Id
         all_players[this_client_id] = client_player;
-        if (!loaded_textures){
-            all_players[this_client_id].SetId(this_client_id);
-        }
+        all_players[this_client_id].SetId(this_client_id);
         all_players[client_player.Id()].anim_current_frame = client_player.anim_current_frame;
         all_players[client_player.Id()].SetState(client_player.State());
         all_players[client_player.Id()].SetIsAnimating(client_player.IsAnimating());
-
-
 
         if (IsKeyDown(KEY_LEFT)) camera.target.x -= 10;
         if (IsKeyDown(KEY_RIGHT)) camera.target.x += 10;
@@ -266,6 +273,7 @@ int main() {
             InLoadingScreen();
             SendStageData(&conn, client_player, all_players, stage, items_rec);
             ListenStageData(&conn, client_player, all_players, stage);
+            center_stage = { (float)stage.cols * stage.cell_size / 2, (float)stage.rows * stage.cell_size / 2 };
             continue;
         }
 
@@ -297,6 +305,7 @@ int main() {
                     }
                     loaded_textures = true;
                 }
+                //UpdateClientPlayerCopies(all_players, &game_state);
                 UpdateItems(all_players, items);
                 break;
             case 1:
@@ -366,7 +375,7 @@ int main() {
             }
         }
         
-        AdjustCameraPosition(all_players, camera, max_camera_y);
+        AdjustCameraPosition(all_players, camera, max_camera_y, center_stage);
         /////// draw /////////
         BeginDrawing();
             ClearBackground(DARKGRAY);
@@ -402,6 +411,17 @@ int main() {
 
     buf[0] = msg_disconnect;
     ClientSendBytes(&conn, (void*)&buf, 32);
+    // unload all textures
+    for (auto& player : all_players){
+        player.UnloadTextures();
+    }
+
+    client_player.UnloadTextures();
+
+    for (auto& item : items){
+        item.UnloadTextures();
+    }
+    
 
 
     std::cout << "Closing application" << std::endl;

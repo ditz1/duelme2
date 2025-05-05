@@ -20,10 +20,10 @@ void DrawGameUI(GameState game, Player& client_player, std::array<Player, 4> all
     int center_x = GetScreenWidth() / 2;
     
     DrawText(TextFormat("Round: %d", round_number), center_x - 50, 25, font_size, RAYWHITE);
-    DrawText(TextFormat("Wins: %d, %d, %d, %d", player_wins[0], player_wins[1], player_wins[2], player_wins[3]), center_x - 50, 50, font_size, RAYWHITE);
 
     for (int i = 0; i < 4; i++) {
         if (i >= num_players_connected) break;
+        DrawText(TextFormat("Wins: %d", player_wins[i]), x_start + hp_bar_spacing * i, hp_y_start - 20, font_size, RAYWHITE);
         DrawText(TextFormat("P%d HP: %d", i, game.player_hps[i]), x_start + hp_bar_spacing * i, hp_y_start, font_size, RAYWHITE);
         Rectangle hp_bg      = {(float)x_start + (hp_bar_spacing * i) - 3, (float)hp_y_start + 20 - 3, 150 + 6, (float)20 + 6};
         Rectangle hp_bar_red = {(float)x_start + (hp_bar_spacing * i), (float)hp_y_start + 20, 150, (float)20};

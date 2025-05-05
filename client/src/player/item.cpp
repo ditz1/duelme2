@@ -20,6 +20,13 @@ void Item::LoadTextures(std::string str_item) {
     draw_data.source = {0.0f, 0.0f, (float)anim_data.img.width, (float)anim_data.img.height};
     draw_data.dest = {0.0f, 0.0f, (float)anim_data.img.width * 1.75f, (float)anim_data.img.height * 1.75f,};  
 }
+
+void Item::UnloadTextures() {
+    UnloadImage(anim_data.img);
+    UnloadTexture(anim_data.tex);
+}
+
+
 void Item::Update(Vector2int player_pos, DrawData draw_data) {
   
     position = V2intToV2(player_pos);

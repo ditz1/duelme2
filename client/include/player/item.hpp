@@ -8,6 +8,7 @@ public:
     void Draw();
     void Update(Vector2int player_pos, DrawData draw_data);
     void LoadTextures(std::string item);
+    void UnloadTextures();
     DrawData draw_data;
     AnimData anim_data;
     Vector2 position;
